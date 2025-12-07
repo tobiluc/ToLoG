@@ -1,7 +1,7 @@
 CMakeLists.txt.user
 build
 external
-*/.DS_Store
+*.DS_Store
 
 # Prerequisites
 *.d
