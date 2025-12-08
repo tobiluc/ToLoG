@@ -10,6 +10,7 @@ if (GTEST_FOUND)
         dsu_tests.cpp
         marching_cubes_tests.cpp
         keyvaluevector_tests.cpp
+        enumerate_tests.hpp
         unittests.cpp
     )
 

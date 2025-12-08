@@ -55,6 +55,7 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/unstable/marching_cubes.cpp
     src/ToLoG/unstable/marching_cubes.hpp
     src/ToLoG/unstable/KDTree.hpp
+    src/ToLoG/enumerate.hpp
 )
 add_library ("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS ${PROJECT_NAME})
 
