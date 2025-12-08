@@ -1,4 +1,6 @@
 #pragma once
+#include <numeric>
+#include <vector>
 
 namespace ToLoG
 {
@@ -59,6 +61,12 @@ public:
             }
             _p[p_idx[r]].push_back(i);
         }
+    }
+
+    inline size_t n_connected_components() {
+        std::vector<std::vector<uint32_t>> dummy;
+        connected_components(dummy);
+        return dummy.size();
     }
 
 private:

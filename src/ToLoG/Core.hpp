@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ToLoG/predicates/ExactPredicates.h>
+#include <ToLoG/predicates/ExactPredicates.hpp>
 #include <MacTypes.h>
 #include <concepts>
 #include <limits>
@@ -16,6 +16,9 @@ template<typename P>
 class AABB
 {
 public:
+    using FT = typename Traits<P>::value_type;
+    static constexpr int DIM = Traits<P>::dim;
+
     AABB() {
         reset();
     }
@@ -48,6 +51,15 @@ public:
     }
     inline const P& max() const {
         return max_;
+    }
+    inline std::array<P,1<<DIM> corners() const {
+        std::array<P,1<<DIM> res;
+        for (int32_t mask = 0; mask < (1<<DIM); ++mask) {
+            for (int d = 0; d < DIM; ++d) {
+                res[mask][d] = (mask & (1<<d))? max_[d] : min_[d];
+            }
+        }
+        return res;
     }
     inline P centroid() const {
         return (min_ + max_) / typename Traits<P>::value_type(2);
@@ -122,6 +134,9 @@ public:
     inline const FT& operator[](const int& _i) const {
         return data_[_i];
     }
+    inline const FT& x() const {static_assert(DIM>=1); return data_[0];}
+    inline const FT& y() const {static_assert(DIM>=2); return data_[1];}
+    inline const FT& z() const {static_assert(DIM>=3); return data_[2];}
     inline Point<FT,DIM> operator-(const Point<FT,DIM>& _rhs) const {
         Point<FT,DIM> res = *this;
         for (int i = 0; i < DIM; ++i) {

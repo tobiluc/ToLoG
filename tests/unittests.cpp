@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <ToLoG/predicates/ExactPredicates.h>
+#include <ToLoG/predicates/ExactPredicates.hpp>
 
 int main(int argc, char** argv)
 {

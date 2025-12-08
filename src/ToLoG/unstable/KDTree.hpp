@@ -1,0 +1,281 @@
+#pragma once
+#include <ToLoG/Core.hpp>
+#include <cassert>
+#include <cstdint>
+#include <vector>
+#include <iostream>
+#include <queue>
+#include <stack>
+
+namespace ToLoG
+{
+
+template<typename Point>
+class KDTree
+{
+public:
+    using FT = Traits<Point>::value_type;
+    static constexpr int DIM = Traits<Point>::dim;
+private:
+    struct Node {
+        // Left children index in nodes_ (right = left+1).
+        // If leaf: left==right==UINT32_MAX
+        uint32_t left = UINT32_MAX;
+
+        // Range [start, end) in points_idx_buffer_.
+        // If inner: start==end==UINT32_MAX
+        uint32_t start = UINT32_MAX;
+        uint32_t end = UINT32_MAX;
+
+        // AABB (min, max)
+        FT bbox_min[DIM];
+        FT bbox_max[DIM];
+
+        // Split axis and value (for inner nodes)
+        uint32_t split_axis = 0;
+        FT split_value = 0.0;
+    };
+
+public:
+    KDTree(const std::vector<Point>& _points, size_t _leaf_size = 32) :
+        points_(_points),
+        leaf_size_(_leaf_size)
+    {
+        build_tree();
+    }
+
+    void k_nearest_neighbors(const FT* _q, const uint32_t _k, std::vector<uint32_t>& _res) const
+    {
+        // Helper: Holds Point Index and Squared Distance
+        struct PointIdxD2
+        {
+            uint32_t idx;
+            FT d2;
+            inline bool operator<(const PointIdxD2& _pilb) const {
+                return d2 < _pilb.d2;
+            }
+        };
+
+        // Helper: Holds Node Index and Squared Distance Lower Bound
+        struct NodeIdxLB
+        {
+            uint32_t idx;
+            FT lb; // lower bound on squared distance
+            inline bool operator>(const NodeIdxLB& _nilb) const {
+                return lb > _nilb.lb;
+            }
+        };
+
+        std::priority_queue<PointIdxD2,std::vector<PointIdxD2>,std::less<PointIdxD2>> best;
+        std::priority_queue<NodeIdxLB,std::vector<NodeIdxLB>,std::greater<NodeIdxLB>> pq;
+
+        pq.push({0, FT(0)}); // push root
+        while(!pq.empty())
+        {
+            auto [node_idx, lb] = pq.top();
+            pq.pop();
+
+            // We already found k points and the node cannot contain closer points?
+            if(best.size()==_k && lb >= best.top().d2) {
+                break;
+            }
+
+            const Node& N = nodes_[node_idx];
+
+            if(is_leaf_node(node_idx)){
+                for(uint32_t i=N.start;i<N.end;i++){
+                    uint32_t pid = points_idx_buffer_[i];
+                    const FT d2 = point_squared_distance(_q, pid);
+                    if(best.size()<_k) {
+                        best.push({pid, d2});
+                    } else if(d2 < best.top().d2) {
+                        // Replace top
+                        best.pop();
+                        best.push({pid, d2});
+                    }
+                }
+            } else {
+                FT lbL = node_squared_distance_lower_bound(_q, N.left);
+                if(best.size()<_k || lbL < best.top().d2) {
+                    pq.push({N.left, lbL}); // left child
+                }
+
+                FT lbR = node_squared_distance_lower_bound(_q, N.left+1);
+                if(best.size()<_k || lbR < best.top().d2) {
+                    pq.push({N.left+1, lbR}); // right child
+                }
+            }
+        }
+
+        // Extract result
+        _res.resize(best.size());
+        uint32_t i = best.size();
+        while(!best.empty()){
+            _res[--i] = best.top().idx;
+            best.pop();
+        }
+    }
+
+private:
+    std::vector<Point> points_;
+    std::vector<Node> nodes_;
+    std::vector<uint32_t> points_idx_buffer_;
+    size_t leaf_size_ = 32;
+
+    void build_tree()
+    {
+        nodes_.clear();
+        nodes_.reserve(2*n_points()/leaf_size_);
+        points_idx_buffer_.clear();
+        points_idx_buffer_.reserve(n_points());
+        if (n_points() == 0) {
+            std::cerr << "Warning: Building KDTree with no points" << std::endl;
+            return;
+        }
+
+        struct BuildTask {
+            uint32_t node_idx;
+            uint32_t* begin;
+            size_t n;
+        };
+
+        std::vector<uint32_t> idx(n_points());
+        std::iota(idx.begin(), idx.end(), 0u); // idx[i] = i
+
+        // Create root node
+        nodes_.emplace_back();
+        std::stack<BuildTask> s;
+        s.push({0, idx.data(), idx.size()});
+
+        // Build
+        while(!s.empty())
+        {
+            BuildTask t = s.top();
+            s.pop();
+
+            // Compute bounding box
+            for (int j = 0; j < DIM; ++j) {
+                nodes_[t.node_idx].bbox_min[j] = point(t.begin[0])[j];
+                nodes_[t.node_idx].bbox_max[j] = point(t.begin[0])[j];
+            }
+            for(size_t i=1;i<t.n;i++){
+                for (int j = 0; j < DIM; ++j) {
+                    nodes_[t.node_idx].bbox_min[j] = std::min(point(t.begin[i])[j], nodes_[t.node_idx].bbox_min[j]);
+                    nodes_[t.node_idx].bbox_max[j] = std::max(point(t.begin[i])[j], nodes_[t.node_idx].bbox_max[j]);
+                }
+            }
+
+            // Leaf?
+            if(t.n <= leaf_size_) {
+                nodes_[t.node_idx].start = points_idx_buffer_.size();
+                nodes_[t.node_idx].end = nodes_[t.node_idx].start + t.n;
+                for(size_t i=0;i<t.n;i++) {
+                    points_idx_buffer_.push_back(t.begin[i]);
+                }
+                continue;
+            }
+
+            // Determine Split Axis
+            {
+                FT d_max(0);
+                for (int i = 0; i < DIM; ++i) {
+                    FT d(nodes_[t.node_idx].bbox_max[i]-nodes_[t.node_idx].bbox_min[i]);
+                    if (d > d_max) {
+                        d_max = d;
+                        nodes_[t.node_idx].split_axis = i;
+                    }
+                }
+            }
+
+            // Median split
+            uint32_t m = t.n / 2;
+            std::nth_element(
+                t.begin,
+                t.begin + m,
+                t.begin + t.n,
+                [&](uint32_t a, uint32_t b){
+                    return point(a)[nodes_[t.node_idx].split_axis] < point(b)[nodes_[t.node_idx].split_axis];
+                }
+                );
+            nodes_[t.node_idx].split_value = point(t.begin[m])[nodes_[t.node_idx].split_axis];
+
+            // Create children
+            nodes_[t.node_idx].left = nodes_.size();
+            nodes_.emplace_back(); // left
+            nodes_.emplace_back(); // right
+
+            // Push tasks
+            s.push({nodes_[t.node_idx].left+1, t.begin+m, t.n-m});
+            s.push({nodes_[t.node_idx].left, t.begin, m});
+        }
+        // Debug Check
+#ifndef NDEBUG
+        std::cerr << "--------------------" << std::endl;
+        std::cerr << "KD Tree Construction" << std::endl;
+        std::cerr << "Node Memory: " << (nodes_.size()*sizeof(Node)*1e-6) << " MB" << std::endl;
+        std::cerr << "--------------------" << std::endl;
+        size_t n_points_in_nodes = 0;
+        for (uint32_t i = 0; i < n_nodes(); ++i) {
+            if (is_leaf(i)) {
+                assert(node(i).left == UINT32_MAX);
+                assert(node(i).start < node(i).end);
+                assert(node(i).start < points_idx_buffer_.size());
+                assert(node(i).end <= points_idx_buffer_.size());
+                n_points_in_nodes += node(i).end-node(i).start;
+            } else {
+                assert(node(i).left < n_nodes());
+                assert(node(i).start == UINT32_MAX);
+                assert(node(i).end == UINT32_MAX);
+            }
+        }
+        assert(n_points_in_nodes == points_.size());
+#endif
+    }
+
+    inline size_t n_nodes() const {
+        return nodes_.size();
+    }
+
+    inline size_t n_points() const {
+        return points_.size();
+    }
+
+    inline bool is_leaf_node(uint32_t _node_idx) const {
+        assert(_node_idx < n_nodes());
+        return nodes_[_node_idx].left == UINT32_MAX;
+    }
+
+    inline const Node& node(uint32_t _node_idx) const {
+        assert(_node_idx < n_nodes());
+        return nodes_[_node_idx];
+    }
+
+    inline const Point& point(const uint32_t& _pidx) const {
+        assert(_pidx < n_points_);
+        return points_[_pidx];
+    }
+
+    /// Squared Distance from Query Point Q to pidx-th Point
+    inline FT point_squared_distance(const FT* _q, const uint32_t& _pidx) const {
+        assert(_pidx < n_points_);
+        FT res(0);
+        for (int i = 0; i < DIM; ++i) {
+            const FT d = _q[i]-point(_pidx)[i];
+            res += d*d;
+        }
+        return res;
+    }
+
+    /// Squared Distance Lower Bound from Query Point Q to Node (based on bbox)
+    inline FT node_squared_distance_lower_bound(const FT* _q, const uint32_t& _node_idx) const {
+        assert(_node_idx < n_nodes());
+        FT res(0);
+        for (int i = 0; i < DIM; ++i) {
+            const FT d = std::max(std::max(node(_node_idx).bbox_min[i] - _q[i], FT(0)), _q[i] - node(_node_idx).bbox_max[i]);
+            res += d*d;
+        }
+        return res;
+    };
+};
+
+}

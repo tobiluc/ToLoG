@@ -1,7 +1,7 @@
-#include "Octree.h"
+#include <ToLoG/unstable/Octree.hpp>
 #include <iostream>
 
-namespace IGRec::Geometry
+namespace ToLoG
 {
 
 #define EPS 1e-12
@@ -47,7 +47,7 @@ void decode(OctreeNodeCode code, u32& x, u32& y, u32& z, u32& depth) {
     depth = (u32)(code >> NUM_MORTON_BITS);
 }
 
-Octree::Octree(BoundingBox bounds, u32 initialResolution, u32 maxDepth)
+Octree3d::Octree3d(AABB bounds, u32 initialResolution, u32 maxDepth)
     : bounds_(bounds), max_depth_(maxDepth),
     initial_resolution_(initialResolution)
 {
@@ -68,7 +68,7 @@ Octree::Octree(BoundingBox bounds, u32 initialResolution, u32 maxDepth)
     }
 }
 
-void Octree::refineNode(u32 idx) {
+void Octree3d::refine_node(u32 idx) {
     if (idx == UINT32_MAX) {return;}
 
     OctreeNodeCode code = nodes_[idx].code;
@@ -90,32 +90,32 @@ void Octree::refineNode(u32 idx) {
     nodes_[idx].refined = true;
 }
 
-u32 Octree::locate(double px, double py, double pz) const {
+u32 Octree3d::locate(Point _q) const {
 
     // Normalize within tree bounds
-    px = (px - bounds_.x0()) / (bounds_.dx());
-    py = (py - bounds_.y0()) / (bounds_.dy());
-    pz = (pz - bounds_.z0()) / (bounds_.dz());
+    _q[0] = (_q[0] - bounds_.min()[0]) / (bounds_.max()[0]-bounds_.min()[0]);
+    _q[1] = (_q[1] - bounds_.min()[1]) / (bounds_.max()[1]-bounds_.min()[1]);
+    _q[2] = (_q[2] - bounds_.min()[2]) / (bounds_.max()[2]-bounds_.min()[2]);
 
     // Check if outside tree bounds
-    if (px < -EPS || px > 1.0+EPS
-        || py < -EPS || py > 1.0+EPS
-        || pz < -EPS || pz > 1.0+EPS) {
+    if (_q[0] < -EPS || _q[0] > 1.0+EPS
+        || _q[1] < -EPS || _q[1] > 1.0+EPS
+        || _q[2] < -EPS || _q[2] > 1.0+EPS) {
         return UINT32_MAX;
     }
 
     // Clamp
-    px = std::clamp(px, 0.0, 1.0);
-    py = std::clamp(py, 0.0, 1.0);
-    pz = std::clamp(pz, 0.0, 1.0);
+    _q[0] = std::clamp(_q[0], 0.0, 1.0);
+    _q[1] = std::clamp(_q[1], 0.0, 1.0);
+    _q[2] = std::clamp(_q[2], 0.0, 1.0);
 
     // Find which root cell this falls into
-    u32 x = (u32)(px * initial_resolution_);
-    u32 y = (u32)(py * initial_resolution_);
-    u32 z = (u32)(pz * initial_resolution_);
+    u32 x = (u32)(_q[0] * initial_resolution_);
+    u32 y = (u32)(_q[1] * initial_resolution_);
+    u32 z = (u32)(_q[2] * initial_resolution_);
 
     OctreeNodeCode code = encode(x, y, z, 0);
-    u32 nodeIdx = getNodeIndex(code);
+    u32 nodeIdx = node_index_from_code(code);
 
     if (nodeIdx == UINT32_MAX) {return UINT32_MAX;}
 
@@ -129,10 +129,10 @@ u32 Octree::locate(double px, double py, double pz) const {
         if (depth >= max_depth_) {break;}
 
         // Compute the relative position of the point in this node
-        double scale = getNodeScaleAtDepth(depth);
-        double localX = (px - cx * scale) / scale;
-        double localY = (py - cy * scale) / scale;
-        double localZ = (pz - cz * scale) / scale;
+        double scale = node_scale_at_depth(depth);
+        double localX = (_q[0] - cx * scale) / scale;
+        double localY = (_q[1] - cy * scale) / scale;
+        double localZ = (_q[2] - cz * scale) / scale;
 
         u32 childIndex =
             ((localZ >= 0.5) << 2) |
@@ -148,22 +148,24 @@ u32 Octree::locate(double px, double py, double pz) const {
     return nodeIdx;
 }
 
-u32 Octree::depth(u32 idx) const
+u32 Octree3d::node_depth(u32 idx) const
 {
     u32 x, y, z, d;
     decode(nodes_[idx].code, x, y, z, d);
     return d;
 }
 
-BoundingBox Octree::node_bounding_box(u32 idx) const {
-    if (idx == UINT32_MAX) {return BoundingBox();}
+Octree3d::AABB Octree3d::node_bounding_box(u32 idx) const {
+    if (idx == UINT32_MAX) {return AABB();}
     u32 cx, cy, cz, d;
     decode(nodes_[idx].code, cx, cy, cz, d);
-    auto size = getNodeSizeAtDepth(d);
-    double x0 = bounds_.x0() + cx * size[0];
-    double y0 = bounds_.y0() + cy * size[1];
-    double z0 = bounds_.z0() + cz * size[2];
-    return BoundingBox(x0,y0,z0,x0+size[0],y0+size[1],z0+size[2]);
+    Point size = node_size_at_depth(d);
+    Point origin(
+        bounds_.min()[0] + cx * size[0],
+        bounds_.min()[1] + cy * size[1],
+        bounds_.min()[2] + cz * size[2]
+    );
+    return AABB({origin, origin+size});
 }
 
 }

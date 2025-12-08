@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <ToLoG/Core.h>
+#include <ToLoG/Core.hpp>
 
 TEST(GeometryCoreTest, PointTest)
 {

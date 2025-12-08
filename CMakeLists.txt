@@ -44,10 +44,17 @@ endif()
 add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/predicates/predicates.c
     src/ToLoG/predicates/ExactPredicates.cpp
-    src/ToLoG/predicates/ExactPredicates.h
-    src/ToLoG/Core.h
-    src/ToLoG/AABBTree.h
-    src/ToLoG/DSU.h
+    src/ToLoG/predicates/ExactPredicates.hpp
+    src/ToLoG/Core.hpp
+    src/ToLoG/AABBTree.hpp
+    src/ToLoG/DSU.hpp
+    src/ToLoG/KeyValueVector.hpp
+
+    src/ToLoG/unstable/Octree.hpp
+    src/ToLoG/unstable/Octree.cpp
+    src/ToLoG/unstable/marching_cubes.cpp
+    src/ToLoG/unstable/marching_cubes.hpp
+    src/ToLoG/unstable/KDTree.hpp
 )
 add_library ("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS ${PROJECT_NAME})
 

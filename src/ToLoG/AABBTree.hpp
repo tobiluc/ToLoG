@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ToLoG/Core.h>
+#include <ToLoG/Core.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <functional>

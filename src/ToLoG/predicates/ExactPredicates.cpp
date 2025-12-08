@@ -1,4 +1,4 @@
-#include <ToLoG/predicates/ExactPredicates.h>
+#include <ToLoG/predicates/ExactPredicates.hpp>
 
 namespace ToLoG
 {

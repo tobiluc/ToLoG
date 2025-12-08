@@ -1,11 +1,11 @@
-#include "marching_cubes.h"
-#include "IGRec/geometry/Octree.h"
+#include <ToLoG/unstable/marching_cubes.hpp>
+#include <ToLoG/unstable/Octree.hpp>
 #include <iostream>
 
-namespace IGRec::Geometry
+namespace ToLoG
 {
 
-const int MarchingCubes::edgeTable[256] =
+const int MarchingCubes3d::edgeTable[256] =
     {
         0x0  , 0x109, 0x203, 0x30a, 0x406, 0x50f, 0x605, 0x70c,
         0x80c, 0x905, 0xa0f, 0xb06, 0xc0a, 0xd03, 0xe09, 0xf00,
@@ -41,7 +41,7 @@ const int MarchingCubes::edgeTable[256] =
         0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0
 };
 
-const int MarchingCubes::triangleTable[256][16] =
+const int MarchingCubes3d::triangleTable[256][16] =
     {
         {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
         {0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
@@ -301,31 +301,31 @@ const int MarchingCubes::triangleTable[256][16] =
         {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}
 };
 
-const Eig::Vec3d MarchingCubes::cubeVertices[8] = {
+const MarchingCubes3d::Point MarchingCubes3d::cubeVertices[8] = {
     {0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {0, 1, 0},
     {0, 0, 1}, {1, 0, 1}, {1, 1, 1}, {0, 1, 1}
 };
 
-const int MarchingCubes::cubeEdges[12][2] = {
+const int MarchingCubes3d::cubeEdges[12][2] = {
     {0,1}, {1,2}, {2,3}, {3,0},
     {4,5}, {5,6}, {6,7}, {7,4},
     {0,4}, {1,5}, {2,6}, {3,7}
 };
 
-int MarchingCubes::generate(const SDF<Eig::Vec3d> &f, TriangleMesh &mesh, const BoundingBox &bounds)
+int MarchingCubes3d::generate(const SDF &f, TriangleMesh &mesh, const AABB &bounds)
 {
     // Evaluate function at node corners
-    Eig::Vec3d p[8];
+    Point p[8];
     double val[8];
-    auto size = bounds.size<Eig::Vec3d>();
+    auto size = bounds.max() - bounds.min();
     for (uint32_t i = 0; i < 8; ++i) {
         int dxi = cubeVertices[i].x();
         int dyi = cubeVertices[i].y();
         int dzi = cubeVertices[i].z();
         p[i] = {
-            bounds.x0() + dxi * size[0],
-            bounds.y0() + dyi * size[1],
-            bounds.z0() + dzi * size[2]
+            bounds.min().x() + dxi * size[0],
+            bounds.min().y() + dyi * size[1],
+            bounds.min().z() + dzi * size[2]
         };
         val[i] = f(p[i]);
     }
@@ -341,7 +341,7 @@ int MarchingCubes::generate(const SDF<Eig::Vec3d> &f, TriangleMesh &mesh, const 
     if (edges == 0) {return 0;}
 
     // Interpolate positions
-    Eig::Vec3d vertList[12];
+    Point vertList[12];
     for (int e = 0; e < 12; ++e) {
         if (edges & (1 << e)) {
             int a = cubeEdges[e][0];
@@ -367,95 +367,8 @@ int MarchingCubes::generate(const SDF<Eig::Vec3d> &f, TriangleMesh &mesh, const 
     return edges;
 }
 
-// void MarchingCubes::generate(SDF<Eig::Vec3d> &f, TriangleMesh &mesh)
-// {
-//     // Compute cube sizes
-//     auto boundsSize = bounds.size<Eig::Vec3d>();
-//     double dx = boundsSize[0] / (nx - 1);
-//     double dy = boundsSize[1] / (ny - 1);
-//     double dz = boundsSize[2] / (nz - 1);
-
-//     // From 3d index to 1d index
-//     auto index = [&](int ix, int iy, int iz) {
-//         return ix + iy * nx + iz * nx * ny;
-//     };
-
-//     // Compute scalar field
-//     std::vector<float> field(nx * ny * nz);
-//     for (int iz = 0; iz < nz; ++iz) {
-//         for (int iy = 0; iy < ny; ++iy) {
-//             for (int ix = 0; ix < nx; ++ix) {
-
-//                 double x = bounds.x0() + ix * dx;
-//                 double y = bounds.y0() + iy * dy;
-//                 double z = bounds.z0() + iz * dz;
-
-//                 field[index(ix, iy, iz)] = f(Eig::Vec3d(x, y, z));
-//             }
-//         }
-//     }
-
-//     // Cube Marching
-//     for (int iz = 0; iz < nz - 1; ++iz) {
-//         for (int iy = 0; iy < ny - 1; ++iy) {
-//             for (int ix = 0; ix < nx - 1; ++ix) {
-
-//                 // Get the cube corners and their values
-//                 Eig::Vec3d p[8];
-//                 float val[8];
-//                 for (int i = 0; i < 8; ++i) {
-//                     int dx_i = cubeVertices[i].x();
-//                     int dy_i = cubeVertices[i].y();
-//                     int dz_i = cubeVertices[i].z();
-//                     p[i] = {
-//                         bounds.x0() + (ix + dx_i) * dx,
-//                         bounds.y0() + (iy + dy_i) * dy,
-//                         bounds.z0() + (iz + dz_i) * dz
-//                     };
-//                     val[i] = field[index(ix + dx_i, iy + dy_i, iz + dz_i)];
-//                 }
-
-//                 // Build cube index
-//                 int cubeIndex = 0;
-//                 for (int i = 0; i < 8; ++i) {
-//                     if (val[i] < 0) cubeIndex |= (1 << i);
-//                 }
-
-//                 // Get the points per cube edge
-//                 int edges = edgeTable[cubeIndex];
-//                 if (edges == 0) {continue;}
-
-//                 // Interpolate positions
-//                 Eig::Vec3d vertList[12];
-//                 for (int e = 0; e < 12; ++e) {
-//                     if (edges & (1 << e)) {
-//                         int a = cubeEdges[e][0];
-//                         int b = cubeEdges[e][1];
-//                         double t = val[a] / (val[a] - val[b]);
-//                         vertList[e] = p[a] + (p[b] - p[a]) * t;
-//                     }
-//                 }
-
-//                 // Construct the triangles
-//                 for (int i = 0; triangleTable[cubeIndex][i] != -1; i += 3) {
-//                     int i0 = triangleTable[cubeIndex][i + 0];
-//                     int i1 = triangleTable[cubeIndex][i + 1];
-//                     int i2 = triangleTable[cubeIndex][i + 2];
-
-//                     uint32_t base = mesh.vertices.size();
-//                     mesh.vertices.push_back(vertList[i0]);
-//                     mesh.vertices.push_back(vertList[i1]);
-//                     mesh.vertices.push_back(vertList[i2]);
-//                     mesh.triangles.push_back({base+0, base+1, base+2});
-//                 }
-//             }
-//         }
-//     }
-
-// }
-
-struct EigVec3dHash {
-    inline std::size_t operator()(const Eig::Vec3d& v) const {
+struct PointHash {
+    inline std::size_t operator()(const MarchingCubes3d::Point& v) const {
         std::size_t h1 = std::hash<float>{}(v.x());
         std::size_t h2 = std::hash<float>{}(v.y());
         std::size_t h3 = std::hash<float>{}(v.z());
@@ -463,34 +376,32 @@ struct EigVec3dHash {
     }
 };
 
- MarchingCubes::TriangleMesh MarchingCubes::generateAdaptive(const SDF<Eig::Vec3d>& sdf, const Settings& settings)
+MarchingCubes3d::TriangleMesh MarchingCubes3d::generate_adaptive(const SDF& sdf, const Settings& settings)
 {
-     TriangleMesh mesh;
+    TriangleMesh mesh;
 
     // Init. Octree
-    Octree tree(settings.bounds, std::max(settings.nx,std::max(settings.ny,settings.nz)), settings.maxDepth);
+    Octree3d tree(settings.bounds, std::max(settings.nx,std::max(settings.ny,settings.nz)), settings.maxDepth);
 
-    std::unordered_map<Eig::Vec3d,double,EigVec3dHash> cachedVals;
+    std::unordered_map<Point,double,PointHash> cachedVals;
 
     // Refine the tree
     for (u32 idx = 0; idx < tree.n_nodes(); ++idx) {
-        if (tree.depth(idx) < settings.maxDepth) {
+        if (tree.node_depth(idx) < settings.maxDepth) {
 
             // Evaluate function at node corners
-            BoundingBox b = tree.node_bounding_box(idx);
-            auto corners = b.corners<Eig::Vec3d>();
+            AABB b = tree.node_bounding_box(idx);
             bool pos = false, neg = false;
-            for (u32 c = 0; c < 8; ++c) {
+            for (const auto& corner : b.corners()) {
                 float val = 0.0f;
-                if (cachedVals.contains(corners[c])) {val = cachedVals.at(corners[c]);}
-                else {val = sdf(corners[c]);}
+                if (cachedVals.contains(corner)) {val = cachedVals.at(corner);}
+                else {val = sdf(corner);}
                 pos |= (val > 0);
                 neg |= (val < 0);
             }
             if (pos && neg) {
                 // Refine Node - this appends a new node at the end so it is considered in the same loop
-                tree.refineNode(idx);
-                tree.deactivate(idx);
+                tree.refine_node(idx);
             }
         }
     }
@@ -498,13 +409,11 @@ struct EigVec3dHash {
     // Now, generate on each leaf node (unrefined)
     for (u32 idx = 0; idx < tree.n_nodes(); ++idx) {
         if (!tree.isRefined(idx)) {
-            if (!generate(sdf, mesh, tree.node_bounding_box(idx))) { // generates triangulation within a single node
-                tree.deactivate(idx); // no geometry
-            }
+            generate(sdf, mesh, tree.node_bounding_box(idx));
         }
     }
 
     return mesh;
 }
 
-} // !namespace AxPl::Algo
+}

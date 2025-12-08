@@ -5,6 +5,11 @@ if (GTEST_FOUND)
         core_tests.cpp
         predicates_tests.cpp
         aabb_tests.cpp
+        kdtree_tests.cpp
+        octree_tests.cpp
+        dsu_tests.cpp
+        marching_cubes_tests.cpp
+        keyvaluevector_tests.cpp
         unittests.cpp
     )
 
