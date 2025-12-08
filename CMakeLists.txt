@@ -47,6 +47,7 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/predicates/ExactPredicates.h
     src/ToLoG/Core.h
     src/ToLoG/AABBTree.h
+    src/ToLoG/DSU.h
 )
 add_library ("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS ${PROJECT_NAME})
 
