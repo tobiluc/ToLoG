@@ -56,7 +56,7 @@ public:
         std::array<P,1<<DIM> res;
         for (int32_t mask = 0; mask < (1<<DIM); ++mask) {
             for (int d = 0; d < DIM; ++d) {
-                res[mask][d] = (mask & (1<<d))? max_[d] : min_[d];
+                res[mask][d] = ((mask>>(DIM-1-d))&1)? max_[d] : min_[d];
             }
         }
         return res;
@@ -208,6 +208,11 @@ public:
             data_, data_+DIM,
             _rhs.data_, _rhs.data_+DIM
         );
+    }
+    friend inline std::ostream& operator<<(std::ostream& _os, const Point& _p) {
+        if (DIM == 0) {return _os;}
+        for (int i = 0; i < DIM-1; ++i) {_os << _p[i] << " ";}
+        return _os << _p[DIM-1];
     }
 private:
     FT data_[DIM];

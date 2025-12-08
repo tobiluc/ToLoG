@@ -4,13 +4,15 @@ if (GTEST_FOUND)
     FILE(GLOB UNITTEST_SRC
         core_tests.cpp
         predicates_tests.cpp
-        aabb_tests.cpp
+        aabbtree_tests.cpp
         kdtree_tests.cpp
         octree_tests.cpp
         dsu_tests.cpp
         marching_cubes_tests.cpp
         keyvaluevector_tests.cpp
         enumerate_tests.hpp
+        hash_tests.cpp
+        heap_tests.cpp
         unittests.cpp
     )
 
