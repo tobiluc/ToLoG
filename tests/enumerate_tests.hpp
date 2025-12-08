@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <ToLoG/enumerate.hpp>
+#include <ToLoG/utils/enumerate.hpp>
 
 using namespace ToLoG;
 

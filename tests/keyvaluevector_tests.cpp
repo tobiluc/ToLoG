@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <ToLoG/KeyValueVector.hpp>
+#include <ToLoG/utils/KeyValueVector.hpp>
 
 using namespace ToLoG;
 

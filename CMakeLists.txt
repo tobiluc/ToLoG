@@ -48,14 +48,14 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/Core.hpp
     src/ToLoG/AABBTree.hpp
     src/ToLoG/DSU.hpp
-    src/ToLoG/KeyValueVector.hpp
+    src/ToLoG/utils/KeyValueVector.hpp
+    src/ToLoG/utils/enumerate.hpp
 
     src/ToLoG/unstable/Octree.hpp
     src/ToLoG/unstable/Octree.cpp
     src/ToLoG/unstable/marching_cubes.cpp
     src/ToLoG/unstable/marching_cubes.hpp
     src/ToLoG/unstable/KDTree.hpp
-    src/ToLoG/enumerate.hpp
 )
 add_library ("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS ${PROJECT_NAME})
 
