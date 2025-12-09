@@ -20,12 +20,21 @@ public:
     static constexpr int DIM = Traits<P>::dim;
 
     AABB() {
-        reset();
+        make_empty();
     }
     AABB(std::initializer_list<P> _pts) {
-        reset();
+        make_empty();
         for (const auto& _p : _pts) {
             expand(_p);
+        }
+    }
+    inline bool empty() const {
+        return DIM==0 || (min_[0]>max_[0]);
+    }
+    inline void make_empty() {
+        for (int i=0;i<Traits<P>::dim;i++) {
+            min_[i] = std::numeric_limits<typename Traits<P>::value_type>::infinity();
+            max_[i] = -min_[i];
         }
     }
     inline void expand(const AABB<P>& _aabb) {
@@ -38,12 +47,6 @@ public:
         for (int i=0;i<Traits<P>::dim;i++) {
             min_[i] = std::min(min_[i], _p[i]);
             max_[i] = std::max(max_[i], _p[i]);
-        }
-    }
-    inline void reset() {
-        for (int i=0;i<Traits<P>::dim;i++) {
-            min_[i] = std::numeric_limits<typename Traits<P>::value_type>::infinity();
-            max_[i] = -min_[i];
         }
     }
     inline const P& min() const {
@@ -589,7 +592,7 @@ inline Traits<PointT>::value_type point_squared_distance(const PointT& _p, const
     PointT ab = _s.end() - _s.start();
     PointT ap = _p - _s.start();
     FT t = std::clamp(ap.dot(ab) / ab.squared_norm(), FT(0), FT(1));
-    PointT closest = _s.start() + t*ab;
+    PointT closest = _s.start() + ab*t;
     return (_p - closest).squared_norm();
 }
 

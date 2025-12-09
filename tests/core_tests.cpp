@@ -61,3 +61,24 @@ TEST(GeometryCoreTest, AABBPointsTest)
     EXPECT_EQ(corners[7], Point(4,-3,10));
 }
 
+TEST(GeometryCoreTest, PointDistanceTest2d)
+{
+    using Point = ToLoG::Point<double, 2>;
+    using Segment = ToLoG::Segment<Point>;
+    using Triangle = ToLoG::Triangle<Point>;
+    using Sphere = ToLoG::Sphere<Point>;
+    using AABB = ToLoG::AABB<Point>;
+
+    Point q(-10,4);
+
+    Point p(1.5, 3);
+    EXPECT_EQ(133.25, ToLoG::point_squared_distance(q, p));
+
+    Segment seg(Point(-12,6), Point(5,6));
+    EXPECT_EQ(4, ToLoG::point_squared_distance(q, seg));
+    seg = Segment(Point(1,6), Point(5,6));
+    EXPECT_EQ(125, ToLoG::point_squared_distance(q, seg));
+    seg = Segment(Point(-11,0), Point(-9,8));
+    EXPECT_EQ(0, ToLoG::point_squared_distance(q, seg));
+}
+
