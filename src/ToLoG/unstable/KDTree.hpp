@@ -216,7 +216,7 @@ private:
         std::cerr << "--------------------" << std::endl;
         size_t n_points_in_nodes = 0;
         for (uint32_t i = 0; i < n_nodes(); ++i) {
-            if (is_leaf(i)) {
+            if (is_leaf_node(i)) {
                 assert(node(i).left == UINT32_MAX);
                 assert(node(i).start < node(i).end);
                 assert(node(i).start < points_idx_buffer_.size());
@@ -251,13 +251,13 @@ private:
     }
 
     inline const Point& point(const uint32_t& _pidx) const {
-        assert(_pidx < n_points_);
+        assert(_pidx < n_points());
         return points_[_pidx];
     }
 
     /// Squared Distance from Query Point Q to pidx-th Point
     inline FT point_squared_distance(const FT* _q, const uint32_t& _pidx) const {
-        assert(_pidx < n_points_);
+        assert(_pidx < n_points());
         FT res(0);
         for (int i = 0; i < DIM; ++i) {
             const FT d = _q[i]-point(_pidx)[i];

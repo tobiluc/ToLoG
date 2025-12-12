@@ -13,6 +13,8 @@ if (GTEST_FOUND)
         enumerate_tests.hpp
         hash_tests.cpp
         heap_tests.cpp
+        sparse_tests.cpp
+        simplex_tests.cpp
         unittests.cpp
     )
 

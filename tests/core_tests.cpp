@@ -80,5 +80,7 @@ TEST(GeometryCoreTest, PointDistanceTest2d)
     EXPECT_EQ(125, ToLoG::point_squared_distance(q, seg));
     seg = Segment(Point(-11,0), Point(-9,8));
     EXPECT_EQ(0, ToLoG::point_squared_distance(q, seg));
+
+    //Triangle tri()
 }
 

@@ -58,6 +58,10 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/unstable/KDTree.hpp
     src/ToLoG/HashMap.hpp
     src/ToLoG/Heap.hpp
+    src/ToLoG/unstable/SimplexSolver.hpp
+    src/ToLoG/unstable/Sparse.hpp
+    src/ToLoG/unstable/LinearProgram.hpp
+    src/ToLoG/unstable/SimplexSolver.cpp
 )
 add_library ("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS ${PROJECT_NAME})
 
