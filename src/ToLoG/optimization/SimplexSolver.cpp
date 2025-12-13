@@ -5,6 +5,8 @@ namespace ToLoG
 
 void SimplexSolver::setup_phase_1()
 {
+    auto timestamp = std::chrono::steady_clock::now();
+
     std::fill(x_.begin(), x_.end(), 0.0);
 
     // Count slacks/artificials
@@ -119,6 +121,10 @@ void SimplexSolver::setup_phase_1()
             }
         }
     }
+
+    std::cerr << "setup_phase_1(): "
+              << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-timestamp).count()
+              << "[µs]" << std::endl;
 #endif
 }
 
@@ -129,6 +135,8 @@ bool SimplexSolver::is_feasible_phase_1()
 
 void SimplexSolver::setup_phase_2()
 {
+    auto timestamp = std::chrono::steady_clock::now();
+
     // Set objective row for Phase 2
     // Minimize c^T x
     tableau_.row(0).set_zero();
@@ -144,10 +152,17 @@ void SimplexSolver::setup_phase_2()
         }
     }
 
+#ifndef NDEBUG
+    std::cerr << "setup_phase_2(): "
+              << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-timestamp).count()
+              << "[µs]" << std::endl;
+#endif
 }
 
 bool SimplexSolver::run_simplex(Phase _phase)
 {
+    auto timestamp = std::chrono::steady_clock::now();
+
 #ifndef NDEBUG
     //if (_phase == Phase::ONE) {
         // Check rhs >= 0
@@ -167,13 +182,19 @@ bool SimplexSolver::run_simplex(Phase _phase)
         if (leaving_row == -1) {
             status_ = Status::UNBOUNDED;
             std::cerr << "Simplex: unbounded!\n";
-            return false;
+            break;
         }
 
         pivot(leaving_row, entering);
     }
 
-    return true;
+#ifndef NDEBUG
+    std::cerr << "run_simplex(): "
+              << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now()-timestamp).count()
+              << "[µs]" << std::endl;
+#endif
+
+    return status_ != Status::UNBOUNDED;
 }
 
 void SimplexSolver::pick_pivot(int& col, int& row)
@@ -235,8 +256,8 @@ void SimplexSolver::remove_artificial_variables()
     int rhs_col = tableau_.n_cols() - 1;
 
     int slack_start = n;
-    int art_start   = n + n_slack_;
-    int art_end     = art_start + n_artificial_;
+    int art_start = n + n_slack_;
+    int art_end = art_start + n_artificial_;
 
     // Remove artificial basis
     for (int i = 0; i < m; ++i) {
@@ -251,7 +272,7 @@ void SimplexSolver::remove_artificial_variables()
         // Try to pivot in an original or slack variable
         for (int col = 0; col < art_start; ++col) {
             double aij = tableau_.at(row, col);
-            if (std::abs(aij) < 1e-12) {continue;}
+            if (is_approx_zero(aij)) {continue;}
 
             // Pivot col into the basis
             pivot(row, col);
