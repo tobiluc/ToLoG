@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <ToLoG/unstable/SimplexSolver.hpp>
+#include <ToLoG/optimization/SimplexSolver.hpp>
 
 namespace ToLoG
 {
@@ -24,6 +24,15 @@ TEST(SparseTest, SparseVectorTest1)
     v += w;
     v.prune();
     EXPECT_TRUE(v.is_zero());
+}
+
+TEST(SparseTest, SparseVectorSetTest)
+{
+    SparseVector<double> v(4);
+    v.set(0, 1);
+    EXPECT_EQ(1, v.at(0));
+    v.set(0, 0);
+    EXPECT_EQ(0, v.at(0));
 }
 
 TEST(SparseTest, SegmentTest)

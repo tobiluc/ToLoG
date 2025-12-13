@@ -1,4 +1,4 @@
-#include <ToLoG/unstable/SimplexSolver.hpp>
+#include <ToLoG/optimization/SimplexSolver.hpp>
 
 namespace ToLoG
 {
@@ -8,7 +8,7 @@ void SimplexSolver::setup_phase_1()
     std::fill(x_.begin(), x_.end(), 0.0);
 
     // Count slacks/artificials
-    struct RowInfo {ConstraintType type; double rhs; bool flip_coeffs;};
+    struct RowInfo {Constraint::Type type; double rhs; bool flip_coeffs;};
     std::vector<RowInfo> rows;
     rows.reserve(lp_.n_constraints());
     n_slack_ = n_artificial_ = 0;
@@ -17,13 +17,13 @@ void SimplexSolver::setup_phase_1()
         // ax >= b -> ax - s = b
 
         // Ensure rhs >= 0
-        ConstraintType type = lp_.constraint(i).type();
+        Constraint::Type type = lp_.constraint(i).type();
         double rhs = lp_.constraint(i).rhs();
         bool flip_coeffs = rhs < 0.0;
         if (flip_coeffs) {
             rhs = -rhs;
-            if (type == ConstraintType::LEQ) {type = ConstraintType::GEQ;}
-            else if (type == ConstraintType::GEQ) {type = ConstraintType::LEQ;}
+            if (type == Constraint::Type::LEQ) {type = Constraint::Type::GEQ;}
+            else if (type == Constraint::Type::GEQ) {type = Constraint::Type::LEQ;}
         }
 
         // Add row info
@@ -31,9 +31,9 @@ void SimplexSolver::setup_phase_1()
 
         // Count variables
         switch (type) {
-        case ConstraintType::LEQ: ++n_slack_; break;
-        case ConstraintType::GEQ: ++n_slack_; ++n_artificial_; break;
-        case ConstraintType::EQ: ++n_artificial_; break;
+        case Constraint::Type::LEQ: ++n_slack_; break;
+        case Constraint::Type::GEQ: ++n_slack_; ++n_artificial_; break;
+        case Constraint::Type::EQ: ++n_artificial_; break;
         default: break;
         }
     }
@@ -74,12 +74,12 @@ void SimplexSolver::setup_phase_1()
         }
 
         // Slack/Artifical vars
-        if (row.type == ConstraintType::LEQ) {
+        if (row.type == Constraint::Type::LEQ) {
             // ax + s = b
             tableau_.set(row_idx, slack_col, 1.0);
             basis_[i] = slack_col++;
         }
-        else if (row.type == ConstraintType::GEQ) {
+        else if (row.type == Constraint::Type::GEQ) {
             // ax - s + a = b
             tableau_.set(row_idx, slack_col, -1.0);
             ++slack_col;
@@ -124,7 +124,7 @@ void SimplexSolver::setup_phase_1()
 
 bool SimplexSolver::is_feasible_phase_1()
 {
-    return tableau_.at(0, tableau_.n_cols()-1) <= 1e-16;
+    return is_approx_zero(tableau_.at(0, tableau_.n_cols()-1));// <= -1e-16;
 }
 
 void SimplexSolver::setup_phase_2()
@@ -149,12 +149,12 @@ void SimplexSolver::setup_phase_2()
 bool SimplexSolver::run_simplex(Phase _phase)
 {
 #ifndef NDEBUG
-    if (_phase == Phase::ONE) {
+    //if (_phase == Phase::ONE) {
         // Check rhs >= 0
         for (int i = 1; i < tableau_.n_rows(); ++i) {
             assert(tableau_.at(i, tableau_.n_cols()-1) >= 0.0);
         }
-    }
+    //}
 #endif
 
     while (true) {
@@ -282,6 +282,14 @@ void SimplexSolver::remove_artificial_variables()
 
 void SimplexSolver::solve()
 {
+    // Check unconstrained case
+    // if (lp_.n_constraints() == 0 &&
+    //     !lp_.objective().is_zero()) {
+    //     std::cerr << "Simplex: unbounded with no constraints!\n";
+    //     status_ = Status::UNBOUNDED;
+    //     return;
+    // }
+
     status_ = Status::NONOPTIMAL;
 
     setup_phase_1();
@@ -300,9 +308,95 @@ void SimplexSolver::solve()
 
     if (!run_simplex(Phase::TWO)) {return;}
 
+
     populate_solution();
 
     status_ = Status::OPTIMAL;
+}
+
+std::optional<Constraint> SimplexSolver::generate_gomory_mixed_integer_cut(
+    int _int_var, const std::vector<int> &_integers)
+{
+    uint n = lp_.n_unknowns();
+
+    // Check Integer violation (column)
+    if (is_approx_zero(x_[_int_var] - std::floor(x_[_int_var]))) {
+        return std::nullopt; // already integer
+    }
+
+    //std::cout << "Variable " << col << " violates Integer Constraint!" << std::endl;
+
+    // Find corresponding Basis row
+    int row = -1;
+    for (uint r = 1; r <= basis_.size(); ++r) {
+        if (basis_[r-1] == _int_var) {
+            row = r;
+            break;
+        }
+    }
+    assert(row != -1);
+    assert(tableau_.at(row, _int_var)==1);
+    //std::cout << "In row " << row << std::endl;
+
+    // Get row and rhs
+    double rhs = tableau_.at(row, tableau_.n_cols()-1);
+    double fi = rhs - std::floor(rhs);
+    assert(fi > 0 && fi < 1);
+    rhs = std::floor(rhs);
+    //Vecd varCoeffs(n);
+
+    Constraint c(lp_.n_unknowns());
+
+    // Mixed Integer Rounding
+    for (int j : _integers) {
+        double aij = tableau_.at(row,j);
+        double fij = aij - std::floor(aij);
+        if (fij <= fi) { // N1<=
+            c.coeffs().set(j, std::floor(aij));
+        } else { // N1>
+            c.coeffs().set(j, std::floor(aij) + ((fij - fi) / (1. - fi)));
+        }
+    }
+    for (int j = 0; j < lp_.n_unknowns()+n_slack_; ++j) {
+        if (std::find(_integers.cbegin(), _integers.cend(), j)
+            != _integers.cend()) {continue;}
+
+        double aij = tableau_.at(row,j);
+        if (aij >= 0) {continue;}
+
+        double coeff = aij / (1. - fi);
+
+        if (j < n) { // N2- problem var
+            c.coeffs().set(j, coeff);
+        } else { // N2- slack var
+            SparseVector<double> varCoeffs(n);
+            double constTerm;
+            getSlackVarCoeffs(j, varCoeffs, constTerm); // resubstitute
+            c.coeffs() += varCoeffs * coeff;
+            rhs -= coeff * constTerm;
+        }
+    }
+
+    c.set_rhs(rhs);
+    c.set_type(Constraint::Type::LEQ);
+    return true;
+}
+
+void SimplexSolver::getSlackVarCoeffs(const int& j, SparseVector<double>& varCoeffs, double& constTerm)
+{
+    // TODO: Use initial basis and initial tableau
+    uint n = lp_.n_unknowns();
+    assert(j >= n && j < n+n_slack_);
+    for (uint r = 1; r <= basis_.size(); ++r) {
+        if (basis_[r-1] == j) {
+            varCoeffs = -tableau_.row(r).get_segment(0, n);
+            constTerm = tableau_.at(r, tableau_.n_cols()-1);
+            return;
+        }
+    }
+    varCoeffs.set_zero();
+    constTerm = 0;
+    return;
 }
 
 }

@@ -1,21 +1,25 @@
 #pragma once
-#include <ToLoG/unstable/Sparse.hpp>
+#include <ToLoG/optimization/Sparse.hpp>
 
 namespace ToLoG
 {
 
-enum class ConstraintType {
-    LEQ, GEQ, EQ
-};
-
 class Constraint {
 public:
+
+    enum class Type {
+        LEQ, GEQ, EQ
+    };
+
     Constraint(
         const SparseVector<double>& _coeffs,
-        const double& _rhs, const ConstraintType _type) :
+        const double& _rhs, const Type _type) :
     coeffs_(_coeffs), rhs_(_rhs), type_(_type)
     {
     }
+
+    Constraint(int _n) : coeffs_(_n), rhs_(0), type_(Type::EQ)
+    {}
 
     inline const SparseVector<double>& coeffs() const {
         return coeffs_;
@@ -25,27 +29,39 @@ public:
         return rhs_;
     }
 
-    inline ConstraintType type() const {
+    inline Type type() const {
         return type_;
     }
 
     inline bool is_feasible(const SparseVector<double>& _x) const {
         double dot(coeffs_.dot(_x));
         switch(type_) {
-            case ConstraintType::EQ:
+            case Type::EQ:
                 return is_approx_zero(dot - rhs_);
-            case ConstraintType::LEQ:
+            case Type::LEQ:
                 return dot <= rhs_;
-            case ConstraintType::GEQ:
+            case Type::GEQ:
                 return dot >= rhs_;
             default: return false;
         }
     }
 
+    inline void set_type(Type _type) {
+        type_ = _type;
+    }
+
+    inline void set_rhs(double _rhs) {
+        rhs_ = _rhs;
+    }
+
+    inline SparseVector<double>& coeffs() {
+        return coeffs_;
+    }
+
 private:
     SparseVector<double> coeffs_;
     double rhs_;
-    ConstraintType type_;
+    Type type_;
 };
 
 /// min_x c^T * x
@@ -59,7 +75,7 @@ public:
     {
     }
 
-    inline void add_constraint(const SparseVector<double>& _coeffs, const double& _rhs, const ConstraintType _type) {
+    inline void add_constraint(const SparseVector<double>& _coeffs, const double& _rhs, const Constraint::Type _type) {
         constraints_.emplace_back(_coeffs, _rhs, _type);
     }
 
@@ -79,15 +95,12 @@ public:
         return objective_;
     }
 
-    inline double operator()(const SparseVector<double>& _x) const {
-        return _x.dot(objective_);
-    }
-
-    inline bool is_feasible(const SparseVector<double>& _x) const {
-        for (int i = 0; i < n_constraints(); ++i) {
-            if (!constraints_[i].is_feasible(_x)) {return false;}
+    inline double operator()(const std::vector<double>& _x) const {
+        double res(0.0);
+        for (auto it = objective_.cbegin(); it != objective_.cend(); ++it) {
+            res += it.value() * _x.at(it.key());
         }
-        return true;
+        return res;
     }
 
 private:

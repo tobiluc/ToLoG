@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ToLoG/unstable/LinearProgram.hpp>
+#include <ToLoG/optimization/LinearProgram.hpp>
 #include <cassert>
 #include <iostream>
 #include <ostream>
@@ -8,6 +8,7 @@
 namespace ToLoG
 {
 
+/// The Simplex Solver implicitly assumes x >= 0
 class SimplexSolver
 {
 public:
@@ -56,83 +57,8 @@ public:
         return status_;
     }
 
-    ///
-    /// \brief generateGomoryMixedIntegerCut
-    /// \param x Current optimal solution
-    /// \param Ai lhs coefficient of cut
-    /// \param bi rhs constant of cut
-    /// \return true iff cut was successfully generated
-    ///
-    // bool generateGomoryMixedIntegerCut(const Vecd& x, Vecd& Ai, double& bi)
-    // {
-    //     uint n = problem.dimension();
-    //     uint n1 = problem.nIntegerConstraints();
-    //     uint n2 = n-n1;
-
-    //     // Find Integer violation (column)
-    //     int col = -1;
-    //     for (auto i = 0u; i < n1; ++i) {
-    //         assert(problem.isIntegerConstrained(i));
-    //         if (!isInt(x[i])) {
-    //             col = i;
-    //             break;
-    //         }
-    //     }
-    //     if (col == -1) {return false;}
-
-    //     //std::cout << "Variable " << col << " violates Integer Constraint!" << std::endl;
-
-    //     // Find corresponding Basis row
-    //     int row = -1;
-    //     for (uint r = 1; r <= basis.size(); ++r) {
-    //         if (basis[r-1] == col) {
-    //             row = r;
-    //             break;
-    //         }
-    //     }
-    //     assert(row != -1);
-    //     assert(T(row,col)==1);
-    //     //std::cout << "In row " << row << std::endl;
-
-    //     // Get row and rhs
-    //     bi = br(row);
-    //     double fi = getFrac(bi);
-    //     assert(fi > 0 && fi < 1);
-    //     bi = floor(bi);
-    //     //Vecd varCoeffs(n);
-
-    //     // Mixed Integer Rounding
-    //     for (uint j = 0; j < n1; ++j) {
-    //         double aij = T(row,j);
-    //         double fij = getFrac(aij);
-    //         if (fij <= fi) { // N1<=
-    //             Ai[j] = floor(aij);
-    //         } else { // N1>
-    //             Ai[j] = floor(aij) + ((fij - fi) / (1. - fi));
-    //         }
-    //     }
-    //     for (uint j = n1; j < n1+n2+nSlackVars; ++j) {
-    //         double aij = T(row,j);
-    //         if (aij >= 0) {continue;}
-
-    //         double coeff = aij / (1. - fi);
-
-    //         if (j < n) { // N2- problem var
-    //             Ai[j] = coeff;
-    //         } else { // N2- slack var
-    //             Vecd varCoeffs(n); double constTerm;
-    //             getSlackVarCoeffs(j, varCoeffs, constTerm); // resubstitute
-    //             //std::cout << "VarCoeffs for slack " << j << " are " << varCoeffs.transpose() << " + " << constTerm << std::endl;
-    //             Ai += coeff * varCoeffs;
-    //             bi -= coeff * constTerm;
-    //         }
-    //     }
-
-    //     for (uint j = 0; j < Ai.size(); ++j) {if (isInt(Ai[j])) {Ai[j] = std::round(Ai[j]);}}
-    //     if (isInt(bi)) {bi = std::round(bi);}
-
-    //     return true;
-    // }
+    std::optional<Constraint> generate_gomory_mixed_integer_cut(
+        int _int_var, const std::vector<int>& _integers);
 
 private:
     enum class Phase {ONE, TWO};
@@ -166,6 +92,11 @@ private:
     // row = leaving variable row
     // col = entering variable column
     void pivot(int row, int col);
+
+    /**
+     * Returns a slack variable s_j expressed as sum c_ij x_i + constTerm
+     */
+    void getSlackVarCoeffs(const int& j, SparseVector<double>& varCoeffs, double& constTerm);
 
     friend std::ostream& operator<< (std::ostream& out, const Status& s) {
         if (s == Status::NONOPTIMAL) return out << "Nonoptimal";

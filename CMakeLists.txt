@@ -45,9 +45,13 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/predicates/predicates.c
     src/ToLoG/predicates/ExactPredicates.cpp
     src/ToLoG/predicates/ExactPredicates.hpp
+
     src/ToLoG/Core.hpp
     src/ToLoG/AABBTree.hpp
     src/ToLoG/DSU.hpp
+    src/ToLoG/HashMap.hpp
+    src/ToLoG/Heap.hpp
+
     src/ToLoG/utils/KeyValueVector.hpp
     src/ToLoG/utils/enumerate.hpp
 
@@ -56,12 +60,11 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/unstable/marching_cubes.cpp
     src/ToLoG/unstable/marching_cubes.hpp
     src/ToLoG/unstable/KDTree.hpp
-    src/ToLoG/HashMap.hpp
-    src/ToLoG/Heap.hpp
-    src/ToLoG/unstable/SimplexSolver.hpp
-    src/ToLoG/unstable/Sparse.hpp
-    src/ToLoG/unstable/LinearProgram.hpp
-    src/ToLoG/unstable/SimplexSolver.cpp
+
+    src/ToLoG/optimization/SimplexSolver.hpp
+    src/ToLoG/optimization/Sparse.hpp
+    src/ToLoG/optimization/LinearProgram.hpp
+    src/ToLoG/optimization/SimplexSolver.cpp
 )
 add_library ("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS ${PROJECT_NAME})
 

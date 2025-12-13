@@ -74,8 +74,8 @@ public:
         if (_i < 0 || _i >= size_) {
             throw std::logic_error("SparseVector.set(index): index outside valid range");
         }
-        if (is_approx_zero(_val)) {return;}
-        entries_.insert(_i, _val);
+        if (is_approx_zero(_val)) {entries_.erase(_i);}
+        else {entries_.insert(_i, _val);}
     }
 
     inline void set(const std::vector<std::pair<int,FT>>& _data) {
@@ -266,7 +266,6 @@ public:
     }
 
     inline void set(int _row, int _col, FT _val) {
-        if (is_approx_zero(_val)) {return;}
         if constexpr (M == MatrixMajor::COL) {
             data_[_col].set(_row, _val);
         } else {
