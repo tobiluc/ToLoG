@@ -74,7 +74,7 @@ public:
         while (!stack.empty()) {
             BuildTask t = stack.back();
             stack.pop_back();
-            Node& node = nodes_[t.node_idx];
+            Node& node = nodes_.at(t.node_idx);
 
             // compute bbox
             compute_node_aabb(node, t.begin, t.n);
@@ -106,13 +106,14 @@ public:
             );
 
             // create children nodes
-            node.left = nodes_.size();
+            uint32_t l = nodes_.size();
+            node.left = l;
             nodes_.emplace_back();
             nodes_.emplace_back();
 
             // push children tasks
-            stack.push_back({node.left+1, t.begin + mid, t.n - mid});
-            stack.push_back({node.left, t.begin, mid});
+            stack.push_back({l+1, t.begin + mid, t.n - mid});
+            stack.push_back({l, t.begin, mid});
         }
     }
 
