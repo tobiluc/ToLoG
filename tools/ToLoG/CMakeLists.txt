@@ -1,5 +1,4 @@
-
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 3.5)
 
 add_executable (ToLoG_cli main.cc)
 target_link_libraries(ToLoG_cli PRIVATE

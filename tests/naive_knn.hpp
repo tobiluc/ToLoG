@@ -1,5 +1,7 @@
 #pragma once
 #include <ToLoG/Core.hpp>
+#include <numeric>
+#include <vector>
 
 namespace ToLoG
 {

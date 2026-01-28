@@ -1,6 +1,6 @@
 #pragma once
-
 #include <ToLoG/Core.hpp>
+#include <functional>
 
 namespace ToLoG
 {

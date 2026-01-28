@@ -2,6 +2,7 @@
 #include <ToLoG/Core.hpp>
 #include <cassert>
 #include <cstdint>
+#include <numeric>
 #include <vector>
 #include <iostream>
 #include <queue>

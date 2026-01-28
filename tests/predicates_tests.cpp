@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <ToLoG/predicates/ExactPredicates.hpp>
 #include <ToLoG/Core.hpp>
 
 namespace ToLoG

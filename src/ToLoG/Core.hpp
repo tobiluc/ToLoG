@@ -1,10 +1,10 @@
 #pragma once
 
-#include <ToLoG/predicates/ExactPredicates.hpp>
 #include <MacTypes.h>
-#include <concepts>
+#include <algorithm>
 #include <limits>
-#include <numeric>
+#include <initializer_list>
+#include <cmath>
 
 namespace ToLoG
 {
@@ -406,9 +406,6 @@ public:
     }
     inline Triangle<P> face(int _i, int _j, int _k) const {
         return Triangle<P>(t_[_i], t_[_j], t_[_k]);
-    }
-    inline ORI orientation() const {
-        return sign_orient3d(t_[0].data(), t_[1].data(), t_[2].data(), t_[3].data());
     }
     inline P centroid() const {
         return (t_[0] + t_[1] + t_[2] + t_[3]) / FT(4);

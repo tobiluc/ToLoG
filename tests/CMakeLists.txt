@@ -54,9 +54,6 @@ if (GTEST_FOUND)
       set_target_properties(ToLoG-unittests PROPERTIES COMPILE_FLAGS "" )
     endif()
 
-    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/testdata/" DESTINATION "${OUTPUT_DIR}/testdata")
-    file(MAKE_DIRECTORY ${OUTPUT_DIR}/Results)
-
     gtest_add_tests(TARGET ToLoG-unittests
         EXTRA_ARGS "--gtest_color=yes;--gtest_output=xml"
         WORKING_DIRECTORY "${OUTPUT_DIR}"
