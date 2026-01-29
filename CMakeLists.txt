@@ -70,6 +70,10 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/io/ply_writer.hpp
     src/ToLoG/utils/indices.hpp
 
+    src/ToLoG/Traits.inl.hpp
+    src/ToLoG/point_squared_distance.inl.hpp
+    src/ToLoG/barycentric.inl.hpp
+
 )
 add_library ("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS ${PROJECT_NAME})
 
