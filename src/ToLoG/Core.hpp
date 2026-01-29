@@ -83,6 +83,7 @@ private:
 };
 
 template<typename FT, int DIM>
+requires(DIM > 0)
 class Point
 {
 public:
