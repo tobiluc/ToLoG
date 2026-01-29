@@ -12,6 +12,9 @@ namespace ToLoG
 template<typename T>
 struct Traits {};
 
+template<typename T>
+struct is_point : std::false_type {};
+
 template<typename P>
 class AABB
 {
@@ -224,6 +227,7 @@ template<typename FT, int DIM>
 using Vector = Point<FT, DIM>;
 
 template<typename P, int N>
+requires(is_point<P>::value)
 class Simplex
 {
 public:
@@ -259,6 +263,7 @@ private:
 };
 
 template<typename P>
+requires(is_point<P>::value)
 class Segment
 {
 public:
@@ -298,6 +303,7 @@ private:
 };
 
 template<typename P>
+requires(is_point<P>::value)
 class Triangle
 {
 public:
@@ -349,6 +355,7 @@ private:
 };
 
 template<typename P>
+requires(is_point<P>::value)
 class Sphere
 {
 public:
@@ -385,7 +392,7 @@ private:
 };
 
 template<typename P>
-requires(Traits<P>::dim == 3)
+requires(Traits<P>::dim == 3 && is_point<P>::value)
 class Tetrahedron
 {
 public:
@@ -427,8 +434,11 @@ private:
 };
 
 //=========================
-// Traits
+// Traits & Concepts
 //=========================
+template<typename FT, int DIM>
+struct is_point<Point<FT, DIM>> : std::true_type {};
+
 template<typename P>
 struct Traits<AABB<P>>
 {
