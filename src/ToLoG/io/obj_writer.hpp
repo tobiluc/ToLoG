@@ -22,7 +22,7 @@ int write_aabb_tree_obj(const std::filesystem::path& _path, const AABBTree<T>& _
                  << v.y() << " "
                  << v.z() << std::endl;
         }
-        for (const auto& f : aabb_3_vertex_indices) {
+        for (const auto& f : cube_vertex_indices) {
             file << "f "
                  << (idx+f[0]) << " "
                  << (idx+f[1]) << " "
