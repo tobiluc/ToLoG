@@ -9,9 +9,11 @@
 namespace ToLoG
 {
 
+// define common properties for primitives
 template<typename T>
 struct Traits {};
 
+// returns true if T is ToLoG::Point
 template<typename T>
 struct is_point : std::false_type {};
 
