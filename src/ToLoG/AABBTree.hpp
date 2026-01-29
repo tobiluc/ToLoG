@@ -16,13 +16,14 @@ namespace ToLoG
 template<typename T>
 class AABBTree
 {
-protected:
+public:
     using Primitive = T;
     using FT = Traits<T>::value_type;
     constexpr static int DIM = Traits<T>::dim;
     using Point = Traits<T>::vector_type;
     using AABB = AABB<Point>;
 
+protected:
     struct Node {
         uint32_t left = UINT32_MAX;
         uint32_t start = UINT32_MAX;
@@ -193,12 +194,28 @@ public:
         }
     }
 
-    size_t n_nodes() const {
+    inline size_t n_nodes() const {
         return nodes_.size();
     }
 
-    size_t n_primitives() const {
+    inline size_t n_primitives() const {
         return primitives_.size();
+    }
+
+    inline const AABB& node_aabb(uint32_t _node_i) const {
+        return nodes_[_node_i].aabb;
+    }
+
+    inline bool is_leaf_node(uint32_t _node_idx) const {
+        return nodes_[_node_idx].left == UINT32_MAX;
+    }
+
+    const Primitive& primitive(uint32_t _prim_idx) const {
+        return primitives_[_prim_idx];
+    }
+
+    inline size_t leaf_size() const {
+        return leaf_size_;
     }
 
 protected:
@@ -207,14 +224,6 @@ protected:
     std::vector<Node> nodes_;
     std::vector<uint32_t> prim_idx_buffer_;
     size_t leaf_size_ = 32;
-
-    const Primitive& primitive(uint32_t _prim_idx) const {
-        return primitives_[_prim_idx];
-    }
-
-    inline bool is_leaf_node(uint32_t _node_idx) const {
-        return nodes_[_node_idx].left == UINT32_MAX;
-    }
 
     inline void compute_node_aabb(Node& _node, uint32_t* _begin, uint32_t _count)
     {

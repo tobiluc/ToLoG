@@ -1,7 +1,9 @@
 #include <gtest/gtest.h>
 #include <ToLoG/AABBTree.hpp>
 #include <random>
+#include "ToLoG/io/ply_writer.hpp"
 #include "naive_knn.hpp"
+#include <ToLoG/io/obj_writer.hpp>
 
 namespace ToLoG
 {

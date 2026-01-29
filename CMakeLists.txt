@@ -65,6 +65,11 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/optimization/Sparse.hpp
     src/ToLoG/optimization/LinearProgram.hpp
     src/ToLoG/optimization/SimplexSolver.cpp
+    src/ToLoG/io/obj_writer.hpp
+    src/ToLoG/io/happly.hpp
+    src/ToLoG/io/ply_writer.hpp
+    src/ToLoG/utils/indices.hpp
+
 )
 add_library ("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS ${PROJECT_NAME})
 
