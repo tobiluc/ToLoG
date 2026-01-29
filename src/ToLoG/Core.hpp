@@ -340,7 +340,9 @@ public:
         return AABB<P>({t_[0], t_[1], t_[2]});
     }
     inline bool operator==(const Triangle<P>& _tri) const {
-        return t_[0] == _tri[0] && t_[1] == _tri[1] && t_[2] == _tri[2];
+        return t_[0] == _tri[0]
+            && t_[1] == _tri[1]
+            && t_[2] == _tri[2];
     }
 private:
     P t_[3];
@@ -383,6 +385,7 @@ private:
 };
 
 template<typename P>
+requires(Traits<P>::dim == 3)
 class Tetrahedron
 {
 public:
@@ -411,13 +414,13 @@ public:
         return (t_[0] + t_[1] + t_[2] + t_[3]) / FT(4);
     }
     inline AABB<P> aabb() const {
-        return AABB<P>({t_[0],t_[1],t_[2],t_[4]});
+        return AABB<P>({t_[0],t_[1],t_[2],t_[3]});
     }
     inline bool operator==(const Tetrahedron<P>& _tet) const {
         return t_[0] == _tet[0]
                && t_[1] == _tet[1]
                && t_[2] == _tet[2]
-               && t_[2] == _tet[2];
+               && t_[3] == _tet[3];
     }
 private:
     P t_[4];
