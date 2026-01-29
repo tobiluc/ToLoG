@@ -1,6 +1,25 @@
 #include <gtest/gtest.h>
 #include <ToLoG/Core.hpp>
 
+TEST(GeometryCoreTest, TraitsTest3d)
+{
+    using Point = ToLoG::Point<double, 3>;
+    using Segment = ToLoG::Segment<Point>;
+    using Triangle = ToLoG::Triangle<Point>;
+    using Sphere = ToLoG::Sphere<Point>;
+    using AABB = ToLoG::AABB<Point>;
+
+    EXPECT_EQ((ToLoG::Traits<Point>::dim), 3);
+    EXPECT_TRUE((std::is_same<ToLoG::Traits<Point>::value_type, double>::value));
+    EXPECT_TRUE((std::is_same<ToLoG::Traits<Point>::vector_type, Point>::value));
+
+    EXPECT_TRUE((ToLoG::is_vector_type<Point>::value));
+    EXPECT_FALSE((ToLoG::is_vector_type<AABB>::value));
+    EXPECT_FALSE((ToLoG::is_vector_type<Triangle>::value));
+    EXPECT_FALSE((ToLoG::is_vector_type<Segment>::value));
+    EXPECT_FALSE((ToLoG::is_vector_type<Sphere>::value));
+}
+
 TEST(GeometryCoreTest, PointTest)
 {
     using Point = ToLoG::Point<double, 3>;
@@ -80,7 +99,5 @@ TEST(GeometryCoreTest, PointDistanceTest2d)
     EXPECT_EQ(125, ToLoG::point_squared_distance(q, seg));
     seg = Segment(Point(-11,0), Point(-9,8));
     EXPECT_EQ(0, ToLoG::point_squared_distance(q, seg));
-
-    //Triangle tri()
 }
 

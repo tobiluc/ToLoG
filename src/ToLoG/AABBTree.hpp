@@ -53,13 +53,13 @@ public:
         }
 
         // Cache Primitive AABBs
-        prim_aabbs_.clear();
-        prim_aabbs_.reserve(n_primitives());
+        std::vector<AABB> prim_aabbs;
+        prim_aabbs.reserve(n_primitives());
         for (uint32_t i = 0; i < n_primitives(); ++i) {
-            prim_aabbs_.push_back(primitive(i).aabb());
+            prim_aabbs.push_back(primitive(i).aabb());
         }
 
-        struct BuildTask {
+        struct NodeTask {
             uint32_t node_idx;
             uint32_t* begin;
             size_t n;
@@ -67,24 +67,29 @@ public:
         std::vector<uint32_t> idx(n_primitives());
         std::iota(idx.begin(), idx.end(), 0u); // idx[i] = i
 
-        std::vector<BuildTask> stack;
+        std::vector<NodeTask> stack;
         stack.reserve(64);
         nodes_.emplace_back(); // Create root node
         stack.push_back({0, idx.data(), idx.size()});
 
         while (!stack.empty()) {
-            BuildTask t = stack.back();
+            NodeTask t = stack.back();
             stack.pop_back();
             Node& node = nodes_.at(t.node_idx);
 
-            // compute bbox
-            compute_node_aabb(node, t.begin, t.n);
+            // Compute Node bbox
+            if (t.n > 0) {
+                node.aabb = prim_aabbs[t.begin[0]];
+                for (uint32_t i = 1; i < t.n; ++i) {
+                    node.aabb.expand(prim_aabbs[t.begin[i]]);
+                }
+            }
 
             // leaf?
             if(t.n <= leaf_size_) {
                 nodes_[t.node_idx].start = prim_idx_buffer_.size();
                 nodes_[t.node_idx].end = nodes_[t.node_idx].start + t.n;
-                for(size_t i=0;i<t.n;i++) {
+                for(uint32_t i=0;i<t.n;i++) {
                     prim_idx_buffer_.push_back(t.begin[i]);
                 }
                 continue;
@@ -101,8 +106,8 @@ public:
                 t.begin + mid,
                 t.begin + t.n,
                 [&](const uint32_t& a, const uint32_t& b){
-                    return prim_aabbs_[a].centroid()[split_axis]
-                           < prim_aabbs_[b].centroid()[split_axis];
+                    return prim_aabbs[a].centroid()[split_axis]
+                           < prim_aabbs[b].centroid()[split_axis];
                 }
             );
 
@@ -126,25 +131,18 @@ public:
         _res.reserve(_k);
         if (_k == 0 || nodes_.empty()) {return;}
 
-        struct PointIdxDist {
+        struct IdxD {
             uint32_t idx;
             FT d;
-            inline bool operator<(const PointIdxDist& _pilb) const {
-                return d < _pilb.d;
-            }
+            inline bool operator<(const IdxD& _id) const {return d < _id.d;}
+            inline bool operator>(const IdxD& _id) const {return d > _id.d;}
         };
 
-        // Helper: Holds Node Index and Squared Distance Lower Bound
-        struct NodeIdxLowerBound {
-            uint32_t idx;
-            FT lb; // lower bound on distance
-            inline bool operator>(const NodeIdxLowerBound& _nilb) const {
-                return lb > _nilb.lb;
-            }
-        };
+        // Point & Distance
+        std::priority_queue<IdxD,std::vector<IdxD>,std::less<IdxD>> best;
 
-        std::priority_queue<PointIdxDist,std::vector<PointIdxDist>,std::less<PointIdxDist>> best;
-        std::priority_queue<NodeIdxLowerBound,std::vector<NodeIdxLowerBound>,std::greater<NodeIdxLowerBound>> pq;
+        // Node & Distance Lower Bound
+        std::priority_queue<IdxD,std::vector<IdxD>,std::greater<IdxD>> pq;
 
         pq.push({0, FT(0)}); // push root
 
@@ -220,19 +218,9 @@ public:
 
 protected:
     std::vector<T>& primitives_; // n_primitives_
-    std::vector<AABB> prim_aabbs_;
     std::vector<Node> nodes_;
     std::vector<uint32_t> prim_idx_buffer_;
     size_t leaf_size_ = 32;
-
-    inline void compute_node_aabb(Node& _node, uint32_t* _begin, uint32_t _count)
-    {
-        if (_count==0) {return;}
-        _node.aabb = prim_aabbs_[_begin[0]];
-        for (uint32_t i = 1; i < _count; ++i) {
-            _node.aabb.expand(prim_aabbs_[_begin[i]]);
-        }
-    }
 };
 
 }

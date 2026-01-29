@@ -15,7 +15,7 @@ struct Traits {};
 
 // returns true if T is ToLoG::Point
 template<typename T>
-struct is_point : std::false_type {};
+struct is_vector_type : std::false_type {};
 
 template<typename P>
 class AABB
@@ -230,7 +230,7 @@ template<typename FT, int DIM>
 using Vector = Point<FT, DIM>;
 
 template<typename P>
-requires(is_point<P>::value)
+requires(is_vector_type<P>::value)
 class Segment
 {
 public:
@@ -270,7 +270,7 @@ private:
 };
 
 template<typename P>
-requires(is_point<P>::value)
+requires(is_vector_type<P>::value)
 class Triangle
 {
 public:
@@ -322,7 +322,7 @@ private:
 };
 
 template<typename P>
-requires(is_point<P>::value)
+requires(is_vector_type<P>::value)
 class Sphere
 {
 public:
@@ -359,7 +359,7 @@ private:
 };
 
 template<typename P>
-requires(Traits<P>::dim == 3 && is_point<P>::value)
+requires(Traits<P>::dim == 3 && is_vector_type<P>::value)
 class Tetrahedron
 {
 public:
@@ -400,17 +400,17 @@ private:
     P t_[4];
 };
 
-#include <ToLoG/Traits.inl.hpp>
+#include "detail/Traits.inl.hpp"
 
 template<int N, typename PointT, typename PrimT>
-requires(is_point<PointT>::value)
+requires(is_vector_type<PointT>::value)
 std::array<typename Traits<PointT>::value_type,N> barycentric_coordinates(const PointT& _p, const PrimT& _prim);
-#include <ToLoG/barycentric.inl.hpp>
+#include "detail/barycentric.inl.hpp"
 
 template<typename PointT, typename PrimT>
-requires(is_point<PointT>::value)
+requires(is_vector_type<PointT>::value)
 Traits<PointT>::value_type point_squared_distance(const PointT& _p, const PrimT& _prim);
-#include <ToLoG/point_squared_distance.inl.hpp>
+#include "detail/point_squared_distance.inl.hpp"
 
 
 }

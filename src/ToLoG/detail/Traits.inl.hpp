@@ -1,7 +1,7 @@
 #pragma once
 
 template<typename FT, int DIM>
-struct is_point<Point<FT, DIM>> : std::true_type {};
+struct is_vector_type<Point<FT, DIM>> : std::true_type {};
 
 template<typename P>
 struct Traits<AABB<P>>
