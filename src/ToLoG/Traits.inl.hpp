@@ -35,14 +35,6 @@ struct Traits<Triangle<P>>
     constexpr static int dim = Traits<P>::dim;
 };
 
-template<typename P, int N>
-struct Traits<Simplex<P,N>>
-{
-    using value_type = Traits<P>::value_type;
-    using vector_type = Traits<P>::vector_type;
-    constexpr static int dim = Traits<P>::dim;
-};
-
 template<typename P>
 struct Traits<Sphere<P>>
 {

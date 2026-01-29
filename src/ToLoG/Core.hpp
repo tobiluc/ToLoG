@@ -229,42 +229,6 @@ private:
 template<typename FT, int DIM>
 using Vector = Point<FT, DIM>;
 
-template<typename P, int N>
-requires(is_point<P>::value)
-class Simplex
-{
-public:
-    using FT = typename Traits<P>::value_type;
-    static constexpr int DIM = Traits<P>::dim;
-
-    Simplex() {}
-    template<typename... Args,
-             typename = std::enable_if_t<sizeof...(Args) == N>>
-    Simplex(Args&&... args)
-        : points_{static_cast<P>(args)...}
-    {}
-    inline P centroid() const {
-        P res;
-        for (int i = 0; i < N; ++i) {res = res + points_[i];}
-        return res / static_cast<FT>(N);
-    }
-    inline AABB<P> aabb() const {
-        AABB<P> res;
-        for (int i = 0; i < N; ++i) {res.expand(points_[i]);}
-        return res;
-    }
-    inline bool operator==(const Simplex<P,N>& _s) const {
-        for (int i = 0; i < N; ++i) {
-            if (points_[i] != _s.points_[i]) {
-                return false;
-            }
-        }
-        return true;
-    }
-private:
-    P points_[N];
-};
-
 template<typename P>
 requires(is_point<P>::value)
 class Segment
