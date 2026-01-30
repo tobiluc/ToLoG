@@ -6,6 +6,7 @@
 #include <functional>
 #include <iostream>
 #include <ostream>
+#include <span>
 #include <vector>
 #include <numeric>
 #include <queue>
@@ -33,7 +34,7 @@ protected:
 public:
     AABBTree() {}
 
-    AABBTree(std::vector<Primitive>& _primitives, size_t _leaf_size = 32) :
+    AABBTree(std::span<const Primitive> _primitives, size_t _leaf_size = 32) :
         primitives_(_primitives),
         leaf_size_(_leaf_size)
     {
@@ -96,14 +97,7 @@ public:
             }
 
             // compute centroids and choose split axis = longest axis of node bbox
-            uint32_t split_axis(0);
-            for (int ax = 0; ax < DIM; ++ax) {
-                if ((node.aabb.max()-node.aabb.min())[ax]
-                    > (node.aabb.max()-node.aabb.min())[split_axis])
-                {
-                    split_axis = ax;
-                }
-            };
+            uint32_t split_axis = argmax(node.aabb.max()-node.aabb.min());
 
             // compute median by nth_element using centroid of prim AABBs
             // nth_element on the subrange prim_indices_[t.begin .. t.begin+t.n)
@@ -199,6 +193,14 @@ public:
         }
     }
 
+    std::vector<uint32_t> k_nearest_neighbors(const Point& _q,
+                             const uint32_t _k) const
+    {
+        std::vector<uint32_t> res;
+        k_nearest_neighbors(_q, _k, res);
+        return res;
+    }
+
     inline size_t n_nodes() const {
         return nodes_.size();
     }
@@ -224,7 +226,7 @@ public:
     }
 
 protected:
-    std::vector<T>& primitives_; // n_primitives_
+    std::span<const Primitive> primitives_;
     std::vector<Node> nodes_;
     std::vector<uint32_t> prim_idx_buffer_;
     size_t leaf_size_ = 32;

@@ -12,33 +12,6 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 #================================================
-# Check if standalone or within other project
-#================================================
-if( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR} )
-    set(TOLOG_STANDALONE_BUILD TRUE)
-    message("Configuring ToLoG as standalone project...")
-else()
-    set(TOLOG_STANDALONE_BUILD FALSE)
-    message("Configuring ToLoG inside another cmake project...")
-endif()
-
-if(TOLOG_STANDALONE_BUILD)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Build/bin")
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Build/lib")
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Build/lib")
-endif()
-
-#================================================
-# CMake Finders
-#================================================
-if(TOLOG_STANDALONE_BUILD)
-    list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-else()
-    set(_my_cmake_module_path "${CMAKE_CURRENT_LIST_DIR}/cmake")
-    set(CMAKE_MODULE_PATH "${_my_cmake_module_path};${CMAKE_MODULE_PATH}" CACHE STRING "CMake module path" FORCE)
-endif()
-
-#================================================
 # Add Library
 #================================================
 add_library("${PROJECT_NAME}" STATIC
@@ -77,7 +50,6 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/detail/centroid.inl.hpp
     src/ToLoG/Traits_fwd.hpp
     src/ToLoG/detail/vector_utils.inl.hpp
-    src/ToLoG/utils/Eigen_Traits.hpp
 
 )
 add_library ("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS ${PROJECT_NAME})
@@ -99,18 +71,6 @@ endif()
 find_package(OpenMP COMPONENTS CXX REQUIRED)
 if(OpenMP_CXX_FOUND)
     target_compile_options(${PROJECT_NAME} PUBLIC ${OpenMP_CXX_FLAGS})
-    target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
-endif()
-
-#=========================
-# NLohmann Json
-#=========================
-if (NOT TARGET nlohmann_json::nlohmann_json)
-    FetchContent_Declare(
-        json
-        URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz
-    )
-    FetchContent_MakeAvailable(json)
 endif()
 
 #=========================
@@ -119,7 +79,6 @@ endif()
 include_directories (${INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PUBLIC
 OpenMP::OpenMP_CXX
-nlohmann_json::nlohmann_json
 )
 
 #=========================
@@ -142,27 +101,11 @@ set_source_files_properties(src/ToLoG/predicates/predicates.c
     LANGUAGE C
 )
 
-#================================
-# Add the standalone executables
-#================================
-if(TOLOG_STANDALONE_BUILD)
-    if(NOT TARGET CLI11::CLI11)
-        FetchContent_Declare(cli11
-            GIT_REPOSITORY https://github.com/CLIUtils/CLI11.git
-            GIT_TAG        v2.5.0
-            SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/CLI11"
-            )
-        FetchContent_MakeAvailable(cli11)
-        message("Downloaded CLI11 to ${cli11_SOURCE_DIR}")
-    endif()
-   add_subdirectory(tools/ToLoG)
-endif()
-
 #=========================
 # Testing
 #=========================
 set(TOLOG_BUILD_UNIT_TESTS true CACHE BOOL "Whether to build the unit tests.")
-if (TOLOG_STANDALONE_BUILD AND TOLOG_BUILD_UNIT_TESTS)
+if (TOLOG_BUILD_UNIT_TESTS)
     enable_testing()
     find_package(GTest REQUIRED)
     add_subdirectory(tests)

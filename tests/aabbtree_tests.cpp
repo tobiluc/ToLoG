@@ -27,8 +27,8 @@ TEST(TreeTest, AABBTReeNNTest)
         Point<double,3> q = pts[i];
 
         t1 = std::chrono::steady_clock::now();
-        std::vector<uint32_t> treeres;
-        tree.k_nearest_neighbors(q.data(), k, treeres);
+        std::vector<uint32_t> treeres = tree.k_nearest_neighbors(q.data(), k);
+        //tree.k_nearest_neighbors(q.data(), k, treeres);
         EXPECT_EQ(k, treeres.size());
         t2 = std::chrono::steady_clock::now();
         dtaabb += std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count();
