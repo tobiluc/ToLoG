@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ToLoG/optimization/LinearProgram.hpp>
+#include <ToLoG/unstable/LinearProgram.hpp>
 #include <cassert>
 #include <iostream>
 #include <ostream>

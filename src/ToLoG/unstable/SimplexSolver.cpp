@@ -1,4 +1,4 @@
-#include <ToLoG/optimization/SimplexSolver.hpp>
+#include <ToLoG/unstable/SimplexSolver.hpp>
 
 namespace ToLoG
 {

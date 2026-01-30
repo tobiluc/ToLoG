@@ -34,10 +34,10 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/unstable/marching_cubes.hpp
     src/ToLoG/unstable/KDTree.hpp
 
-    src/ToLoG/optimization/SimplexSolver.hpp
+    src/ToLoG/unstable/SimplexSolver.hpp
     src/ToLoG/optimization/Sparse.hpp
-    src/ToLoG/optimization/LinearProgram.hpp
-    src/ToLoG/optimization/SimplexSolver.cpp
+    src/ToLoG/unstable/LinearProgram.hpp
+    src/ToLoG/unstable/SimplexSolver.cpp
     src/ToLoG/io/obj_writer.hpp
     src/ToLoG/io/happly.hpp
     src/ToLoG/io/ply_writer.hpp
