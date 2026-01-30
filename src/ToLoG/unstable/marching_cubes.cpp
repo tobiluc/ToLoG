@@ -319,13 +319,13 @@ int MarchingCubes3d::generate(const SDF &f, TriangleMesh &mesh, const AABB &boun
     double val[8];
     auto size = bounds.max() - bounds.min();
     for (uint32_t i = 0; i < 8; ++i) {
-        int dxi = cubeVertices[i].x();
-        int dyi = cubeVertices[i].y();
-        int dzi = cubeVertices[i].z();
+        int dxi = cubeVertices[i][0];
+        int dyi = cubeVertices[i][1];
+        int dzi = cubeVertices[i][2];
         p[i] = {
-            bounds.min().x() + dxi * size[0],
-            bounds.min().y() + dyi * size[1],
-            bounds.min().z() + dzi * size[2]
+            bounds.min()[0] + dxi * size[0],
+            bounds.min()[1] + dyi * size[1],
+            bounds.min()[2] + dzi * size[2]
         };
         val[i] = f(p[i]);
     }
@@ -369,9 +369,9 @@ int MarchingCubes3d::generate(const SDF &f, TriangleMesh &mesh, const AABB &boun
 
 struct PointHash {
     inline std::size_t operator()(const MarchingCubes3d::Point& v) const {
-        std::size_t h1 = std::hash<float>{}(v.x());
-        std::size_t h2 = std::hash<float>{}(v.y());
-        std::size_t h3 = std::hash<float>{}(v.z());
+        std::size_t h1 = std::hash<float>{}(v[0]);
+        std::size_t h2 = std::hash<float>{}(v[1]);
+        std::size_t h3 = std::hash<float>{}(v[2]);
         return h1 ^ (h2 << 1) ^ (h3 << 2);
     }
 };

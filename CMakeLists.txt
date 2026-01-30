@@ -73,6 +73,10 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/detail/Traits.inl.hpp
     src/ToLoG/detail/point_squared_distance.inl.hpp
     src/ToLoG/detail/barycentric.inl.hpp
+    src/ToLoG/detail/aabb.inl.hpp
+    src/ToLoG/detail/centroid.inl.hpp
+    src/ToLoG/Traits_fwd.hpp
+    src/ToLoG/detail/vector_utils.inl.hpp
 
 )
 add_library ("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS ${PROJECT_NAME})

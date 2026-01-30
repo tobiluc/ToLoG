@@ -38,7 +38,7 @@ int write_aabb_tree_ply(const std::filesystem::path& _path, const AABBTree<T>& _
 
         // Add Vertices
         for (const auto& v : aabb.corners()) {
-            v_positions.push_back({v.x(),v.y(),v.z()});
+            v_positions.push_back({v[0],v[1],v[2]});
         }
         // Add Faces
         for (const auto& f : cube_vertex_indices) {

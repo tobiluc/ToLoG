@@ -45,7 +45,7 @@ private:
 public:
     Octree3d(AABB bounds, u32 initialResolution = 2, u32 maxDepth = 5);
 
-    Octree3d() : Octree3d(AABB({Point::filled(0), Point::filled(1)})) {}
+    Octree3d() : Octree3d(AABB({filled<Point>(0), filled<Point>(1)})) {}
 
     inline bool isRefined(u32 idx) const {
         return nodes_[idx].refined;

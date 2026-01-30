@@ -86,12 +86,12 @@ TEST(TreeTest, PointBetweenTwoSpheresTest)
     Sphere s1(Point(-101,0,0), 100);
     Sphere s2(Point(5,0,0),2);
 
-    EXPECT_EQ(Point(-201,-100,-100), s1.aabb().min());
-    EXPECT_EQ(Point(-1,100,100), s1.aabb().max());
-    EXPECT_EQ(s1.centroid(), s1.aabb().centroid());
-    EXPECT_EQ(Point(3,-2,-2), s2.aabb().min());
-    EXPECT_EQ(Point(7,2,2), s2.aabb().max());
-    EXPECT_EQ(s2.centroid(), s2.aabb().centroid());
+    EXPECT_EQ(Point(-201,-100,-100), ToLoG::aabb(s1).min());
+    EXPECT_EQ(Point(-1,100,100), ToLoG::aabb(s1).max());
+    EXPECT_EQ(s1.center(), ToLoG::centroid(ToLoG::aabb(s1)));
+    EXPECT_EQ(Point(3,-2,-2), ToLoG::aabb(s2).min());
+    EXPECT_EQ(Point(7,2,2), ToLoG::aabb(s2).max());
+    EXPECT_EQ(s2.center(), ToLoG::centroid(ToLoG::aabb(s2)));
 
     Point q1(0,0,0);
     EXPECT_EQ(1, point_squared_distance(q1, s1));
@@ -104,10 +104,10 @@ TEST(TreeTest, PointBetweenTwoSpheresTest)
 
     std::vector<uint32_t> res;
 
-    tree.k_nearest_neighbors(s1.centroid(), 1, res);
+    tree.k_nearest_neighbors(s1.center(), 1, res);
     EXPECT_EQ(0, res[0]);
 
-    tree.k_nearest_neighbors(s2.centroid(), 1, res);
+    tree.k_nearest_neighbors(s2.center(), 1, res);
     EXPECT_EQ(1, res[0]);
 
     tree.k_nearest_neighbors(q1, 1, res);

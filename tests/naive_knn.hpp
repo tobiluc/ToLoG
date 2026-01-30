@@ -15,7 +15,7 @@ void naive_knn_search(const std::vector<Point>& _pts,
     std::vector<double> d;
     d.reserve(_pts.size());
     for (const auto& p : _pts) {
-        d.push_back((p - _q).squared_norm());
+        d.push_back(squared_norm(p - _q));
     }
 
     // Sort points

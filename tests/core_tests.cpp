@@ -30,12 +30,56 @@ TEST(GeometryCoreTest, PointTest)
     int d = ToLoG::Traits<Point>::dim;
     ASSERT_EQ(3, d);
 
-    ASSERT_EQ(p, p.aabb().min());
-    ASSERT_EQ(p, p.aabb().max());
-    ASSERT_EQ(p, p.centroid());
+    ASSERT_EQ(p, ToLoG::aabb(p).min());
+    ASSERT_EQ(p, ToLoG::aabb(p).max());
+    ASSERT_EQ(p, ToLoG::centroid(p));
 
     ASSERT_LT(Point(2,5,1), p);
     ASSERT_LT(p, Point(3,4,-4));
+}
+
+TEST(GeometryCoreTest, AABBTest)
+{
+    using Point = ToLoG::Point<double, 3>;
+    using Segment = ToLoG::Segment<Point>;
+    using Triangle = ToLoG::Triangle<Point>;
+    using Sphere = ToLoG::Sphere<Point>;
+    using AABB = ToLoG::AABB<Point>;
+
+    AABB aabb;
+    Point a(3,4,-5);
+    Point b(1,0,5);
+    Point c(1,0,5);
+    Point d(1,0,5);
+    aabb = ToLoG::aabb(a);
+    Segment seg(a, b);
+    aabb = ToLoG::aabb(seg);
+    Triangle tri(a, b, c);
+    aabb = ToLoG::aabb(tri);
+    Sphere sphere(a, 4);
+    aabb = ToLoG::aabb(sphere);
+}
+
+TEST(GeometryCoreTest, CentroidTest)
+{
+    using Point = ToLoG::Point<double, 3>;
+    using Segment = ToLoG::Segment<Point>;
+    using Triangle = ToLoG::Triangle<Point>;
+    using Sphere = ToLoG::Sphere<Point>;
+    using AABB = ToLoG::AABB<Point>;
+
+    Point center;
+    Point a(3,4,-5);
+    Point b(1,0,5);
+    Point c(1,0,5);
+    Point d(1,0,5);
+    center = ToLoG::centroid(a);
+    Segment seg(a, b);
+    center = ToLoG::centroid(seg);
+    Triangle tri(a, b, c);
+    center = ToLoG::centroid(tri);
+    Sphere sphere(a, 4);
+    center = ToLoG::centroid(sphere);
 }
 
 TEST(GeometryCoreTest, Triangle2dTest)
@@ -49,7 +93,7 @@ TEST(GeometryCoreTest, Triangle2dTest)
     Point b(3,0);
     Point c(0,4);
     Triangle tri(a,b,c);
-    EXPECT_EQ(AABB({Point(0,0),Point(3,4)}), tri.aabb());
+    EXPECT_EQ(AABB({Point(0,0),Point(3,4)}), ToLoG::aabb(tri));
     EXPECT_EQ(6, tri.area());
     EXPECT_EQ(12, tri.circumference());
     EXPECT_EQ(Segment(a,b), tri.edge(0));
@@ -66,7 +110,7 @@ TEST(GeometryCoreTest, AABBPointsTest)
 
     EXPECT_EQ(Point(-1,-3,0), aabb.min());
     EXPECT_EQ(Point(4,-3,10), aabb.max());
-    EXPECT_EQ(Point(1.5,-3,5), aabb.centroid());
+    EXPECT_EQ(Point(1.5,-3,5), ToLoG::centroid(aabb));
 
     auto corners = aabb.corners();
     EXPECT_EQ(8, corners.size());

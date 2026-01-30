@@ -56,7 +56,7 @@ public:
         std::vector<AABB> prim_aabbs;
         prim_aabbs.reserve(n_primitives());
         for (uint32_t i = 0; i < n_primitives(); ++i) {
-            prim_aabbs.push_back(primitive(i).aabb());
+            prim_aabbs.push_back(aabb(primitive(i)));
         }
 
         struct NodeTask {
@@ -96,7 +96,14 @@ public:
             }
 
             // compute centroids and choose split axis = longest axis of node bbox
-            uint32_t split_axis = (node.aabb.max()-node.aabb.min()).argmax();
+            uint32_t split_axis(0);
+            for (int ax = 0; ax < DIM; ++ax) {
+                if ((node.aabb.max()-node.aabb.min())[ax]
+                    > (node.aabb.max()-node.aabb.min())[split_axis])
+                {
+                    split_axis = ax;
+                }
+            };
 
             // compute median by nth_element using centroid of prim AABBs
             // nth_element on the subrange prim_indices_[t.begin .. t.begin+t.n)
@@ -106,8 +113,8 @@ public:
                 t.begin + mid,
                 t.begin + t.n,
                 [&](const uint32_t& a, const uint32_t& b){
-                    return prim_aabbs[a].centroid()[split_axis]
-                           < prim_aabbs[b].centroid()[split_axis];
+                    return centroid(prim_aabbs[a])[split_axis]
+                           < centroid(prim_aabbs[b])[split_axis];
                 }
             );
 

@@ -18,9 +18,9 @@ int write_aabb_tree_obj(const std::filesystem::path& _path, const AABBTree<T>& _
         const auto& aabb = _tree.node_aabb(node_i);
         for (const auto& v : aabb.corners()) {
             file << "v "
-                 << v.x() << " "
-                 << v.y() << " "
-                 << v.z() << std::endl;
+                 << v[0] << " "
+                 << v[1] << " "
+                 << v[2] << std::endl;
         }
         for (const auto& f : cube_vertex_indices) {
             file << "f "

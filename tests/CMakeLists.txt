@@ -15,6 +15,7 @@ if (GTEST_FOUND)
         heap_tests.cpp
         sparse_tests.cpp
         simplex_tests.cpp
+        customization_tests.cpp
         unittests.cpp
     )
 

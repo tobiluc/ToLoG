@@ -1,9 +1,10 @@
 #pragma once
 
-template<typename FT, int DIM>
-inline FT point_squared_distance(const Point<FT,DIM>& _p, const Point<FT,DIM>& _q)
+template<class P>
+requires(is_vector_type<P>::value)
+inline auto point_squared_distance(const P& _p, const P& _q)
 {
-    return (_p - _q).squared_norm();
+    return squared_norm(_p - _q);
 }
 
 template<typename PointT>
@@ -31,16 +32,16 @@ inline Traits<PointT>::value_type point_squared_distance(const PointT& _p, const
     }
     PointT ab = _s.end() - _s.start();
     PointT ap = _p - _s.start();
-    FT t = std::clamp(ap.dot(ab) / ab.squared_norm(), FT(0), FT(1));
+    FT t = std::clamp(dot(ap,ab) / squared_norm(ab), FT(0), FT(1));
     PointT closest = _s.start() + ab*t;
-    return (_p - closest).squared_norm();
+    return squared_norm(_p - closest);
 }
 
 template<typename PointT>
 inline Traits<PointT>::value_type point_squared_distance(const PointT& _p, const Sphere<PointT>& _s)
 {
     using FT = Traits<PointT>::value_type;
-    FT d = std::max((_p - _s.centroid()).norm() - _s.radius(), static_cast<FT>(0));
+    FT d = std::max(norm(_p - _s.center()) - _s.radius(), static_cast<FT>(0));
     return d*d;
 }
 
