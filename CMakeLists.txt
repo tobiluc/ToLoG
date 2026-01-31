@@ -49,6 +49,8 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/detail/centroid.inl.hpp
     src/ToLoG/Traits_fwd.hpp
     src/ToLoG/detail/vector_utils.inl.hpp
+    src/ToLoG/Ray.hpp
+    src/ToLoG/math/polynomial_roots.hpp
 
 )
 add_library ("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS ${PROJECT_NAME})

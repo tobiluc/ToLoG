@@ -12,6 +12,7 @@ if (GTEST_FOUND)
         keyvaluevector_tests.cpp
         octree_tests.cpp
         predicates_tests.cpp
+        ray_tests.cpp
         simplex_tests.cpp
         sparse_tests.cpp
         unittests.cpp
