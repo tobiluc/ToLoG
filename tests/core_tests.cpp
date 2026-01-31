@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 #include <ToLoG/Core.hpp>
-#include <ToLoG/math/winding_number.hpp>
 
 TEST(GeometryCoreTest, TraitsTest3d)
 {
@@ -156,76 +155,4 @@ TEST(GeometryCoreTest, TetrahedronTest)
     Point d(0,1,0);
 
     ToLoG::Tetrahedron<Point> tet(a,b,c,d);
-}
-
-TEST(GeometryCoreTest, WindingNumber3dTest)
-{
-    using Point = ToLoG::Point<double,3>;
-    using Triangle = ToLoG::Triangle<Point>;
-
-    // Tetrahedron vertices
-    Point v0( 1,  1,  1);
-    Point v1(-1, -1,  1);
-    Point v2(-1,  1, -1);
-    Point v3( 1, -1, -1);
-
-    // Oriented faces (outward)
-    std::vector<Triangle> tris = {
-        Triangle(v0, v2, v1),
-        Triangle(v0, v1, v3),
-        Triangle(v0, v3, v2),
-        Triangle(v1, v2, v3)
-    };
-
-    auto wn = [&](const Point& _p) {
-        double wn(0);
-        for (const auto& t : tris) {
-            wn += winding_number(_p, t);
-        }
-        //bool inside = std::abs(wn) > 0.5;
-        return wn;
-    };
-    constexpr double eps = std::numeric_limits<double>::epsilon();
-
-
-    EXPECT_NEAR(wn(Point(0,0,0)), 1.0, eps); // Inside
-    EXPECT_NEAR(wn(Point(0.5,0.5,0.5)), 1.0, eps); // Inside
-    EXPECT_NEAR(wn(Point(5,5,5)), 0.0, eps); // Outside
-    EXPECT_NEAR(wn(Point(-99,0,-99)), 0.0, eps); // Outside 
-
-}
-
-TEST(GeometryCoreTest, WindingNumber2dTest)
-{
-    using Point = ToLoG::Point<double,2>;
-    using Segment = ToLoG::Segment<Point>;
-
-    // Square vertices
-    Point v0(0,0);
-    Point v1(1,0);
-    Point v2(1,1);
-    Point v3(0,1);
-
-    // Square
-    std::vector<Segment> square = {
-        Segment(v0, v1),
-        Segment(v1, v2),
-        Segment(v2, v3),
-        Segment(v3, v0)
-    };
-
-    auto wn = [&](const Point& _p) {
-        double wn(0);
-        for (const auto& s : square) {
-            wn += winding_number(_p, s);
-        }
-        return wn;
-    };
-    constexpr double eps = std::numeric_limits<double>::epsilon();
-
-    EXPECT_NEAR(wn(Point(0.5,0.5)), 1.0, eps); // Inside
-    EXPECT_NEAR(wn(Point(0.1,0.9)), 1.0, eps); // Inside
-    EXPECT_NEAR(wn(Point(5,5)), 0.0, eps); // Outside
-    EXPECT_NEAR(wn(Point(-1000,0.5)), 0.0, eps); // Outside
-    EXPECT_NEAR(wn(Point(0.5,1.01)), 0.0, eps); // Outside
 }

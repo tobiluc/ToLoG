@@ -15,6 +15,7 @@ if (GTEST_FOUND)
         ray_tests.cpp
         simplex_tests.cpp
         sparse_tests.cpp
+        winding_number_tests.cpp
         unittests.cpp
     )
 
