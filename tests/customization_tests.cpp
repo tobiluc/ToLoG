@@ -74,6 +74,8 @@ TEST(GeometryCoreTest, CustomVec3dTest)
 {
     auto p = CustomVec3d(1, 2, 3);
     auto q = CustomVec3d(3, 2, 1);
+    auto r = CustomVec3d(1,0,0);
+    auto s = CustomVec3d(0,0,1);
 
     // Traits
     EXPECT_EQ((ToLoG::Traits<CustomVec3d>::dim), 3);
@@ -108,4 +110,7 @@ TEST(GeometryCoreTest, CustomVec3dTest)
     EXPECT_EQ(seg.end(), q);
     auto sphere = ToLoG::Sphere<CustomVec3d>(p, 1);
     EXPECT_EQ(sphere.center(), p);
+    auto tri = ToLoG::Triangle<CustomVec3d>(p,q,r);
+    auto tet = ToLoG::Tetrahedron<CustomVec3d>(p,q,r,s);
+
 }

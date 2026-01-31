@@ -22,13 +22,18 @@ std::vector<FT> solve_quadratic(FT a, FT b, FT c)
 
     FT discriminant = b*b - 4*a*c;
 
-    // Equation has no solutions
-    if (discriminant < FT(0.0)) {return {};}
-
-    FT sqrtDiscriminant = std::sqrt<FT>(discriminant);
-
-    FT s0 = FT(0.5) * (-b - sqrtDiscriminant) / a;
-    return {s0, s0 + sqrtDiscriminant / a};
+    if (is_near_zero(discriminant)) {
+        // 1 solution
+        return {-b/(static_cast<FT>(2.0)*a)};
+    } else if (discriminant > static_cast<FT>(0.0)) {
+        // 2 solutions
+        FT sqrtDiscriminant = std::sqrt<FT>(discriminant);
+        FT s0 =(-b - sqrtDiscriminant) / (static_cast<FT>(2.0)*a);
+        return {s0, s0 + sqrtDiscriminant / a};
+    } else {
+        // no solutions
+        return {};
+    }
 }
 
 template<typename FT>

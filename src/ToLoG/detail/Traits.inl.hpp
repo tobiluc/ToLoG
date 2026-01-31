@@ -6,9 +6,7 @@ struct is_vector_type<Point<FT, DIM>> : std::true_type {};
 template<typename P>
 struct Traits<AABB<P>>
 {
-    using value_type = Traits<P>::value_type;
-    using vector_type = Traits<P>::vector_type;
-    constexpr static int dim = Traits<P>::dim;
+    using vector_type = P;
 };
 
 template<typename FT, int DIM>
@@ -22,31 +20,23 @@ struct Traits<Point<FT,DIM>>
 template<typename P>
 struct Traits<Segment<P>>
 {
-    using value_type = Traits<P>::value_type;
-    using vector_type = Traits<P>::vector_type;
-    constexpr static int dim = Traits<P>::dim;
+    using vector_type = P;
 };
 
 template<typename P>
 struct Traits<Triangle<P>>
 {
-    using value_type = Traits<P>::value_type;
-    using vector_type = Traits<P>::vector_type;
-    constexpr static int dim = Traits<P>::dim;
+    using vector_type = P;
 };
 
 template<typename P>
 struct Traits<Sphere<P>>
 {
-    using value_type = Traits<P>::value_type;
-    using vector_type = Traits<P>::vector_type;
-    constexpr static int dim = Traits<P>::dim;
+    using vector_type = P;
 };
 
 template<typename P>
 struct Traits<Tetrahedron<P>>
 {
-    using value_type = Traits<P>::value_type;
-    using vector_type = Traits<P>::vector_type;
-    constexpr static int dim = Traits<P>::dim;
+    using vector_type = P;
 };

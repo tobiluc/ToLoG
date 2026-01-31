@@ -19,9 +19,9 @@ class AABBTree
 {
 public:
     using Primitive = T;
-    using FT = Traits<T>::value_type;
-    constexpr static int DIM = Traits<T>::dim;
     using Point = Traits<T>::vector_type;
+    using FT = Traits<Point>::value_type;
+    constexpr static int DIM = Traits<Point>::dim;
     using AABB = AABB<Point>;
 
 protected:

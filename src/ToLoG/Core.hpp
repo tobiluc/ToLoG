@@ -152,12 +152,9 @@ private:
 template<typename FT, int DIM>
 using Vector = Point<FT, DIM>;
 
-template<typename P>
-requires(is_vector_type<P>::value)
+template<typename P> requires(is_vector_type<P>::value)
 class Segment
 {
-private:
-    using FT = typename Traits<P>::value_type;
 public:
     Segment() {}
     Segment(const P& _start, const P& _end) :
@@ -179,13 +176,11 @@ private:
     P start_, end_;
 };
 
-template<typename P>
-requires(is_vector_type<P>::value)
+template<typename P> requires(is_vector_type<P>::value)
 class Triangle
 {
 private:
-    using FT = typename Traits<P>::value_type;
-    static constexpr int DIM = Traits<P>::dim;
+    using FT = Traits<P>::value_type;
 public:
     Triangle() {}
     Triangle(const P& _a, const P& _b, const P& _c)
@@ -197,24 +192,8 @@ public:
     inline const P& operator[](const int& _i) const {
         return t_[_i];
     }
-    inline FT area() const {
-        P u = t_[1] - t_[0];
-        P v = t_[2] - t_[0];
-        FT uu = dot(u,u);
-        FT vv = dot(v,v);
-        FT uv = dot(u,v);
-        FT det = uu * vv - uv * uv;
-        return std::sqrt(std::max<FT>(det, FT(0))) / FT(2);
-    }
-    inline FT circumference() const {
-        return norm(t_[1]-t_[0]) + norm(t_[2]-t_[1]) + norm(t_[0]-t_[2]);
-    }
     inline Segment<P> edge(int _i) const {
         return Segment<P>(t_[_i], t_[(_i+1)%3]);
-    }
-    inline P normal() const {
-        static_assert(DIM==3, "Triangle normal is only defined in 3 dimensions");
-        return (t_[1] - t_[0]).cross(t_[2] - t_[0]);
     }
     inline bool operator==(const Triangle<P>& _tri) const {
         return t_[0] == _tri[0]
@@ -255,8 +234,7 @@ private:
     FT radius_;
 };
 
-template<typename P>
-requires(Traits<P>::dim == 3 && is_vector_type<P>::value)
+template<typename P> requires(is_vector_type<P>::value)
 class Tetrahedron
 {
 public:
@@ -289,7 +267,8 @@ private:
 };
 
 #include "detail/Traits.inl.hpp"
-#include "detail/vector_utils.inl.hpp"
+#include "detail/vector.inl.hpp"
+#include "detail/triangle.inl.hpp"
 
 template<typename PrimT>
 AABB<typename Traits<PrimT>::vector_type> aabb(const PrimT& _prim);
