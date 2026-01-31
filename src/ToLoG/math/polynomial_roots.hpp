@@ -6,12 +6,6 @@ namespace ToLoG
 {
 
 template<typename FT>
-bool is_near_zero(FT _x, FT _scale = FT(1.)) {
-    constexpr FT eps = std::numeric_limits<FT>::epsilon();
-    return std::abs(_x) <= eps * _scale;
-}
-
-template<typename FT>
 std::vector<FT> solve_quadratic(FT a, FT b, FT c)
 {
     // Handle degenerate linear case
