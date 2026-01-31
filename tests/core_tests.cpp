@@ -156,3 +156,42 @@ TEST(GeometryCoreTest, TetrahedronTest)
 
     ToLoG::Tetrahedron<Point> tet(a,b,c,d);
 }
+
+TEST(GeometryCoreTest, WindingNumberTest)
+{
+    using Point = ToLoG::Point<double,3>;
+    using Triangle = ToLoG::Triangle<Point>;
+
+    // Tetrahedron vertices
+    Point v0( 1,  1,  1);
+    Point v1(-1, -1,  1);
+    Point v2(-1,  1, -1);
+    Point v3( 1, -1, -1);
+
+    // Oriented faces (outward)
+    std::vector<Triangle> tris = {
+        Triangle(v0, v2, v1),
+        Triangle(v0, v1, v3),
+        Triangle(v0, v3, v2),
+        Triangle(v1, v2, v3)
+    };
+
+    auto wn = [&](const Point& _p) {
+        double wn(0);
+        for (const auto& t : tris) {
+            wn += winding_number(_p, t);
+        }
+        //bool inside = std::abs(wn) > 0.5;
+        return wn / (4.0 * M_PI);
+    };
+    constexpr double eps = std::numeric_limits<double>::epsilon();
+
+
+    EXPECT_NEAR(wn(Point(0,0,0)), 1.0, eps); // Inside
+    EXPECT_NEAR(wn(Point(0.5,0.5,0.5)), 1.0, eps); // Inside
+    EXPECT_NEAR(wn(Point(5,5,5)), 0.0, eps); // Outside
+    EXPECT_NEAR(wn(Point(-99,0,-99)), 0.0, eps); // Outside
+
+
+}
+
