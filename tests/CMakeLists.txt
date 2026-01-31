@@ -2,20 +2,18 @@ if (GTEST_FOUND)
     include(GoogleTest)
 
     FILE(GLOB UNITTEST_SRC
-        core_tests.cpp
-        predicates_tests.cpp
         aabbtree_tests.cpp
-        kdtree_tests.cpp
-        octree_tests.cpp
+        core_tests.cpp
+        customization_tests.cpp
         dsu_tests.cpp
-        marching_cubes_tests.cpp
-        keyvaluevector_tests.cpp
-        enumerate_tests.hpp
+        enumerate_tests.cpp
         hash_tests.cpp
         heap_tests.cpp
-        sparse_tests.cpp
+        keyvaluevector_tests.cpp
+        octree_tests.cpp
+        predicates_tests.cpp
         simplex_tests.cpp
-        customization_tests.cpp
+        sparse_tests.cpp
         unittests.cpp
     )
 

@@ -32,7 +32,6 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/unstable/Octree.cpp
     src/ToLoG/unstable/marching_cubes.cpp
     src/ToLoG/unstable/marching_cubes.hpp
-    src/ToLoG/unstable/KDTree.hpp
 
     src/ToLoG/unstable/SimplexSolver.hpp
     src/ToLoG/optimization/Sparse.hpp

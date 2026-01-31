@@ -1,5 +1,6 @@
 #pragma once
 #include <cstddef>
+#include <span>
 #include <utility>
 
 namespace ToLoG
@@ -9,9 +10,9 @@ template <typename T>
 class enumerate
 {
 private:
-    T& container_;
+    std::span<T> container_;
 public:
-    enumerate(T& _container) : container_(_container) {}
+    enumerate(std::span<T> _container) : container_(_container) {}
 
     struct iterator
     {
