@@ -51,12 +51,12 @@ inline Traits<PointT>::value_type point_squared_distance(const PointT& _p, const
     using FT = Traits<PointT>::value_type;
     constexpr int DIM = Traits<PointT>::dim;
 
-    std::array<FT,3> bary = barycentric_coordinates(_p. _tri);
+    std::array<FT,3> bary = barycentric_coordinates(_p, _tri);
 
     // If inside triangle, project onto triangle plane
     if (bary[0] >= 0 && bary[1] >= 0 && bary[2] >= 0) {
         Point<FT,DIM> q = _tri[0] + (_tri[1] - _tri[0])*bary[0] + (_tri[2] - _tri[0])*bary[1]; // closest point
-        return (_p - q).squared_norm();
+        return squared_norm(_p - q);
     }
 
     // Otherwise, closest point is on an edge
