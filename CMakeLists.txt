@@ -52,6 +52,7 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/Ray.hpp
     src/ToLoG/math/polynomial_roots.hpp
     src/ToLoG/detail/triangle.inl.hpp
+    src/ToLoG/math/winding_number.hpp
 
 
 
