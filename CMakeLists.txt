@@ -56,7 +56,7 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/mesh/delauney_triangulation.hpp
     src/ToLoG/predicates/contains_point.hpp
     src/ToLoG/mesh/mesh_types.hpp
-    src/ToLoG/unstable/DynamicAABBTree.hpp
+
 
 
 

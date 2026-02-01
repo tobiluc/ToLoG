@@ -39,11 +39,14 @@ public:
         primitives_(_primitives),
         leaf_size_(_leaf_size)
     {
-        build_tree();
+        build_tree(_primitives, _leaf_size);
     }
 
-    void build_tree()
+    void build_tree(std::span<const Primitive> _primitives, size_t _leaf_size = 32)
     {
+        leaf_size_ = _leaf_size;
+        primitives_ = _primitives;
+
         // Setup
         nodes_.clear();
         nodes_.reserve(2*n_primitives()/leaf_size_);
@@ -203,7 +206,7 @@ public:
     }
 
     /// Locates the primitive which contains the query point q
-    std::optional<uint32_t> locate(const Point& _q) const
+    std::optional<uint32_t> locate_primitive(const Point& _q) const
     {
         // First, locate the node
         uint32_t node_i(0);

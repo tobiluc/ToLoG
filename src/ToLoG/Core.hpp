@@ -24,13 +24,13 @@ public:
     AABB() {
         make_empty();
     }
-    AABB(const std::span<const P> _pts) {
+    AABB(std::span<const P> _pts) {
         make_empty();
         for (const auto& _p : _pts) {
             expand(_p);
         }
     }
-    AABB(std::initializer_list<P> _pts) {
+    AABB(std::initializer_list<const P> _pts) {
         make_empty();
         for (const auto& _p : _pts) {
             expand(_p);
