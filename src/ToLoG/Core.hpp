@@ -3,8 +3,8 @@
 #include <MacTypes.h>
 #include <algorithm>
 #include <limits>
-#include <initializer_list>
 #include <cmath>
+#include <span>
 
 namespace ToLoG
 {
@@ -23,6 +23,12 @@ private:
 public:
     AABB() {
         make_empty();
+    }
+    AABB(const std::span<const P> _pts) {
+        make_empty();
+        for (const auto& _p : _pts) {
+            expand(_p);
+        }
     }
     AABB(std::initializer_list<P> _pts) {
         make_empty();
@@ -56,6 +62,14 @@ public:
     }
     inline const P& max() const {
         return max_;
+    }
+    inline bool contains(const AABB<P>& _box) const {
+        for (int i = 0; i < DIM; ++i) {
+            if (_box.max_[i] < min_[i] || max_[i] < _box.min_[i]) {
+                return false;
+            }
+        }
+        return true;
     }
     inline std::array<P,1<<DIM> corners() const {
         std::array<P,1<<DIM> res;

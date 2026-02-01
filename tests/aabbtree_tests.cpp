@@ -2,6 +2,7 @@
 #include <ToLoG/AABBTree.hpp>
 #include <random>
 #include "ToLoG/io/ply_writer.hpp"
+#include "ToLoG/unstable/DynamicAABBTree.hpp"
 #include "naive_knn.hpp"
 #include <ToLoG/io/obj_writer.hpp>
 
@@ -19,9 +20,10 @@ TEST(TreeTest, AABBTReeNNTest)
     }
 
     AABBTree<Point<double,3>> tree(pts, 8);
+    DynamicAABBTree<Point<double,3>> dyntree(pts,8);
 
     uint32_t k = 30;
-    long long dtnaive = 0, dtaabb = 0;
+    long long dtnaive = 0, dtaabb = 0, dtdyn = 0;
     std::chrono::steady_clock::time_point t1, t2;
     for (uint32_t i = 0; i < pts.size(); ++i) {
         Point<double,3> q = pts[i];
@@ -32,6 +34,12 @@ TEST(TreeTest, AABBTReeNNTest)
         EXPECT_EQ(k, treeres.size());
         t2 = std::chrono::steady_clock::now();
         dtaabb += std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count();
+
+        t1 = std::chrono::steady_clock::now();
+        std::vector<uint32_t> dynres = dyntree.k_nearest_neighbors(q.data(), k);
+        EXPECT_EQ(k, dynres.size());
+        t2 = std::chrono::steady_clock::now();
+        dtdyn += std::chrono::duration_cast<std::chrono::microseconds>(t2-t1).count();
 
         t1 = std::chrono::steady_clock::now();
         std::vector<uint32_t> naiveres;
@@ -45,6 +53,7 @@ TEST(TreeTest, AABBTReeNNTest)
 
     EXPECT_LT(dtaabb, dtnaive);
     std::cerr << "AABBTree KNN: " << dtaabb << "[µs]" << std::endl;
+    std::cerr << "Dynamic AABBTree KNN: " << dtdyn << "[µs]" << std::endl;
     std::cerr << "Naive KNN: " << dtnaive << "[µs]" << std::endl;
 }
 
@@ -112,6 +121,12 @@ TEST(TreeTest, PointBetweenTwoSpheresTest)
 
     tree.k_nearest_neighbors(q1, 1, res);
     EXPECT_EQ(0, res[0]);
+
+    EXPECT_TRUE(tree.locate(Point(-3,0,0)).has_value());
+    EXPECT_EQ(tree.locate(Point(-3,0,0)).value(), 0);
+    EXPECT_TRUE(tree.locate(Point(4,0,0)).has_value());
+    EXPECT_EQ(tree.locate(Point(4,0,0)).value(), 1);
+    EXPECT_FALSE(tree.locate(Point(0,0,0)).has_value());
 }
 
 }

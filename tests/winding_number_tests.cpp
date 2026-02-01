@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <ToLoG/Core.hpp>
 #include <ToLoG/math/winding_number.hpp>
-#include <ToLoG/predicates/ExactPredicates.hpp>
+#include <ToLoG/predicates/predicates_wrapper.hpp>
 
 TEST(GeometryCoreTest, WindingNumber3dTest)
 {

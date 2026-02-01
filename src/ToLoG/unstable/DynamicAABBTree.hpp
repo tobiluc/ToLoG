@@ -7,6 +7,7 @@
 #include <iostream>
 #include <ostream>
 #include <span>
+#include <stack>
 #include <vector>
 #include <numeric>
 #include <queue>
@@ -16,7 +17,7 @@ namespace ToLoG
 {
 
 template<typename T>
-class AABBTree
+class DynamicAABBTree
 {
 public:
     using Primitive = T;
@@ -27,19 +28,68 @@ public:
 
 protected:
     struct Node {
-        uint32_t left = UINT32_MAX;
-        uint32_t start = UINT32_MAX;
-        uint32_t end = UINT32_MAX;
+        uint32_t left = UINT32_MAX; // right = left+1
+        std::vector<uint32_t> prim_indices;
         AABB aabb;
     };
 public:
-    AABBTree() {}
+    DynamicAABBTree() {}
 
-    AABBTree(std::span<const Primitive> _primitives, size_t _leaf_size = 32) :
+    DynamicAABBTree(std::span<const Primitive> _primitives, size_t _leaf_size = 32) :
         primitives_(_primitives),
         leaf_size_(_leaf_size)
     {
         build_tree();
+    }
+
+    void split_node(uint32_t _node_i)
+    {
+        std::stack<uint32_t> node_stack;
+        node_stack.push(_node_i);
+
+        while (!node_stack.empty())
+        {
+            _node_i = node_stack.top();
+            node_stack.pop();
+
+            // Small enough
+            if (node_size(_node_i) <= leaf_size_) {continue;}
+
+            // Determine split axis (max extent of node bbox)
+            uint32_t split_axis = argmax(node_aabb(_node_i).max() - node_aabb(_node_i).min());
+
+            // Median Split
+            auto m = nodes_[_node_i].prim_indices.begin() + nodes_[_node_i].prim_indices.size() / 2;
+            std::nth_element(
+                nodes_[_node_i].prim_indices.begin(),
+                m,
+                nodes_[_node_i].prim_indices.end(),
+                [&](const uint32_t& a, const uint32_t& b){
+                    return centroid(prim_bboxes_[a])[split_axis]
+                           < centroid(prim_bboxes_[b])[split_axis];
+                }
+                );
+
+            // Create Left Child
+            nodes_[_node_i].left = nodes_.size();
+            nodes_.emplace_back();
+            nodes_.back().prim_indices.reserve(leaf_size_);
+            for (auto it = nodes_[_node_i].prim_indices.begin(); it <= m; ++it) {
+                nodes_.back().prim_indices.push_back(*it);
+                nodes_.back().aabb.expand(prim_bboxes_[*it]);
+            }
+
+            // Create Right Child
+            nodes_.emplace_back();
+            nodes_.back().prim_indices.reserve(leaf_size_);
+            for (auto it = m; it < nodes_[_node_i].prim_indices.end(); ++it) {
+                nodes_.back().prim_indices.push_back(*it);
+                nodes_.back().aabb.expand(prim_bboxes_[*it]);
+            }
+
+            node_stack.push(nodes_.size()-2);
+            node_stack.push(nodes_.size()-1);
+        }
     }
 
     void build_tree()
@@ -55,74 +105,22 @@ public:
         }
 
         // Cache Primitive AABBs
-        std::vector<AABB> prim_aabbs;
-        prim_aabbs.reserve(n_primitives());
+        prim_bboxes_.clear();
+        prim_bboxes_.reserve(n_primitives());
         for (uint32_t i = 0; i < n_primitives(); ++i) {
-            prim_aabbs.push_back(aabb(primitive(i)));
+            prim_bboxes_.push_back(aabb(primitive(i)));
         }
 
-        struct NodeTask {
-            uint32_t node_idx;
-            uint32_t* begin;
-            size_t n;
-        };
-        std::vector<uint32_t> idx(n_primitives());
-        std::iota(idx.begin(), idx.end(), 0u); // idx[i] = i
-
-        std::vector<NodeTask> stack;
-        stack.reserve(64);
-        nodes_.emplace_back(); // Create root node
-        stack.push_back({0, idx.data(), idx.size()});
-
-        while (!stack.empty()) {
-            NodeTask t = stack.back();
-            stack.pop_back();
-            Node& node = nodes_.at(t.node_idx);
-
-            // Compute Node bbox
-            if (t.n > 0) {
-                node.aabb = prim_aabbs[t.begin[0]];
-                for (uint32_t i = 1; i < t.n; ++i) {
-                    node.aabb.expand(prim_aabbs[t.begin[i]]);
-                }
-            }
-
-            // leaf?
-            if(t.n <= leaf_size_) {
-                nodes_[t.node_idx].start = prim_idx_buffer_.size();
-                nodes_[t.node_idx].end = nodes_[t.node_idx].start + t.n;
-                for(uint32_t i=0;i<t.n;i++) {
-                    prim_idx_buffer_.push_back(t.begin[i]);
-                }
-                continue;
-            }
-
-            // compute centroids and choose split axis = longest axis of node bbox
-            uint32_t split_axis = argmax(node.aabb.max()-node.aabb.min());
-
-            // compute median by nth_element using centroid of prim AABBs
-            // nth_element on the subrange prim_indices_[t.begin .. t.begin+t.n)
-            uint32_t mid = t.n / 2;
-            std::nth_element(
-                t.begin,
-                t.begin + mid,
-                t.begin + t.n,
-                [&](const uint32_t& a, const uint32_t& b){
-                    return centroid(prim_aabbs[a])[split_axis]
-                           < centroid(prim_aabbs[b])[split_axis];
-                }
-            );
-
-            // create children nodes
-            uint32_t l = nodes_.size();
-            node.left = l;
-            nodes_.emplace_back();
-            nodes_.emplace_back();
-
-            // push children tasks
-            stack.push_back({l+1, t.begin + mid, t.n - mid});
-            stack.push_back({l, t.begin, mid});
+        // Create the root Box
+        nodes_.emplace_back();
+        nodes_.back().prim_indices.resize(n_primitives());
+        std::iota(nodes_.back().prim_indices.begin(), nodes_.back().prim_indices.end(), 0u);
+        nodes_.back().aabb = prim_bboxes_[0];
+        for (uint32_t i = 1; i < n_primitives(); ++i) {
+            nodes_.back().aabb.expand(prim_bboxes_[i]);
         }
+
+        split_node(0);
     }
 
     void k_nearest_neighbors(const Point& _q,
@@ -161,8 +159,7 @@ public:
             const Node& N = nodes_[node_idx];
 
             if(is_leaf_node(node_idx)) {
-                for(uint32_t i=N.start;i<N.end;i++){
-                    uint32_t pid = prim_idx_buffer_[i];
+                for(uint32_t pid : nodes_[node_idx].prim_indices) {
                     const FT d = point_squared_distance(_q, primitives_[pid]);
                     if(best.size()<_k) {
                         best.push({pid, d});
@@ -195,7 +192,7 @@ public:
     }
 
     std::vector<uint32_t> k_nearest_neighbors(const Point& _q,
-                             const uint32_t _k) const
+                                              const uint32_t _k) const
     {
         std::vector<uint32_t> res;
         k_nearest_neighbors(_q, _k, res);
@@ -227,6 +224,31 @@ public:
         return std::nullopt;
     }
 
+    /*
+    bool insert_inside_leaf(const std::vector<Primitive>& _new_prims)
+    {
+        if (_new_prims.empty()) {return false;}
+
+        // Cache new prims bboxes and compute total bbox of new prims
+        std::vector<AABB> new_prims_boxes;
+        new_prims_boxes.reserve(_new_prims.size());
+        AABB total_box;
+        for (const auto& new_prim : _new_prims) {
+            AABB box = aabb(new_prim);
+            total_box.expand(box);
+            new_prims_boxes.emplace_back(std::move(box));
+        }
+
+        // Find leaf node containing the total box
+        auto node_i_opt = locate_leaf(total_box);
+        if (!node_i_opt.has_value()) {return false;}
+        uint32_t node_i = node_i_opt.value();
+
+        //TODO
+        return false;
+    }
+    */
+
     inline size_t n_nodes() const {
         return nodes_.size();
     }
@@ -253,9 +275,30 @@ public:
 
 protected:
     std::span<const Primitive> primitives_;
+    std::vector<AABB> prim_bboxes_;
     std::vector<Node> nodes_;
     std::vector<uint32_t> prim_idx_buffer_;
     size_t leaf_size_ = 32;
+
+    /// Locates the leaf node, starting from node_i, which contains the given box
+    std::optional<uint32_t> locate_leaf(uint32_t _node_i, const AABB& _box) const
+    {
+        if (!nodes_[nodes_[_node_i]].aabb.contains(_box)) {return std::nullopt;}
+        while (!is_leaf_node(_node_i)) {
+            if (nodes_[nodes_[_node_i].left].aabb.contains(_box)) {
+                _node_i = nodes_[_node_i].left;
+            } else if (nodes_[nodes_[_node_i].left+1].aabb.contains(_box)) {
+                _node_i = nodes_[_node_i].left+1;
+            } else {
+                return std::nullopt;
+            }
+        }
+        return _node_i;
+    }
+
+    size_t node_size(uint32_t _node_i) const {
+        return nodes_[_node_i].prim_indices.size();
+    }
 };
 
 }

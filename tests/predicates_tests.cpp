@@ -1,6 +1,7 @@
+#include "ToLoG/mesh/delauney_triangulation.hpp"
 #include <gtest/gtest.h>
-#include <ToLoG/predicates/ExactPredicates.hpp>
 #include <ToLoG/Core.hpp>
+#include <ToLoG/predicates/contains_point.hpp>
 
 namespace ToLoG
 {
@@ -25,6 +26,23 @@ TEST(PredicatesTest, SignOri3dTest1)
     ASSERT_EQ(ORI::CCW, sign_orient3d(p0.data(), p1.data(), p2.data(), p3.data()));
     ASSERT_EQ(ORI::CW, sign_orient3d(p0.data(), p2.data(), p1.data(), p3.data()));
     ASSERT_EQ(ORI::ZERO, sign_orient3d(p0.data(), p1.data(), p2.data(), Point<double,3>(10,0,-10).data()));
+}
+
+TEST(PredicatesTest, PointInTriangle2dTest)
+{
+    using Point = Point<double,2>;
+    using Triangle = Triangle<Point>;
+
+    Point t0(0,0);
+    Point t1(0,5);
+    Point t2(9,-4);
+    Triangle tri(t0,t1,t2);
+
+    EXPECT_TRUE(contains_point(tri, t0));
+    EXPECT_TRUE(contains_point(tri, t1));
+    EXPECT_TRUE(contains_point(tri, t2));
+    EXPECT_TRUE(contains_point(tri, Point(0,2.1)));
+    EXPECT_FALSE(contains_point(tri, Point(0,6)));
 }
 
 }

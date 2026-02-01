@@ -16,8 +16,8 @@ endif()
 #================================================
 add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/predicates/predicates.c
-    src/ToLoG/predicates/ExactPredicates.cpp
-    src/ToLoG/predicates/ExactPredicates.hpp
+    src/ToLoG/predicates/predicates_wrapper.cpp
+    src/ToLoG/predicates/predicates_wrapper.hpp
 
     src/ToLoG/Core.hpp
     src/ToLoG/AABBTree.hpp
@@ -53,6 +53,10 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/math/polynomial_roots.hpp
     src/ToLoG/detail/triangle.inl.hpp
     src/ToLoG/math/winding_number.hpp
+    src/ToLoG/mesh/delauney_triangulation.hpp
+    src/ToLoG/predicates/contains_point.hpp
+    src/ToLoG/mesh/mesh_types.hpp
+    src/ToLoG/unstable/DynamicAABBTree.hpp
 
 
 
