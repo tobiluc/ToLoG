@@ -85,3 +85,25 @@ inline int argmin(const P& _p)
     };
     return idx;
 }
+
+template<class P> requires(is_vector_type<P>::value)
+inline typename Traits<P>::value_type max(const P& _p)
+{
+    using FT = typename Traits<P>::value_type;
+    FT max_val = -std::numeric_limits<FT>::infinity();
+    for (int i = 0; i < Traits<P>::dim; ++i) {
+        max_val = std::max<FT>(max_val, _p[i]);
+    };
+    return max_val;
+}
+
+template<class P> requires(is_vector_type<P>::value)
+inline typename Traits<P>::value_type min(const P& _p)
+{
+    using FT = typename Traits<P>::value_type;
+    FT min_val = std::numeric_limits<FT>::infinity();
+    for (int i = 0; i < Traits<P>::dim; ++i) {
+        min_val = std::min<FT>(min_val, _p[i]);
+    };
+    return min_val;
+}

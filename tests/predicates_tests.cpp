@@ -45,4 +45,12 @@ TEST(PredicatesTest, PointInTriangle2dTest)
     EXPECT_FALSE(contains_point(tri, Point(0,6)));
 }
 
+TEST(PredicatesTest, DelauneyTest)
+{
+    using Point = Point<double,2>;
+
+    std::vector<Point> points = {Point(0,0)};
+    delauney_triangulation(points);
+}
+
 }

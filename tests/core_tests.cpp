@@ -24,6 +24,11 @@ TEST(GeometryCoreTest, PointTest)
 {
     using Point = ToLoG::Point<double, 3>;
     Point p(3,4,-5);
+
+    EXPECT_EQ(max(p), 4);
+    EXPECT_EQ(min(p), -5);
+    EXPECT_EQ(max(abs(p)), 5);
+
     ASSERT_EQ(3, p[0]);
     ASSERT_EQ(4, p[1]);
     ASSERT_EQ(-5, p[2]);
