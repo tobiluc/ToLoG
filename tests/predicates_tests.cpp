@@ -60,6 +60,19 @@ TEST(PredicatesTest, DelauneyTest)
         Point(-6,-4),
         Point(5,-4)
     };
+    // std::vector<Point> points = {
+    //     Point(-1,-1),
+    //     Point(1,-1),
+    //     Point(0,1)
+    // };
+
+    points.clear();
+    for (int x = 0; x < 10; ++x) {
+        for (int y = 0; y < 10; ++y) {
+            points.emplace_back(x,y);
+        }
+    }
+
     delauney_triangulation(points);
 }
 

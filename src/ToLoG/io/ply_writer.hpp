@@ -66,4 +66,32 @@ int write_aabb_tree_ply(const std::filesystem::path& _path, const AABBTree<T>& _
     return 0;
 }
 
+template<typename P, typename T>
+requires(is_vector_type<P>::value && (Traits<P>::dim==2||Traits<P>::dim==3))
+int write_triangles_ply(const std::filesystem::path& _path,
+                        const std::vector<P>& _vertices,
+                        const std::vector<T>& _triangles)
+{
+    static constexpr int DIM = Traits<P>::dim;
+
+    std::vector<std::array<double, 3>> v_positions;
+    v_positions.reserve(_vertices.size());
+    for (const P& p : _vertices) {
+        if constexpr(DIM == 2) {v_positions.push_back({p[0], p[1], 0.0});}
+        else if constexpr(DIM == 3) {v_positions.push_back({p[0], p[1], p[2]});}
+    }
+
+    std::vector<std::vector<size_t>> f_indices;
+    f_indices.reserve(_triangles.size());
+    for (const T& t : _triangles) {
+        f_indices.push_back({t[0],t[1],t[2]});
+    }
+
+    happly::PLYData out;
+    out.addVertexPositions(v_positions);
+    out.addFaceIndices(f_indices);
+    out.write(_path, happly::DataFormat::ASCII);
+    return 0;
+}
+
 }

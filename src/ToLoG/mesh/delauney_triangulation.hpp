@@ -5,6 +5,7 @@
 #include <numeric>
 #include <ostream>
 #include <stack>
+#include <ToLoG/io/ply_writer.hpp>
 
 namespace ToLoG
 {
@@ -26,6 +27,7 @@ std::pair<
             UINT32_MAX,UINT32_MAX,UINT32_MAX
         }; // adj[i] is triangle adjacent over edge opposite to v[i]
         uint32_t child_idx = UINT32_MAX; // 1st child idx (others are idx+1/2)
+        inline uint32_t operator[](int i) const {return v[i];}
     };
 
     // Get Points normalized
@@ -47,6 +49,7 @@ std::pair<
     tris.back().v[0] = pts.size()-3;
     tris.back().v[1] = pts.size()-2;
     tris.back().v[2] = pts.size()-1;
+    tris.back().adj[0] = tris.back().adj[1] = tris.back().adj[2] = UINT32_MAX;
 
     auto split_triangle = [&](uint32_t tri_i, uint32_t pt_i)
     {
@@ -63,6 +66,12 @@ std::pair<
         tris.back().adj[0] = tris[tri_i].adj[2];
         tris.back().adj[1] = i1;
         tris.back().adj[2] = i2;
+        for (int j = 0; j < 3; ++j) {
+            if (tris[tri_i].adj[2] < UINT32_MAX && tris[tris[tri_i].adj[2]].adj[j] == tri_i) {
+                tris[tris[tri_i].adj[2]].adj[j] = i0;
+                break;
+            }
+        }
 
         tris.emplace_back();
         tris.back().v[0] = pt_i;
@@ -71,6 +80,12 @@ std::pair<
         tris.back().adj[0] = tris[tri_i].adj[0];
         tris.back().adj[1] = i2;
         tris.back().adj[2] = i0;
+        for (int j = 0; j < 3; ++j) {
+            if (tris[tri_i].adj[0] < UINT32_MAX && tris[tris[tri_i].adj[0]].adj[j] == tri_i) {
+                tris[tris[tri_i].adj[0]].adj[j] = i1;
+                break;
+            }
+        }
 
         tris.emplace_back();
         tris.back().v[0] = pt_i;
@@ -79,6 +94,12 @@ std::pair<
         tris.back().adj[0] = tris[tri_i].adj[1];
         tris.back().adj[1] = i0;
         tris.back().adj[2] = i1;
+        for (int j = 0; j < 3; ++j) {
+            if (tris[tri_i].adj[1] < UINT32_MAX && tris[tris[tri_i].adj[1]].adj[j] == tri_i) {
+                tris[tris[tri_i].adj[1]].adj[j] = i2;
+                break;
+            }
+        }
     };
 
     auto locate_triangle = [&](uint32_t tri_i, uint32_t pt_i) -> uint32_t
@@ -86,13 +107,15 @@ std::pair<
         while (tris[tri_i].child_idx != UINT32_MAX)
         {
             uint32_t ci = tris[tris[tri_i].child_idx].v[0]; // center point index of triangle
-            auto o0 = point_orient2d(pts[ci], pts[tris[tri_i].v[0]], pts[pt_i]);
-            auto o1 = point_orient2d(pts[ci], pts[tris[tri_i].v[1]], pts[pt_i]);
-            auto o2 = point_orient2d(pts[ci], pts[tris[tri_i].v[2]], pts[pt_i]);
+            //auto o = point_orient2d(pts[tris[tri_i].v[0]], pts[tris[tri_i].v[1]], pts[tris[tri_i].v[2]]);
+            const double o0 = point_orient2d(pts[ci], pts[tris[tri_i].v[0]], pts[pt_i]);
+            const double o1 = point_orient2d(pts[ci], pts[tris[tri_i].v[1]], pts[pt_i]);
+            const double o2 = point_orient2d(pts[ci], pts[tris[tri_i].v[2]], pts[pt_i]);
 
-            tri_i = tris[tri_i].child_idx;
-            if (o1>=0.0&&o2<=0.0 || o1<=0.0&&o2>=0.0) {tri_i += 1;}
-            else if (o2>=0.0&&o0<=0.0 || o2<=0.0&&o0>=0.0) {tri_i += 2;}
+            if (o0>=0.0&&o1<=0.0) {tri_i = tris[tri_i].child_idx;}
+            else if (o1>=0.0&&o2<=0.0) {tri_i = tris[tri_i].child_idx+1;}
+            else if (o2>=0.0&&o0<=0.0) {tri_i = tris[tri_i].child_idx+2;}
+            else {std::exit(1);}
         }
         return tri_i;
     };
@@ -127,7 +150,7 @@ std::pair<
                         break;
                     }
                 }
-                assert(v3 != v0 && v3 != v1 && v3 != v2);
+                assert(v3 != UINT32_MAX && v3 != v0 && v3 != v1 && v3 != v2);
 
                 // Incircle Test
                 if (!point_incircle(
@@ -160,8 +183,29 @@ std::pair<
         // Split the triangle
         split_triangle(tri_i, pt_i);
 
-        check_delauney(tri_i);
+        // Check delauney for the created children
+        // check_delauney(tris[tri_i].child_idx);
+        // check_delauney(tris[tri_i].child_idx+1);
+        // check_delauney(tris[tri_i].child_idx+2);
     }
+
+    // Remove sentinel triangles
+    tris.erase(std::remove_if(
+        tris.begin(), tris.end(),
+        [&](const Triangle& t) {
+            if (t.child_idx != UINT32_MAX) // not leaf
+            {return true;}
+            for (int j = 0; j < 3; ++j) {
+                for (uint32_t v = pts.size()-3; v < pts.size(); ++v) {
+                    if (t.v[j] == v) {return true;} // part of big triangle
+                }
+            }
+            return false;
+        }), tris.end());
+    pts.pop_back();
+    pts.pop_back();
+    pts.pop_back();
+    write_triangles_ply("/Users/tobiaskohler/Desktop/delauney.ply", pts, tris);
 
     return {{}, {}};
 }
