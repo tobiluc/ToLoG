@@ -49,7 +49,17 @@ TEST(PredicatesTest, DelauneyTest)
 {
     using Point = Point<double,2>;
 
-    std::vector<Point> points = {Point(0,0)};
+    std::vector<Point> points = {
+        Point(0,2),
+        Point(-5,5),
+        Point(5,5),
+        Point(-2,3),
+        Point(3,1),
+        Point(-4,-1),
+        Point(1,-2),
+        Point(-6,-4),
+        Point(5,-4)
+    };
     delauney_triangulation(points);
 }
 

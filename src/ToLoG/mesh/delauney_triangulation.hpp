@@ -4,6 +4,7 @@
 #include <iostream>
 #include <numeric>
 #include <ostream>
+#include <stack>
 
 namespace ToLoG
 {
@@ -26,14 +27,19 @@ std::pair<
         }; // adj[i] is triangle adjacent over edge opposite to v[i]
         uint32_t child_idx = UINT32_MAX; // 1st child idx (others are idx+1/2)
     };
-    std::vector<Point> pts = _pts;
-    std::vector<Triangle> tris;
 
-    // Compute bounding box
+    // Get Points normalized
     AABB<Point> bbox(_pts);
     FT max_size = max(bbox.max() - bbox.min());
+    std::vector<Point> pts;
+    pts.reserve(_pts.size()+3);
+    for (const auto& p : _pts) {
+        pts.emplace_back((p-bbox.min())/max_size);
+    }
 
-    // Add 3 more points that are the large triangle
+    std::vector<Triangle> tris;
+
+    // Add 3 more points that make up the big triangle
     pts.push_back(Point(-100,-100));
     pts.push_back(Point(100,-100));
     pts.push_back(Point(0,100));
@@ -44,7 +50,7 @@ std::pair<
 
     auto split_triangle = [&](uint32_t tri_i, uint32_t pt_i)
     {
-        // Create 3 new triangles
+        // Create 3 new triangles around pt (assumes pt inside tri)
         uint32_t i0 = tris.size();
         uint32_t i1 = i0+1;
         uint32_t i2 = i1+1;
@@ -93,39 +99,69 @@ std::pair<
 
     auto check_delauney = [&](uint32_t tri_i)
     {
-        // Check with each neighbour
-        for (int j = 0; j < 3; ++j) {
+        std::stack<uint32_t> stack;
+        stack.push(tri_i);
 
-            // Get neighbour
-            uint32_t tri_j = tris[tri_i].adj[j];
-            if (tri_j == UINT32_MAX) {continue;}
+        while (!stack.empty())
+        {
+            tri_i = stack.top();
+            stack.pop();
 
-            // Get the three vertices of the neighboring triangle
-            // s.t. v0, v1 are the common edge, v2 is the 3rd triangle vertex
-            // and v3 is the 3rd triangle vertex of the neighbour
-            uint32_t v2 = tris[tri_i].v[j];
-            uint32_t v0 = tris[tri_i].v[(j+1)%3];
-            uint32_t v1 = tris[tri_i].v[(j+2)%3];
-            uint32_t v3 = UINT32_MAX;
-            for (int k = 0; k < 3; ++k) {
-                if (tris[tri_j].adj[k] == tri_i) {
-                    v3 = tris[tri_j].v[k];
-                    break;
+            // Check with each neighbour
+            for (int j = 0; j < 3; ++j) {
+
+                // Get neighbour
+                uint32_t tri_j = tris[tri_i].adj[j];
+                if (tri_j == UINT32_MAX) {continue;}
+
+                // Get the three vertices of the neighboring triangle
+                // s.t. v0, v1 are the common edge, v2 is the 3rd triangle vertex
+                // and v3 is the 3rd triangle vertex of the neighbour
+                uint32_t v2 = tris[tri_i].v[j];
+                uint32_t v0 = tris[tri_i].v[(j+1)%3];
+                uint32_t v1 = tris[tri_i].v[(j+2)%3];
+                uint32_t v3 = UINT32_MAX;
+                for (int k = 0; k < 3; ++k) {
+                    if (tris[tri_j].adj[k] == tri_i) {
+                        v3 = tris[tri_j].v[k];
+                        break;
+                    }
                 }
-            }
-            assert(v3 != v0 && v3 != v1 && v3 != v2);
+                assert(v3 != v0 && v3 != v1 && v3 != v2);
 
-            // Incircle Test
-            if (!point_incircle(
-                pts[v0],
-                pts[v1],
-                pts[v2],
-                pts[v3]))
-            {
-                // Flip edge between triangles
+                // Incircle Test
+                if (!point_incircle(
+                    pts[v0],
+                    pts[v1],
+                    pts[v2],
+                    pts[v3]))
+                {
+                    // Push neighbours onto stack
+                    for (int k = 0; k < 3; ++k) {
+                        if (tris[tri_j].adj[k] != tri_i) {stack.push(tris[tri_j].adj[k]);}
+                        if (tris[tri_i].adj[k] != tri_j) {stack.push(tris[tri_i].adj[k]);}
+                    }
+
+                    // Flip edge between triangles
+                    //TODO
+
+
+                }
             }
         }
     };
+
+    // Insert points 1 by 1
+    for (uint32_t pt_i = 0; pt_i < pts.size()-3; ++pt_i)
+    {
+        // Get the triangle containing pt
+        uint32_t tri_i = locate_triangle(0, pt_i);
+
+        // Split the triangle
+        split_triangle(tri_i, pt_i);
+
+        check_delauney(tri_i);
+    }
 
     return {{}, {}};
 }
