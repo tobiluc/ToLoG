@@ -5,6 +5,7 @@
 #include <limits>
 #include <cmath>
 #include <span>
+#include <ToLoG/predicates/predicates_wrapper.hpp>
 
 namespace ToLoG
 {
@@ -303,10 +304,19 @@ requires(is_vector_type<PointT>::value)
 std::array<typename Traits<PointT>::value_type,N> barycentric_coordinates(const PointT& _p, const PrimT& _prim);
 #include "detail/barycentric.inl.hpp"
 
-template<typename PointT, typename PrimT>
-requires(is_vector_type<PointT>::value)
-Traits<PointT>::value_type point_squared_distance(const PointT& _p, const PrimT& _prim);
-#include "detail/point_squared_distance.inl.hpp"
+template<typename Prim1, typename Prim2>
+requires(std::is_same<
+    typename Traits<Prim1>::vector_type,
+    typename Traits<Prim2>::vector_type>::value)
+Traits<typename Traits<Prim1>::vector_type>::value_type squared_distance(const Prim1& _prim1, const Prim2& _prim2);
+#include "detail/squared_distance.inl.hpp"
+
+template<typename Prim1, typename Prim2>
+    requires(std::is_same<
+             typename Traits<Prim1>::vector_type,
+             typename Traits<Prim2>::vector_type>::value)
+bool intersects(const Prim1& _prim1, const Prim2& _prim2);
+#include "detail/intersects.inl.hpp"
 
 
 }

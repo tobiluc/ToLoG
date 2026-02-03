@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <ToLoG/AABBTree.hpp>
 #include <random>
+#include "ToLoG/HashMap.hpp"
 #include "ToLoG/io/ply_writer.hpp"
 #include "naive_knn.hpp"
 #include <ToLoG/io/obj_writer.hpp>
@@ -50,8 +51,10 @@ TEST(TreeTest, AABBTReeNNTest)
 
 TEST(TreeTest, TreeTest2i)
 {
+    using Point = Point<int,2>;
+
     size_t n_points_sqrt = 6;
-    std::vector<Point<int,2>> pts;
+    std::vector<Point> pts;
     for (int x = 0; x < n_points_sqrt; ++x) {
         for (int y = 0; y < n_points_sqrt; ++y) {
             pts.emplace_back(x, y);
@@ -59,13 +62,13 @@ TEST(TreeTest, TreeTest2i)
     }
 
     // Tree init
-    AABBTree<Point<int,2>> tree(pts, 48);
+    AABBTree<Point> tree(pts, 48);
 
     // Queries
     std::vector<uint32_t> res;
     for (int x = 1; x < n_points_sqrt-1; ++x) {
         for (int y = 1; y < n_points_sqrt-1; ++y) {
-            Point<int,2> q(x,y);
+            Point q(x,y);
             tree.k_nearest_neighbors(q, 9, res);
             for (int j = 0; j < res.size(); ++j) {
                 EXPECT_LE(std::abs(pts[res[j]][0] - q[0]), 1);
@@ -73,7 +76,12 @@ TEST(TreeTest, TreeTest2i)
                 //std::cerr << q.transpose() << ": " << pts[res[j]].transpose() << std::endl;
             }
         }
+    }
 
+    for (int i = 0; i < pts.size(); ++i) {
+        auto j = tree.locate(pts[i]);
+        EXPECT_TRUE(j.has_value());
+        EXPECT_EQ(j.value(), i);
     }
 }
 
@@ -94,8 +102,8 @@ TEST(TreeTest, PointBetweenTwoSpheresTest)
     EXPECT_EQ(s2.center(), ToLoG::centroid(ToLoG::aabb(s2)));
 
     Point q1(0,0,0);
-    EXPECT_EQ(1, point_squared_distance(q1, s1));
-    EXPECT_EQ(9, point_squared_distance(q1, s2));
+    EXPECT_EQ(1, squared_distance(q1, s1));
+    EXPECT_EQ(9, squared_distance(q1, s2));
 
     std::vector<Sphere> spheres = {s1, s2};
     Tree tree(spheres);
@@ -113,11 +121,11 @@ TEST(TreeTest, PointBetweenTwoSpheresTest)
     tree.k_nearest_neighbors(q1, 1, res);
     EXPECT_EQ(0, res[0]);
 
-    EXPECT_TRUE(tree.locate_primitive(Point(-3,0,0)).has_value());
-    EXPECT_EQ(tree.locate_primitive(Point(-3,0,0)).value(), 0);
-    EXPECT_TRUE(tree.locate_primitive(Point(4,0,0)).has_value());
-    EXPECT_EQ(tree.locate_primitive(Point(4,0,0)).value(), 1);
-    EXPECT_FALSE(tree.locate_primitive(Point(0,0,0)).has_value());
+    EXPECT_TRUE(tree.locate(Point(-3,0,0)).has_value());
+    EXPECT_EQ(tree.locate(Point(-3,0,0)).value(), 0);
+    EXPECT_TRUE(tree.locate(Point(4,0,0)).has_value());
+    EXPECT_EQ(tree.locate(Point(4,0,0)).value(), 1);
+    EXPECT_FALSE(tree.locate(Point(0,0,0)).has_value());
 }
 
 }

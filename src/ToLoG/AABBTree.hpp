@@ -7,10 +7,10 @@
 #include <iostream>
 #include <ostream>
 #include <span>
+#include <stack>
 #include <vector>
 #include <numeric>
 #include <queue>
-#include <ToLoG/predicates/contains_point.hpp>
 
 namespace ToLoG
 {
@@ -166,7 +166,7 @@ public:
             if(is_leaf_node(node_idx)) {
                 for(uint32_t i=N.start;i<N.end;i++){
                     uint32_t pid = prim_idx_buffer_[i];
-                    const FT d = point_squared_distance(_q, primitives_[pid]);
+                    const FT d = squared_distance(_q, primitives_[pid]);
                     if(best.size()<_k) {
                         best.push({pid, d});
                     } else if(d < best.top().d) {
@@ -176,12 +176,12 @@ public:
                     }
                 }
             } else {
-                FT lbL = point_squared_distance(_q, nodes_[N.left].aabb);
+                FT lbL = squared_distance(_q, nodes_[N.left].aabb);
                 if(best.size()<_k || lbL < best.top().d) {
                     pq.push({N.left, lbL}); // left child
                 }
 
-                FT lbR = point_squared_distance(_q, nodes_[N.left+1].aabb);
+                FT lbR = squared_distance(_q, nodes_[N.left+1].aabb);
                 if(best.size()<_k || lbR < best.top().d) {
                     pq.push({N.left+1, lbR}); // right child
                 }
@@ -205,16 +205,49 @@ public:
         return res;
     }
 
-    /// Locates the primitive which contains the query point q
-    std::optional<uint32_t> locate_primitive(const Point& _q) const
+    template<typename PrimT>
+    requires(std::is_same<typename Traits<PrimT>::vector_type,Point>::value)
+    bool intersecting(const PrimT& _q,
+        std::vector<uint32_t>& _res) const
+    {
+        AABB q_aabb = aabb(_q);
+        if (n_nodes()==0 || !intersects(q_aabb,nodes_[0].aabb)) {return false;}
+        std::stack<uint32_t> node_stack;
+        node_stack.push(0);
+        while (!node_stack.empty()) {
+            uint32_t node_i = node_stack.top();
+            node_stack.pop();
+
+            if (is_leaf_node(node_i)) {
+                // Check all primitives in node
+                for(uint32_t i=nodes_[node_i].start; i < nodes_[node_i].end; ++i) {
+                    if (intersects(primitives_[prim_idx_buffer_[i]], _q)) {
+                        _res.push_back(prim_idx_buffer_[i]);
+                    }
+                }
+            } else {
+                // Push children with intersecting boxes
+                if (intersects(q_aabb,nodes_[nodes_[node_i].left].aabb)) {
+                    node_stack.push(nodes_[node_i].left);
+                }
+                if (intersects(q_aabb,nodes_[nodes_[node_i].left+1].aabb)) {
+                    node_stack.push(nodes_[node_i].left+1);
+                }
+            }
+        }
+        return !_res.empty();
+    }
+
+    /// Locates the first primitive which contains the query point q
+    std::optional<uint32_t> locate(const Point& _q) const
     {
         // First, locate the node
         uint32_t node_i(0);
         while (true) {
             if (is_leaf_node(node_i)) {break;}
-            if (contains_point(nodes_[nodes_[node_i].left].aabb, _q)) {
+            if (intersects(nodes_[nodes_[node_i].left].aabb, _q)) {
                 node_i = nodes_[node_i].left;
-            } else if (contains_point(nodes_[nodes_[node_i].left+1].aabb, _q)) {
+            } else if (intersects(nodes_[nodes_[node_i].left+1].aabb, _q)) {
                 node_i = nodes_[node_i].left+1;
             } else {
                 return std::nullopt;
@@ -223,7 +256,7 @@ public:
 
         // Locate the primitive within the node
         for(uint32_t i=nodes_[node_i].start; i < nodes_[node_i].end; ++i) {
-            if (contains_point(primitives_[prim_idx_buffer_[i]], _q)) {
+            if (intersects(primitives_[prim_idx_buffer_[i]], _q)) {
                 return prim_idx_buffer_[i];
             }
         }

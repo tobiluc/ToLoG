@@ -2,13 +2,31 @@
 
 template<class P>
 requires(is_vector_type<P>::value)
-inline auto point_squared_distance(const P& _p, const P& _q)
+inline auto squared_distance(const P& _p, const P& _q)
 {
     return squared_norm(_p - _q);
 }
 
+template<class P>
+inline auto squared_distance(const AABB<P>& _a, const AABB<P>& _b)
+{
+    using FT = typename Traits<P>::value_type;
+    constexpr int DIM = Traits<P>::dim;
+    FT d2(0);
+    for (int i = 0; i < DIM; ++i) {
+        if (_a.max()[i] < _b.min()[i]) {
+            FT d = _b.min()[i] - _a.max()[i];
+            d2 += d * d;
+        } else if (_b.max()[i] < _a.min()[i]) {
+            FT d = _a.min()[i] - _b.max()[i];
+            d2 += d * d;
+        }
+    }
+    return d2;
+}
+
 template<typename PointT>
-inline Traits<PointT>::value_type point_squared_distance(const PointT& _p, const AABB<PointT>& _aabb)
+inline Traits<PointT>::value_type squared_distance(const PointT& _p, const AABB<PointT>& _aabb)
 {
     using FT = Traits<PointT>::value_type;
     FT res(0);
@@ -24,11 +42,11 @@ inline Traits<PointT>::value_type point_squared_distance(const PointT& _p, const
 }
 
 template<typename PointT>
-inline Traits<PointT>::value_type point_squared_distance(const PointT& _p, const Segment<PointT>& _s)
+inline Traits<PointT>::value_type squared_distance(const PointT& _p, const Segment<PointT>& _s)
 {
     using FT = Traits<PointT>::value_type;
     if (_s.end() == _s.start()) {
-        return point_squared_distance(_p, _s.start());
+        return squared_distance(_p, _s.start());
     }
     PointT ab = _s.end() - _s.start();
     PointT ap = _p - _s.start();
@@ -38,7 +56,7 @@ inline Traits<PointT>::value_type point_squared_distance(const PointT& _p, const
 }
 
 template<typename PointT>
-inline Traits<PointT>::value_type point_squared_distance(const PointT& _p, const Sphere<PointT>& _s)
+inline Traits<PointT>::value_type squared_distance(const PointT& _p, const Sphere<PointT>& _s)
 {
     using FT = Traits<PointT>::value_type;
     FT d = std::max(norm(_p - _s.center()) - _s.radius(), static_cast<FT>(0));
@@ -46,7 +64,7 @@ inline Traits<PointT>::value_type point_squared_distance(const PointT& _p, const
 }
 
 template<typename PointT>
-inline Traits<PointT>::value_type point_squared_distance(const PointT& _p, const Triangle<PointT>& _tri)
+inline Traits<PointT>::value_type squared_distance(const PointT& _p, const Triangle<PointT>& _tri)
 {
     using FT = Traits<PointT>::value_type;
     constexpr int DIM = Traits<PointT>::dim;
@@ -68,7 +86,7 @@ inline Traits<PointT>::value_type point_squared_distance(const PointT& _p, const
 }
 
 template<typename PointT>
-inline Traits<PointT>::value_type point_squared_distance(const PointT& _p, const Tetrahedron<PointT>& _tet)
+inline Traits<PointT>::value_type squared_distance(const PointT& _p, const Tetrahedron<PointT>& _tet)
 {
     using FT = Traits<PointT>::value_type;
 

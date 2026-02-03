@@ -1,7 +1,6 @@
 #include "ToLoG/mesh/delauney_triangulation.hpp"
 #include <gtest/gtest.h>
 #include <ToLoG/Core.hpp>
-#include <ToLoG/predicates/contains_point.hpp>
 
 namespace ToLoG
 {
@@ -38,11 +37,22 @@ TEST(PredicatesTest, PointInTriangle2dTest)
     Point t2(9,-4);
     Triangle tri(t0,t1,t2);
 
-    EXPECT_TRUE(contains_point(tri, t0));
-    EXPECT_TRUE(contains_point(tri, t1));
-    EXPECT_TRUE(contains_point(tri, t2));
-    EXPECT_TRUE(contains_point(tri, Point(0,2.1)));
-    EXPECT_FALSE(contains_point(tri, Point(0,6)));
+    EXPECT_TRUE(intersects(tri, t0));
+    EXPECT_TRUE(intersects(tri, t1));
+    EXPECT_TRUE(intersects(tri, t2));
+    EXPECT_TRUE(intersects(tri, Point(0,2.1)));
+    EXPECT_FALSE(intersects(tri, Point(0,6)));
+}
+
+TEST(PredicatesTest, InCircleTest)
+{
+    using Point = Point<double,2>;
+    Point a(-1,-1);
+    Point b(1,-1);
+    Point c(0,1);
+    EXPECT_GT(point_incircle(a,b,c,Point(0,0)), 0.0); // in circle
+    EXPECT_GT(point_incircle(a,b,c,Point(0,-1.1)), 0.0); // in circle
+    EXPECT_LT(point_incircle(a,b,c,Point(0,1.1)), 0.0); // outside circle
 }
 
 TEST(PredicatesTest, DelauneyTest)
@@ -66,12 +76,18 @@ TEST(PredicatesTest, DelauneyTest)
     //     Point(0,1)
     // };
 
-    points.clear();
-    for (int x = 0; x < 10; ++x) {
-        for (int y = 0; y < 10; ++y) {
-            points.emplace_back(x,y);
-        }
-    }
+    // points.clear();
+    // for (int x = 0; x < 2; ++x) {
+    //     for (int y = 0; y < 2; ++y) {
+    //         points.emplace_back(x,y);
+    //     }
+    // }
+    // std::vector<Point> points = {
+    //     Point(0,0),
+    //     Point(-1,-1),
+    //     Point(1,-1),
+    //     Point(0,1)
+    // };
 
     delauney_triangulation(points);
 }

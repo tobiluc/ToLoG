@@ -140,14 +140,14 @@ TEST(GeometryCoreTest, PointDistanceTest2d)
     Point q(-10,4);
 
     Point p(1.5, 3);
-    EXPECT_EQ(133.25, ToLoG::point_squared_distance(q, p));
+    EXPECT_EQ(133.25, ToLoG::squared_distance(q, p));
 
     Segment seg(Point(-12,6), Point(5,6));
-    EXPECT_EQ(4, ToLoG::point_squared_distance(q, seg));
+    EXPECT_EQ(4, ToLoG::squared_distance(q, seg));
     seg = Segment(Point(1,6), Point(5,6));
-    EXPECT_EQ(125, ToLoG::point_squared_distance(q, seg));
+    EXPECT_EQ(125, ToLoG::squared_distance(q, seg));
     seg = Segment(Point(-11,0), Point(-9,8));
-    EXPECT_EQ(0, ToLoG::point_squared_distance(q, seg));
+    EXPECT_EQ(0, ToLoG::squared_distance(q, seg));
 }
 
 TEST(GeometryCoreTest, TetrahedronTest)
@@ -160,4 +160,21 @@ TEST(GeometryCoreTest, TetrahedronTest)
     Point d(0,1,0);
 
     ToLoG::Tetrahedron<Point> tet(a,b,c,d);
+}
+
+TEST(GeometryCoreTest, AABBDistanceTest)
+{
+    using Point = ToLoG::Point<double,2>;
+    using AABB = ToLoG::AABB<Point>;
+
+    AABB b0({Point(0,0), Point(1,1)});
+    AABB b1({Point(1.5,1), Point(2,2)});
+    AABB b2({Point(0.5,0.5), Point(2,1)});
+    AABB b3({Point(-10,-10), Point(-8,10)});
+
+    constexpr double eps = std::numeric_limits<double>::epsilon();
+    EXPECT_NEAR(ToLoG::squared_distance(b0, b1), 0.25, eps);
+    EXPECT_EQ(ToLoG::squared_distance(b0, b2), 0);
+    EXPECT_EQ(ToLoG::squared_distance(b1, b2), 0);
+    EXPECT_NEAR(ToLoG::squared_distance(b0, b3), 64, eps);
 }

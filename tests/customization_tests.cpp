@@ -91,7 +91,7 @@ TEST(GeometryCoreTest, CustomVec3dTest)
     EXPECT_EQ(ToLoG::argmax(p), 2);
     EXPECT_EQ(ToLoG::abs(CustomVec3d(-1,2,-3)), p);
 
-    EXPECT_EQ(ToLoG::point_squared_distance(p, q), 8);
+    EXPECT_EQ(ToLoG::squared_distance(p, q), 8);
 
     // AABB
     auto aabb = ToLoG::AABB<CustomVec3d>();

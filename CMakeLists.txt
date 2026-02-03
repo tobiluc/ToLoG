@@ -43,7 +43,7 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/utils/indices.hpp
 
     src/ToLoG/detail/Traits.inl.hpp
-    src/ToLoG/detail/point_squared_distance.inl.hpp
+    src/ToLoG/detail/squared_distance.inl.hpp
     src/ToLoG/detail/barycentric.inl.hpp
     src/ToLoG/detail/aabb.inl.hpp
     src/ToLoG/detail/centroid.inl.hpp
@@ -54,8 +54,10 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/detail/triangle.inl.hpp
     src/ToLoG/math/winding_number.hpp
     src/ToLoG/mesh/delauney_triangulation.hpp
-    src/ToLoG/predicates/contains_point.hpp
+    src/ToLoG/detail/intersects.inl.hpp
     src/ToLoG/mesh/mesh_types.hpp
+
+
 
 
 
