@@ -14,12 +14,14 @@ inline typename Traits<P>::value_type area(const Triangle<P>& _tri) {
 
 template<class P> requires(Traits<P>::dim==3)
 inline P normal(const Triangle<P>& _tri) {
-    return cross((_tri[1] - _tri[0]),(_tri[2] - _tri[0]));
+    return cross(static_cast<P>(_tri[1] - _tri[0]),static_cast<P>(_tri[2] - _tri[0]));
 }
 
 template<class P>
 inline typename Traits<P>::value_type circumference(const Triangle<P>& _tri) {
-    return norm(_tri[1]-_tri[0]) + norm(_tri[2]-_tri[1]) + norm(_tri[0]-_tri[2]);
+    return norm(static_cast<P>(_tri[1]-_tri[0]))
+        + norm(static_cast<P>(_tri[2]-_tri[1]))
+        + norm(static_cast<P>(_tri[0]-_tri[2]));
 }
 
 template<class P>
@@ -29,4 +31,14 @@ inline typename Traits<P>::value_type volume(const Tetrahedron<P>& _tet) {
     P ca = _tet[2] - _tet[0];
     P da = _tet[3] - _tet[0];
     return dot(ba, cross(ca, da)) / static_cast<FT>(6.);
+}
+
+template<class P>
+inline typename Traits<P>::value_type volume(const AABB<P>& _box) {
+    using FT = typename Traits<P>::value_type;
+    FT vol(1);
+    for (int i = 0; i < Traits<P>::dim; ++i) {
+        vol *= _box.max()[i] - _box.min()[i];
+    }
+    return vol;
 }

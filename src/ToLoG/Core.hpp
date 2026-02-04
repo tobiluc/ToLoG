@@ -310,7 +310,7 @@ private:
 
 #include "detail/Traits.inl.hpp"
 #include "detail/vector.inl.hpp"
-#include "detail/triangle.inl.hpp"
+#include "detail/volume.inl.hpp"
 
 template<typename PrimT>
 AABB<typename Traits<PrimT>::vector_type> aabb(const PrimT& _prim);
