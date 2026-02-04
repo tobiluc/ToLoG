@@ -41,6 +41,9 @@ TEST(GeometryCoreTest, PointTest)
 
     ASSERT_LT(Point(2,5,1), p);
     ASSERT_LT(p, Point(3,4,-4));
+
+    p = Point(3.2, 4.9, -5.6);
+    EXPECT_EQ(ToLoG::rounded(p), Point(3,5,-6));
 }
 
 TEST(GeometryCoreTest, AABBTest)

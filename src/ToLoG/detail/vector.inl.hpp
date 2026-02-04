@@ -1,6 +1,16 @@
 #pragma once
 
-template<class P> requires(is_vector_type<P>::value && Traits<P>::dim==3)
+template<class P> requires(is_vector_type<P>::value)
+inline P rounded(const P& _p) {
+    using FT = typename Traits<P>::value_type;
+    P r;
+    for (int i = 0; i < Traits<P>::dim; ++i) {
+        r[i] = static_cast<int>((_p[i] < 0)? (_p[i] - static_cast<FT>(0.5)) : (_p[i] + static_cast<FT>(0.5)));
+    }
+    return r;
+}
+
+template<class P> requires(is_vector_type<P>::value)
 inline P scaled(const P& _p, typename Traits<P>::value_type _s) {
     P res;
     for (int i = 0; i < Traits<P>::dim; ++i) {
