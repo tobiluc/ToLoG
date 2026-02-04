@@ -79,9 +79,9 @@ inline Traits<PointT>::value_type squared_distance(const PointT& _p, const Trian
 
     // Otherwise, closest point is on an edge
     return std::min({
-        point_squared_distance(_p, _tri.edge(0)),
-        point_squared_distance(_p, _tri.edge(1)),
-        point_squared_distance(_p, _tri.edge(2))
+        squared_distance(_p, _tri.edge(0)),
+        squared_distance(_p, _tri.edge(1)),
+        squared_distance(_p, _tri.edge(2))
     });
 }
 
@@ -99,9 +99,9 @@ inline Traits<PointT>::value_type squared_distance(const PointT& _p, const Tetra
 
     // Otherwise, closest point lies on a face triangle
     return std::min({
-        point_squared_distance(_p, _tet.face(0,1,2)),
-        point_squared_distance(_p, _tet.face(0,1,3)),
-        point_squared_distance(_p, _tet.face(0,2,3)),
-        point_squared_distance(_p, _tet.face(1,2,3))
+        squared_distance(_p, _tet.face(0,1,2)),
+        squared_distance(_p, _tet.face(0,1,3)),
+        squared_distance(_p, _tet.face(0,2,3)),
+        squared_distance(_p, _tet.face(1,2,3))
     });
 }
