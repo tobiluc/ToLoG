@@ -53,7 +53,7 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/math/polynomial_roots.hpp
     src/ToLoG/detail/triangle.inl.hpp
     src/ToLoG/math/winding_number.hpp
-    src/ToLoG/mesh/delauney_triangulation.hpp
+
     src/ToLoG/detail/intersects.inl.hpp
     src/ToLoG/mesh/mesh_types.hpp
     src/ToLoG/predicates/derived_predicates.hpp

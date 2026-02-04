@@ -1,4 +1,3 @@
-#include "ToLoG/mesh/delauney_triangulation.hpp"
 #include "ToLoG/predicates/derived_predicates.hpp"
 #include <gtest/gtest.h>
 #include <ToLoG/Core.hpp>
@@ -56,7 +55,7 @@ TEST(PredicatesTest, InCircleTest)
     EXPECT_LT(point_incircle(a,b,c,Point(0,1.1)), 0.0); // outside circle
 }
 
-TEST(PredicatesTest, ExactSimplexInTetTest)
+TEST(PredicatesTest, ExactSimplexInTetPointTest)
 {
     using P = Point<double,3>;
     using T = Tetrahedron<P>;
@@ -64,73 +63,56 @@ TEST(PredicatesTest, ExactSimplexInTetTest)
     T tet(P(0,0,0), P(0,0,1), P(1,0,0), P(0,1,0));
     std::vector<int> i;
 
-    i = ToLoG::exact_simplex_in_tet(tet, P(-1,0,0));
+    i = ToLoG::exact_simplex_of_point_in_tet(tet, P(-1,0,0));
     EXPECT_TRUE(i.empty());
 
-    i = ToLoG::exact_simplex_in_tet(tet, P(0,0,0));
+    i = ToLoG::exact_simplex_of_point_in_tet(tet, P(0,0,0));
     EXPECT_EQ(i.size(), 1);
     EXPECT_EQ(i[0], 0);
-    i = ToLoG::exact_simplex_in_tet(tet, P(0,0,1));
+    i = ToLoG::exact_simplex_of_point_in_tet(tet, P(0,0,1));
     EXPECT_EQ(i.size(), 1);
     EXPECT_EQ(i[0], 1);
-    i = ToLoG::exact_simplex_in_tet(tet, P(1,0,0));
+    i = ToLoG::exact_simplex_of_point_in_tet(tet, P(1,0,0));
     EXPECT_EQ(i.size(), 1);
     EXPECT_EQ(i[0], 2);
-    i = ToLoG::exact_simplex_in_tet(tet, P(0,1,0));
+    i = ToLoG::exact_simplex_of_point_in_tet(tet, P(0,1,0));
     EXPECT_EQ(i.size(), 1);
     EXPECT_EQ(i[0], 3);
 
-    i = ToLoG::exact_simplex_in_tet(tet, P(0,0,0.5));
+    i = ToLoG::exact_simplex_of_point_in_tet(tet, P(0,0,0.5));
     EXPECT_EQ(i.size(), 2);
-    i = ToLoG::exact_simplex_in_tet(tet, P(0.5,0,0));
+    i = ToLoG::exact_simplex_of_point_in_tet(tet, P(0.5,0,0));
     EXPECT_EQ(i.size(), 2);
-    i = ToLoG::exact_simplex_in_tet(tet, P(0,0.5,0));
+    i = ToLoG::exact_simplex_of_point_in_tet(tet, P(0,0.5,0));
     EXPECT_EQ(i.size(), 2);
-    i = ToLoG::exact_simplex_in_tet(tet, P(0.5,0,0.5));
+    i = ToLoG::exact_simplex_of_point_in_tet(tet, P(0.5,0,0.5));
     EXPECT_EQ(i.size(), 2);
 
-    i = ToLoG::exact_simplex_in_tet(tet, P(0.1,0,0.1));
+    i = ToLoG::exact_simplex_of_point_in_tet(tet, P(0.1,0,0.1));
     EXPECT_EQ(i.size(), 3);
 
-    i = ToLoG::exact_simplex_in_tet(tet, P(0.1,0.1,0.1));
+    i = ToLoG::exact_simplex_of_point_in_tet(tet, P(0.1,0.1,0.1));
     EXPECT_EQ(i.size(), 4);
 }
 
-TEST(PredicatesTest, DelauneyTest)
+TEST(PredicatesTest, ExactSimplexInTetRayTest)
 {
-    using Point = Point<double,2>;
+    using P = Point<double,3>;
+    using T = Tetrahedron<P>;
 
-    std::vector<Point> points = {
-        Point(0,2),
-        Point(-5,5),
-        Point(5,5),
-        Point(-2,3),
-        Point(3,1),
-        Point(-4,-1),
-        Point(1,-2),
-        Point(-6,-4),
-        Point(5,-4)
-    };
-    // std::vector<Point> points = {
-    //     Point(-1,-1),
-    //     Point(1,-1),
-    //     Point(0,1)
-    // };
+    T tet(P(0,0,0), P(0,0,1), P(1,0,0), P(0,1,0));
+    std::vector<int> i;
 
-    // points.clear();
-    // for (int x = 0; x < 2; ++x) {
-    //     for (int y = 0; y < 2; ++y) {
-    //         points.emplace_back(x,y);
-    //     }
-    // }
-    // std::vector<Point> points = {
-    //     Point(0,0),
-    //     Point(-1,-1),
-    //     Point(1,-1),
-    //     Point(0,1)
-    // };
+    i = ToLoG::exact_simplex_of_ray_in_tet(tet, P(0,0,0), P(1,0,0));
+    EXPECT_EQ(i.size(), 2);
+    EXPECT_EQ(i[0], 0);
+    EXPECT_EQ(i[1], 2);
 
-    delauney_triangulation(points);
+    i = ToLoG::exact_simplex_of_ray_in_tet(tet, P(0,0,0), P(100,0,100));
+    EXPECT_EQ(i.size(), 3);
+
+    i = ToLoG::exact_simplex_of_ray_in_tet(tet, P(0.2,0.1,0.3), P(-1,10,14));
+    EXPECT_EQ(i.size(), 4);
 }
 
 }
