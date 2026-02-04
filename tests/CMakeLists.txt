@@ -7,6 +7,7 @@ if (GTEST_FOUND)
         customization_tests.cpp
         dsu_tests.cpp
         enumerate_tests.cpp
+        eigen_tests.cpp
         hash_tests.cpp
         heap_tests.cpp
         keyvaluevector_tests.cpp
@@ -19,9 +20,29 @@ if (GTEST_FOUND)
         unittests.cpp
     )
 
+    # Get Eigen
+    if(NOT TARGET Eigen3::Eigen)
+        FetchContent_Declare(Eigen3 SYSTEM
+            GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+            GIT_TAG 3.4.0
+            GIT_SHALLOW TRUE
+            SOURCE_SUBDIR cmake
+        )
+        FetchContent_MakeAvailable(Eigen3)
+        add_library(Eigen3::Eigen INTERFACE IMPORTED)
+        set_target_properties(Eigen3::Eigen PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${eigen3_SOURCE_DIR})
+        target_link_libraries(Eigen3::Eigen INTERFACE OpenMP::OpenMP_CXX)
+    endif()
+
     # Create unittest executable
     add_executable(ToLoG-unittests ${UNITTEST_SRC})
-    target_link_libraries(ToLoG-unittests ToLoG::ToLoG GTest::GTest GTest::Main)
+    target_link_libraries(ToLoG-unittests
+        ToLoG::ToLoG
+        GTest::GTest
+        GTest::Main
+        Eigen3::Eigen
+    )
+
     if ( NOT WIN32)
       target_link_libraries(ToLoG-unittests pthread)
     endif()

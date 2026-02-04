@@ -4,7 +4,7 @@ template<class P>
 requires(is_vector_type<P>::value)
 inline auto squared_distance(const P& _p, const P& _q)
 {
-    return squared_norm(_p - _q);
+    return squared_norm(static_cast<P>(_p - _q));
 }
 
 template<class P>
