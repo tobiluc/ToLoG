@@ -21,3 +21,12 @@ template<class P>
 inline typename Traits<P>::value_type circumference(const Triangle<P>& _tri) {
     return norm(_tri[1]-_tri[0]) + norm(_tri[2]-_tri[1]) + norm(_tri[0]-_tri[2]);
 }
+
+template<class P>
+inline typename Traits<P>::value_type volume(const Tetrahedron<P>& _tet) {
+    using FT = typename Traits<P>::value_type;
+    P ba = _tet[1] - _tet[0];
+    P ca = _tet[2] - _tet[0];
+    P da = _tet[3] - _tet[0];
+    return dot(ba, cross(ca, da)) / static_cast<FT>(6.);
+}
