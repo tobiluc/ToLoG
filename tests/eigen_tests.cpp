@@ -21,4 +21,9 @@ TEST(EigenTest, EigenTest1)
     auto is = tree.intersecting(p);
     EXPECT_EQ(is.size(), 1);
     EXPECT_EQ(is[0], 0);
+    is = tree.intersecting(ToLoG::Sphere<Eigen::Vector3d>({0,0,0}, 100));
+    EXPECT_EQ(is.size(), 2);
+
+    ToLoG::Sphere<Eigen::Vector2f> circle({1,1}, 5.0f);
+    EXPECT_EQ(circle.squared_radius(), 25.0f);
 }

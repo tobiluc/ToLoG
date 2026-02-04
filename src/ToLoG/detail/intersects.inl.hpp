@@ -39,7 +39,7 @@ inline bool intersects(const P& _q, const AABB<P>& _box)
 template<class P> requires(is_vector_type<P>::value)
 inline bool intersects(const Sphere<P>& _sphere, const P& _q)
 {
-    return squared_norm(_q - _sphere.center()) <= _sphere.squared_radius();
+    return squared_norm(static_cast<P>(_q - _sphere.center())) <= _sphere.squared_radius();
 }
 
 template<class P>
@@ -51,7 +51,7 @@ inline bool intersects(const P& _q, const Sphere<P>& _sphere)
 template<class P>
 inline bool intersects(const Sphere<P>& _s1, const Sphere<P>& _s2)
 {
-    return norm(_s1.center()-_s2.center()) <= _s1.radius()+_s2.radius();
+    return norm(static_cast<P>(_s1.center()-_s2.center())) <= _s1.radius()+_s2.radius();
 }
 
 template<class P> requires(is_vector_type<P>::value && Traits<P>::dim==2)
