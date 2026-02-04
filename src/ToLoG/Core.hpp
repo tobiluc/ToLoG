@@ -21,6 +21,7 @@ class AABB
 {
 private:
     static constexpr int DIM = Traits<P>::dim;
+    using FT = Traits<P>::value_type;
 public:
     AABB() {
         make_empty();
@@ -57,6 +58,26 @@ public:
             min_[i] = std::min(min_[i], _p[i]);
             max_[i] = std::max(max_[i], _p[i]);
         }
+    }
+    inline FT squared_diagonal() const {
+        FT diag(0);
+        for (int i=0;i<Traits<P>::dim;i++) {
+            FT d = max_[i]-min_[i];
+            diag += d*d;
+        }
+        return diag;
+    }
+    inline FT diagonal() const {
+        return std::sqrt<FT>(squared_diagonal());
+    }
+    inline AABB<P> scaled(FT _s) const {
+        AABB<P> sbox;
+        for (int i=0;i<Traits<P>::dim;i++) {
+            FT d = static_cast<FT>(0.5)*(max_[i]-min_[i])*(_s-static_cast<FT>(1.0));
+            sbox.min_[i] = min_[i] - d;
+            sbox.max_[i] = max_[i] + d;
+        }
+        return sbox;
     }
     inline const P& min() const {
         return min_;
