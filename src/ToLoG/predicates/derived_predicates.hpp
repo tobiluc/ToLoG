@@ -239,8 +239,9 @@ template<typename P>
 bool exact_ray_cuts_face_within_tet(
     const Tetrahedron<P>& _tet,
     const P& _p, const P& _q,
-    const std::array<int,3>& _f)
+    const std::vector<int>& _f)
 {
+    assert(_f.size()==3);
     const ORI tet_ori = sign_orient3d(_tet[0].data(),_tet[1].data(),_tet[2].data(),_tet[3].data());
     if (tet_ori == ORI::ZERO) {
         std::cerr << "Warning: Cannot evaluate exact_ray_through_face_in_tet in tet with volume zero" << std::endl;

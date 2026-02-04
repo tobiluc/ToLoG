@@ -25,7 +25,7 @@ inline std::array<typename Traits<PointT>::value_type,3> barycentric_coordinates
         u = (d11*d20 - d01*d21) / denom;
         v = (d00*d21 - d01*d20) / denom;
     }
-    return {u, v, FT(1)-u-v};
+    return {FT(1)-u-v, u, v};
 }
 
 template<typename PointT>
@@ -59,5 +59,5 @@ inline std::array<typename Traits<PointT>::value_type,4> barycentric_coordinates
         v = (d00*(d1p*d22 - d12*d2p) - d0p*(d01*d22 - d12*d02) + d02*(d01*d2p - d1p*d02)) / denom;
         w = (d00*(d11*d2p - d1p*d12) - d01*(d01*d2p - d1p*d02) + d0p*(d01*d12 - d11*d02)) / denom;
     }
-    return {u, v, w, FT(1)-u-v-w};
+    return {FT(1)-u-v-w, u, v, w};
 }
