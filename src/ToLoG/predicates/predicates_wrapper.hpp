@@ -93,16 +93,16 @@ static inline double point_orient2d(const P& a, const P& b, const P& c) {
     return orient2d(pa, pb, pc);
 }
 
-static inline double abs_orient2d(const double* pa, const double* pb, const double* pc) {
-    const double result = orient2d(pa, pb, pc);
-    return (result >= 0.0)? result : -result;
-}
+// static inline double abs_orient2d(const double* pa, const double* pb, const double* pc) {
+//     const double result = orient2d(pa, pb, pc);
+//     return (result >= 0.0)? result : -result;
+// }
 
 /// Wrapper around ::orient3d. Returns the result as an ::ORIENTATION.
 static inline ORI sign_orient3d(const double* pa, const double* pb, const double* pc, const double* pd) {
     const double result = orient3d(pa, pb, pc, pd);
     // A little convoluted but branchless.
-    return (ORI) ((result > 0.0) - (result < 0.0));
+    return (ORI)((result > 0.0) - (result < 0.0));
 }
 
 template<typename P> requires(is_vector_type<P>::value && Traits<P>::dim==3)
@@ -114,10 +114,10 @@ static inline double point_orient3d(const P& a, const P& b, const P& c, const P&
     return orient3d(pa, pb, pc, pd);
 }
 
-static inline double abs_orient3d(const double* pa, const double* pb, const double* pc, const double* pd) {
-    const double result = orient3d(pa, pb, pc, pd);
-    return (result >= 0.0)? result : -result;
-}
+// static inline double abs_orient3d(const double* pa, const double* pb, const double* pc, const double* pd) {
+//     const double result = orient3d(pa, pb, pc, pd);
+//     return (result >= 0.0)? result : -result;
+// }
 
 static inline char sign(const double& x) {return ((x > 0.0) - (x < 0.0));}
 
