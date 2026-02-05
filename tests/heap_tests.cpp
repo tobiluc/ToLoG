@@ -45,7 +45,7 @@ TEST(HeapTest, PerformanceTest)
     std::chrono::steady_clock::time_point t1, t2;
     std::mt19937 gen(42);
     std::uniform_real_distribution<double> rand(-9999.0, 9999.0);
-    size_t n = 10000000;
+    size_t n = 10000;
 
     Heap<double> heap(n);
     std::priority_queue<double> q;

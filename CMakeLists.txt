@@ -51,12 +51,13 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/detail/vector.inl.hpp
     src/ToLoG/Ray.hpp
     src/ToLoG/math/polynomial_roots.hpp
-    src/ToLoG/detail/triangle.inl.hpp
+    src/ToLoG/detail/volume.inl.hpp
     src/ToLoG/math/winding_number.hpp
 
     src/ToLoG/detail/intersects.inl.hpp
     src/ToLoG/mesh/mesh_types.hpp
-    src/ToLoG/predicates/derived_predicates.hpp
+    src/ToLoG/predicates/derived_predicates_3d.hpp
+    src/ToLoG/mesh/simplex_indices.hpp
 
 
 

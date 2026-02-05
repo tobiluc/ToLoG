@@ -202,15 +202,14 @@ public:
     Segment(const P& _start, const P& _end) :
         start_(_start), end_(_end)
     {}
-    inline const P& start() const {
-        return start_;
-    }
-    inline const P& end() const {
-        return end_;
-    }
-    inline Segment reversed() const {
-        return Segment(end_, start_);
-    }
+    inline const P& start() const {return start_;}
+    inline const P& end() const {return end_;}
+    inline Segment reversed() const {return Segment(end_, start_);}
+
+    inline P& start() {return start_;}
+    inline P& end() {return end_;}
+    inline void reverse() {std::swap(start_, end_);}
+
     inline bool operator==(const Segment<P>& _s) const {
         return start_ == _s.start_ && end_ == _s.end_;
     }
@@ -292,10 +291,10 @@ public:
     inline const P& operator[](const int& _i) const {
         return t_[_i];
     }
-    inline Segment<P> edge(int _i, int _j) const {
+    inline Segment<P> segment(int _i, int _j) const {
         return Segment<P>(t_[_i], t_[_j]);
     }
-    inline Triangle<P> face(int _i, int _j, int _k) const {
+    inline Triangle<P> triangle(int _i, int _j, int _k) const {
         return Triangle<P>(t_[_i], t_[_j], t_[_k]);
     }
     inline bool operator==(const Tetrahedron<P>& _tet) const {
