@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include <cassert>
 #include <vector>
 
 namespace ToLoG
@@ -32,6 +33,13 @@ public:
         std::vector<T> r;
         r.reserve(size_);
         for (int i = 0; i < size_; ++i) {r.push_back(_vec[indices_[i]]);}
+        return r;
+    }
+    template<int dim>
+    inline std::array<int,dim> array() const {
+        assert(dim==size_);
+        std::array<int,dim> r;
+        for (int i = 0; i < size_; ++i) {r[i] = indices_[i];}
         return r;
     }
 private:

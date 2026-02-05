@@ -230,11 +230,17 @@ public:
         t_[1] = _b;
         t_[2] = _c;
     }
-    inline const P& operator[](const int& _i) const {
+    inline const P& operator[](int _i) const {
         return t_[_i];
     }
-    inline Segment<P> edge(int _i) const {
+    inline Segment<P> segment(int _i) const {
         return Segment<P>(t_[_i], t_[(_i+1)%3]);
+    }
+    inline Triangle<P> reversed() const {
+        return Triangle<P>(t_[2], t_[1], t_[0]);
+    }
+    inline void reverse() {
+        std::swap(t_[0],t_[2]);
     }
     inline bool operator==(const Triangle<P>& _tri) const {
         return t_[0] == _tri[0]
@@ -298,7 +304,7 @@ public:
         return Triangle<P>(t_[_i], t_[_j], t_[_k]);
     }
     inline bool operator==(const Tetrahedron<P>& _tet) const {
-        return t_[0] == _tet[0]
+        return    t_[0] == _tet[0]
                && t_[1] == _tet[1]
                && t_[2] == _tet[2]
                && t_[3] == _tet[3];

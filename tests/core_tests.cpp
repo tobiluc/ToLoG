@@ -127,9 +127,9 @@ TEST(GeometryCoreTest, Triangle2dTest)
     EXPECT_EQ(AABB({Point(0,0),Point(3,4)}), ToLoG::aabb(tri));
     EXPECT_EQ(6, area(tri));
     EXPECT_EQ(12, circumference(tri));
-    EXPECT_EQ(Segment(a,b), tri.edge(0));
-    EXPECT_EQ(Segment(b,c), tri.edge(1));
-    EXPECT_EQ(Segment(c,a), tri.edge(2));
+    EXPECT_EQ(Segment(a,b), tri.segment(0));
+    EXPECT_EQ(Segment(b,c), tri.segment(1));
+    EXPECT_EQ(Segment(c,a), tri.segment(2));
 }
 
 TEST(GeometryCoreTest, AABBPointsTest)

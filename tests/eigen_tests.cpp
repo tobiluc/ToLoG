@@ -1,6 +1,6 @@
 #include "ToLoG/AABBTree.hpp"
 #include <gtest/gtest.h>
-#include <ToLoG/utils/EigenTraits.hpp>
+#include <ToLoG/utils/Eigen_Traits.hpp>
 #include <ToLoG/Core.hpp>
 
 TEST(EigenTest, EigenTest1)

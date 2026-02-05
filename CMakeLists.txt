@@ -58,13 +58,6 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/mesh/mesh_types.hpp
     src/ToLoG/predicates/derived_predicates_3d.hpp
     src/ToLoG/mesh/simplex_indices.hpp
-
-
-
-
-
-
-
 )
 add_library ("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS ${PROJECT_NAME})
 

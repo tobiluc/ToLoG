@@ -165,8 +165,8 @@ TEST(PredicatesTest, PointSupportingSimplexInInvertedTetTest)
     i = ToLoG::supporting_simplex_in_tet(tet, P(0.1,0,0.1));
     EXPECT_TRUE(i.is_face());
     EXPECT_EQ(i[0], 0);
-    EXPECT_EQ(i[1], 2);
-    EXPECT_EQ(i[2], 1);
+    EXPECT_EQ(i[1], 1);
+    EXPECT_EQ(i[2], 2);
 
     i = ToLoG::supporting_simplex_in_tet(tet, P(0.1,0.1,0.1));
     EXPECT_TRUE(i.is_tet());
@@ -280,8 +280,8 @@ TEST(PredicatesTest, SegmentThroughInvertedTetTest)
     i = ToLoG::exiting_simplex_in_tet(tet, s);
     EXPECT_TRUE(i.simplex.is_face());
     EXPECT_EQ(i.simplex[0], 0);
-    EXPECT_EQ(i.simplex[1], 1);
-    EXPECT_EQ(i.simplex[2], 3);
+    EXPECT_EQ(i.simplex[1], 3);
+    EXPECT_EQ(i.simplex[2], 1);
 
     s = S(P(1,1,1), P(-3,-3,-3));
     i = ToLoG::exiting_simplex_in_tet(tet, s);
