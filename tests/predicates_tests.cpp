@@ -54,7 +54,7 @@ TEST(PredicatesTest, InCircleTest)
     EXPECT_LT(ToLoG::point_incircle(a,b,c,Point(0,1.1)), 0.0); // outside circle
 }
 
-TEST(PredicatesTest, ExactSimplexInTetPointTest)
+TEST(PredicatesTest, PointSupportingSimplexInTetTest)
 {
     using P = ToLoG::Point<double,3>;
     using T = ToLoG::Tetrahedron<P>;
@@ -66,32 +66,114 @@ TEST(PredicatesTest, ExactSimplexInTetPointTest)
     EXPECT_TRUE(i.empty());
 
     i = ToLoG::supporting_simplex_in_tet(tet, P(0,0,0));
-    EXPECT_EQ(i.size(), 1);
+    EXPECT_TRUE(i.is_vertex());
     EXPECT_EQ(i[0], 0);
+
     i = ToLoG::supporting_simplex_in_tet(tet, P(0,0,1));
-    EXPECT_EQ(i.size(), 1);
+    EXPECT_TRUE(i.is_vertex());
     EXPECT_EQ(i[0], 1);
+
     i = ToLoG::supporting_simplex_in_tet(tet, P(1,0,0));
-    EXPECT_EQ(i.size(), 1);
+    EXPECT_TRUE(i.is_vertex());
     EXPECT_EQ(i[0], 2);
+
     i = ToLoG::supporting_simplex_in_tet(tet, P(0,1,0));
-    EXPECT_EQ(i.size(), 1);
+    EXPECT_TRUE(i.is_vertex());
     EXPECT_EQ(i[0], 3);
 
     i = ToLoG::supporting_simplex_in_tet(tet, P(0,0,0.5));
-    EXPECT_EQ(i.size(), 2);
+    EXPECT_TRUE(i.is_edge());
+    EXPECT_EQ(i[0], 0);
+    EXPECT_EQ(i[1], 1);
+
     i = ToLoG::supporting_simplex_in_tet(tet, P(0.5,0,0));
     EXPECT_EQ(i.size(), 2);
+    EXPECT_EQ(i[0], 0);
+    EXPECT_EQ(i[1], 2);
+
     i = ToLoG::supporting_simplex_in_tet(tet, P(0,0.5,0));
-    EXPECT_EQ(i.size(), 2);
+    EXPECT_TRUE(i.is_edge());
+    EXPECT_EQ(i[0], 0);
+    EXPECT_EQ(i[1], 3);
+
     i = ToLoG::supporting_simplex_in_tet(tet, P(0.5,0,0.5));
-    EXPECT_EQ(i.size(), 2);
+    EXPECT_TRUE(i.is_edge());
+    EXPECT_EQ(i[0], 1);
+    EXPECT_EQ(i[1], 2);
 
     i = ToLoG::supporting_simplex_in_tet(tet, P(0.1,0,0.1));
-    EXPECT_EQ(i.size(), 3);
+    EXPECT_TRUE(i.is_face());
+    EXPECT_EQ(i[0], 0);
+    EXPECT_EQ(i[1], 1);
+    EXPECT_EQ(i[2], 2);
 
     i = ToLoG::supporting_simplex_in_tet(tet, P(0.1,0.1,0.1));
-    EXPECT_EQ(i.size(), 4);
+    EXPECT_TRUE(i.is_tet());
+    EXPECT_EQ(i[0], 0);
+    EXPECT_EQ(i[1], 1);
+    EXPECT_EQ(i[2], 2);
+    EXPECT_EQ(i[3], 3);
+}
+
+TEST(PredicatesTest, PointSupportingSimplexInInvertedTetTest)
+{
+    using P = ToLoG::Point<double,3>;
+    using T = ToLoG::Tetrahedron<P>;
+
+    T tet(P(0,0,0), P(1,0,0), P(0,0,1), P(0,1,0));
+    ToLoG::SimplexIndices i;
+
+    i = ToLoG::supporting_simplex_in_tet(tet, P(-1,0,0));
+    EXPECT_TRUE(i.empty());
+
+    i = ToLoG::supporting_simplex_in_tet(tet, P(0,0,0));
+    EXPECT_TRUE(i.is_vertex());
+    EXPECT_EQ(i[0], 0);
+
+    i = ToLoG::supporting_simplex_in_tet(tet, P(0,0,1));
+    EXPECT_TRUE(i.is_vertex());
+    EXPECT_EQ(i[0], 2);
+
+    i = ToLoG::supporting_simplex_in_tet(tet, P(1,0,0));
+    EXPECT_TRUE(i.is_vertex());
+    EXPECT_EQ(i[0], 1);
+
+    i = ToLoG::supporting_simplex_in_tet(tet, P(0,1,0));
+    EXPECT_TRUE(i.is_vertex());
+    EXPECT_EQ(i[0], 3);
+
+    i = ToLoG::supporting_simplex_in_tet(tet, P(0,0,0.5));
+    EXPECT_TRUE(i.is_edge());
+    EXPECT_EQ(i[0], 0);
+    EXPECT_EQ(i[1], 2);
+
+    i = ToLoG::supporting_simplex_in_tet(tet, P(0.5,0,0));
+    EXPECT_EQ(i.size(), 2);
+    EXPECT_EQ(i[0], 0);
+    EXPECT_EQ(i[1], 1);
+
+    i = ToLoG::supporting_simplex_in_tet(tet, P(0,0.5,0));
+    EXPECT_TRUE(i.is_edge());
+    EXPECT_EQ(i[0], 0);
+    EXPECT_EQ(i[1], 3);
+
+    i = ToLoG::supporting_simplex_in_tet(tet, P(0.5,0,0.5));
+    EXPECT_TRUE(i.is_edge());
+    EXPECT_EQ(i[0], 1);
+    EXPECT_EQ(i[1], 2);
+
+    i = ToLoG::supporting_simplex_in_tet(tet, P(0.1,0,0.1));
+    EXPECT_TRUE(i.is_face());
+    EXPECT_EQ(i[0], 0);
+    EXPECT_EQ(i[1], 2);
+    EXPECT_EQ(i[2], 1);
+
+    i = ToLoG::supporting_simplex_in_tet(tet, P(0.1,0.1,0.1));
+    EXPECT_TRUE(i.is_tet());
+    EXPECT_EQ(i[0], 0);
+    EXPECT_EQ(i[1], 1);
+    EXPECT_EQ(i[2], 2);
+    EXPECT_EQ(i[3], 3);
 }
 
 TEST(PredicatesTest, ExactSimplexInTetRayTest)

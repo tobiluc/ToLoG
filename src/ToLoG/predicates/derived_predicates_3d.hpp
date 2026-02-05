@@ -40,10 +40,7 @@ SimplexIndices supporting_simplex_in_tet(
     const P& _p)
 {
     // Check against vertices directly
-    if (_tet[0] == _p) {return SimplexIndices({0});}
-    if (_tet[1] == _p) {return SimplexIndices({1});}
-    if (_tet[2] == _p) {return SimplexIndices({2});}
-    if (_tet[3] == _p) {return SimplexIndices({3});}
+    for (int i = 0; i < 4; ++i) {if (_tet[i] == _p) {return SimplexIndices({i});}}
 
     // Get tet ori and opposite tet ori
     const ORI tet_ori = sign_orient3d(_tet[0].data(),_tet[1].data(),_tet[2].data(),_tet[3].data());
@@ -51,24 +48,14 @@ SimplexIndices supporting_simplex_in_tet(
         std::cerr << "Warning: Cannot evaluate exact_simplex_of_point_in_tet in tet with volume zero" << std::endl;
         return SimplexIndices();
     }
-    const ORI opp_ori = (tet_ori==ORI::CCW)? ORI::CW : ORI::CCW;
 
     // Evaluate ori against each halfface
     auto oris = std::array<ToLoG::ORI, 4>();
     for (int i = 0; i < 4; ++i) {
-        const auto& f = tet_vertex_indices_ccw[i];
+        const auto& f = (tet_ori==ORI::CCW)? tet_vertex_indices_ccw[i] : tet_vertex_indices_cw[i];
         oris[i] = sign_orient3d(_tet.triangle(f[0],f[1],f[2]), _p);
-        if (oris[i] == opp_ori) {return SimplexIndices();}
+        if (oris[i] == ORI::CW) {return SimplexIndices();}
     }
-
-    // oris[0] = sign_orient3d(_tet[0].data(), _tet[1].data(), _tet[2].data(), _p.data());
-    // if (oris[0] == opp_ori) {return SimplexIndices();}
-    // oris[1] = sign_orient3d(_tet.triangle(0,2,3), _p);
-    // if (oris[1] == opp_ori) {return SimplexIndices();}
-    // oris[2] = sign_orient3d(_tet[0].data(), _tet[3].data(), _tet[1].data(), _p.data());
-    // if (oris[2] == opp_ori) {return SimplexIndices();}
-    // oris[3] = sign_orient3d(_tet[1].data(), _tet[3].data(), _tet[2].data(), _p.data());
-    // if (oris[3] == opp_ori) {return SimplexIndices();}
 
     // Get zero oris
     auto zeros = std::vector<char>();
@@ -76,32 +63,28 @@ SimplexIndices supporting_simplex_in_tet(
     for (char i = 0; i <= 3; ++i) {if (oris[i] == ToLoG::ORI::ZERO) {zeros.push_back(i);}}
 
     // Determine simplex of tet which contains p
-    if (zeros.size() == 3) {
-        // cannot happen
+    if (zeros.size() == 2) { // Edge
+        const auto& f1 = (tet_ori==ORI::CCW)? tet_vertex_indices_ccw[zeros[0]] : tet_vertex_indices_cw[zeros[0]];
+        const auto& f2 = (tet_ori==ORI::CCW)? tet_vertex_indices_ccw[zeros[1]] : tet_vertex_indices_cw[zeros[1]];
+        for (int i = 0; i < 3; ++i) {
+            if (f1[i] != f2[0] && f1[i] != f2[1] && f1[i] != f2[2]) {
+                int v0 = f1[(i+1)%3];
+                int v1 = f1[(i+2)%3];
+                if (v0 > v1) {std::swap(v0,v1);}
+                return SimplexIndices({v0,v1});
+            }
+        }
         assert(false);
     }
-    if (zeros.size() == 2) {
-        // Edge
-        if (zeros[0] == 0 && zeros[1] == 1) {return SimplexIndices({0,2});}
-        else if (zeros[0] == 0 && zeros[1] == 2) {return SimplexIndices({0,1});}
-        else if (zeros[0] == 0 && zeros[1] == 3) {return SimplexIndices({1,2});}
-        else if (zeros[0] == 1 && zeros[1] == 2) {return SimplexIndices({0,3});}
-        else if (zeros[0] == 1 && zeros[1] == 3) {return SimplexIndices({2,3});}
-        else if (zeros[0] == 2 && zeros[1] == 3) {return SimplexIndices({1,3});}
-        assert(false);
+    if (zeros.size() == 1) { // Face
+        const auto& f = (tet_ori==ORI::CCW)? tet_vertex_indices_ccw[zeros[0]] : tet_vertex_indices_cw[zeros[0]];
+        return SimplexIndices({f[0],f[1],f[2]});
     }
-    if (zeros.size() == 1) {
-        // Face
-        if (zeros[0] == 0) {return SimplexIndices({0,1,2});}
-        else if (zeros[0] == 1) {return SimplexIndices({0,2,3});}
-        else if (zeros[0] == 2) {return SimplexIndices({0,3,1});}
-        else if (zeros[0] == 3) {return SimplexIndices({1,3,2});}
-    }
-    if (zeros.size() == 0) {
-        // Cell
+    if (zeros.size() == 0) { // Tet
         return SimplexIndices({0,1,2,3});
     }
 
+    // cannot happen
     assert(false);
     return SimplexIndices();
 }
@@ -284,15 +267,13 @@ TetSegmentIntersection<P> exiting_simplex_in_tet(
 {
     using FT = typename Traits<P>::value_type;
 
-    const ORI tet_ori = sign_orient3d(_tet[0].data(),_tet[1].data(),_tet[2].data(),_tet[3].data());
+    const ORI tet_ori = sign_orient3d(_tet);
     if (tet_ori == ORI::ZERO) {
         std::cerr << "Warning: Cannot evaluate intersection_simplex_from_within_tet in tet with volume zero" << std::endl;
         return {};
     }
-    const bool ccw_tet = tet_ori==ORI::CCW;
-    const ORI opp_ori = ccw_tet? ORI::CW : ORI::CCW;
 
-    for (const auto& f : ccw_tet? tet_vertex_indices_ccw : tet_vertex_indices_cw) {
+    for (const auto& f : (tet_ori==ORI::CCW)? tet_vertex_indices_ccw : tet_vertex_indices_cw) {
         if (_exclude_f.has_value() && f == _exclude_f.value()) {continue;}
 
         auto is_pt = [&]() -> P
@@ -360,7 +341,7 @@ TetSegmentIntersection<P> exiting_simplex_in_tet(
             if (zeros[0] == 0 && zeros[1] == 1) {i = f[1];}
             else if (zeros[0] == 0 && zeros[1] == 2) {i = f[0];}
             else if (zeros[0] == 1 && zeros[1] == 2) {i = f[2];}
-            return {SimplexIndices({i}), is_pt(), f};
+            return {SimplexIndices({i}), _tet[i], f};
         }
     }
     return {};
