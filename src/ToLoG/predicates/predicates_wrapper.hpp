@@ -2,11 +2,26 @@
 
 #include <cassert>
 #include <ostream>
-#include <array>
 #include <ToLoG/Traits_fwd.hpp>
 
 namespace ToLoG
 {
+
+template<typename P, int k>
+concept vector_kd =
+    is_vector_type<P>::value &&
+    Traits<P>::dim == k &&
+    std::is_same_v<typename Traits<P>::value_type, double> &&
+    requires(const P& p) {
+        {p.data()} -> std::same_as<const typename Traits<P>::value_type*>;
+    };
+;
+
+template<typename P>
+concept vector_3d = vector_kd<P,3>;
+
+template<typename P>
+concept vector_2d = vector_kd<P,2>;
 
 enum class ORI {
     CCW = -1,
@@ -69,57 +84,32 @@ double incircle(const double* pa, const double* pb, const double* pc, const doub
 namespace ToLoG
 {
 
-template<typename P> requires(is_vector_type<P>::value && Traits<P>::dim==2)
+template<vector_2d P>
 static inline double point_incircle(const P& a, const P& b, const P& c, const P& d) {
-    const double pa[2] = {static_cast<double>(a[0]),static_cast<double>(a[1])};
-    const double pb[2] = {static_cast<double>(b[0]),static_cast<double>(b[1])};
-    const double pc[2] = {static_cast<double>(c[0]),static_cast<double>(c[1])};
-    const double pd[2] = {static_cast<double>(d[0]),static_cast<double>(d[1])};
-    return incircle(pa, pb, pc, pd);
+    return incircle(a.data(), b.data(), c.data(), d.data());
 }
 
 /// Wrapper around ::orient2d. Returns the result as an ::ORIENTATION.
 static inline ORI sign_orient2d(const double* pa, const double* pb, const double* pc) {
     const double result = orient2d(pa, pb, pc);
-    // A little convoluted but branchless.
-    return (ORI) ((result > 0.0) - (result < 0.0));
+    return static_cast<ORI>((result > 0.0)-(result < 0.0));
 }
 
-template<typename P> requires(is_vector_type<P>::value && Traits<P>::dim==2)
+template<vector_2d P>
 static inline double point_orient2d(const P& a, const P& b, const P& c) {
-    const double pa[2] = {static_cast<double>(a[0]),static_cast<double>(a[1])};
-    const double pb[2] = {static_cast<double>(b[0]),static_cast<double>(b[1])};
-    const double pc[2] = {static_cast<double>(c[0]),static_cast<double>(c[1])};
-    return orient2d(pa, pb, pc);
+    return orient2d(a.data(), b.data(), c.data());
 }
-
-// static inline double abs_orient2d(const double* pa, const double* pb, const double* pc) {
-//     const double result = orient2d(pa, pb, pc);
-//     return (result >= 0.0)? result : -result;
-// }
 
 /// Wrapper around ::orient3d. Returns the result as an ::ORIENTATION.
 static inline ORI sign_orient3d(const double* pa, const double* pb, const double* pc, const double* pd) {
     const double result = orient3d(pa, pb, pc, pd);
-    // A little convoluted but branchless.
-    return (ORI)((result > 0.0) - (result < 0.0));
+    return static_cast<ORI>((result > 0.0)-(result < 0.0));
 }
 
-template<typename P> requires(is_vector_type<P>::value && Traits<P>::dim==3)
+template<vector_3d P>
 static inline double point_orient3d(const P& a, const P& b, const P& c, const P& d) {
-    const double pa[3] = {static_cast<double>(a[0]),static_cast<double>(a[1]),static_cast<double>(a[2])};
-    const double pb[3] = {static_cast<double>(b[0]),static_cast<double>(b[1]),static_cast<double>(b[2])};
-    const double pc[3] = {static_cast<double>(c[0]),static_cast<double>(c[1]),static_cast<double>(c[2])};
-    const double pd[3] = {static_cast<double>(d[0]),static_cast<double>(d[1]),static_cast<double>(d[2])};
-    return orient3d(pa, pb, pc, pd);
+    return orient3d(a.data, b.data, c.data, d.data);
 }
-
-// static inline double abs_orient3d(const double* pa, const double* pb, const double* pc, const double* pd) {
-//     const double result = orient3d(pa, pb, pc, pd);
-//     return (result >= 0.0)? result : -result;
-// }
-
-static inline char sign(const double& x) {return ((x > 0.0) - (x < 0.0));}
 
 class PredicatesInitalizer
 {

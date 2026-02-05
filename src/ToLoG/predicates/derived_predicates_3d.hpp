@@ -8,17 +8,13 @@
 namespace ToLoG
 {
 
-template<typename P>
-requires(std::is_same<typename Traits<P>::value_type,double>::value)
+template<vector_3d P>
 ORI sign_orient3d(const Tetrahedron<P>& _tet)
 {
     return sign_orient3d(_tet[0].data(),_tet[1].data(),_tet[2].data(),_tet[3].data());
 }
 
-template<typename P>
-requires(is_vector_type<P>::value
-         && Traits<P>::dim == 3
-         && std::is_same<typename Traits<P>::value_type,double>::value)
+template<vector_3d P>
 ORI sign_orient3d(const Triangle<P>& _tri, const P& _p)
 {
     return sign_orient3d(_tri[0].data(),_tri[1].data(),_tri[2].data(),_p.data());
@@ -31,10 +27,7 @@ ORI sign_orient3d(const Triangle<P>& _tri, const P& _p)
  * If _p lies exactly on the face given by the first three vertices, returns {0,1,2}
  * If _p is outside the tet, returns {}. If _p is strictly inside the tet, returns {0,1,2,3}.
  */
-template<typename P>
-requires(is_vector_type<P>::value
-        && Traits<P>::dim == 3
-        && std::is_same<typename Traits<P>::value_type,double>::value)
+template<vector_3d P>
 SimplexIndices supporting_simplex_in_tet(
     const Tetrahedron<P>& _tet,
     const P& _p)
@@ -96,10 +89,7 @@ SimplexIndices supporting_simplex_in_tet(
  * Mathematically, returns the unique lowest dimensional simplex s s.t.
  * for all delta>0 there exists delta>eps>0 s.t. p + eps*(q-p) is contained in s.
  */
-template<typename P>
-    requires(is_vector_type<P>::value
-             && Traits<P>::dim == 3
-             && std::is_same<typename Traits<P>::value_type,double>::value)
+template<vector_3d P>
 SimplexIndices supporting_simplex_in_tet(
     const Tetrahedron<P>& _tet,
     const Segment<P>& _s,
@@ -176,8 +166,10 @@ SimplexIndices supporting_simplex_in_tet(
             return SimplexIndices({vs[1],vs[0],v3});
         }
         if (o0 == ORI::ZERO && o1 == ORI::ZERO) {
-            // along edge (should be get the order matching the direction?)
-            return SimplexIndices({vs[0],vs[1]});
+            // along edge
+            return (vs[0]<vs[1])?
+                SimplexIndices({vs[0],vs[1]}) :
+                SimplexIndices({vs[1],vs[0]});
         }
 
         // outside
@@ -240,10 +232,7 @@ SimplexIndices supporting_simplex_in_tet(
     return SimplexIndices();
 }
 
-template<typename P>
-requires(is_vector_type<P>::value
-         && Traits<P>::dim == 3
-         && std::is_same<typename Traits<P>::value_type,double>::value)
+template<vector_3d P>
 struct TetSegmentIntersection
 {
     SimplexIndices simplex; // vertex, edge or face
@@ -340,11 +329,7 @@ TetSegmentIntersection<P> exiting_simplex_in_tet(
     return {};
 }
 
-
-template<typename P>
-    requires(is_vector_type<P>::value
-             && Traits<P>::dim == 3
-             && std::is_same<typename Traits<P>::value_type,double>::value)
+template<vector_3d P>
 TetSegmentIntersection<P> entering_simplex_in_tet(
     const Tetrahedron<P>& _tet,
     const Segment<P>& _s)
