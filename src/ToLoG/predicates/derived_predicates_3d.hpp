@@ -244,10 +244,7 @@ struct TetSegmentIntersection
 /// which contains the intersection point of the segment with the face.
 /// It is expected that q lies outside the tet, and p lies on the opposite side of the face
 /// compared to q.
-template<typename P>
-    requires(is_vector_type<P>::value
-             && Traits<P>::dim == 3
-             && std::is_same<typename Traits<P>::value_type,double>::value)
+template<vector_3d P>
 TetSegmentIntersection<P> exiting_simplex_in_tet(
     const Tetrahedron<P>& _tet,
     const Segment<P>& _s, std::optional<std::array<int,3>> _exclude_f = std::nullopt)
