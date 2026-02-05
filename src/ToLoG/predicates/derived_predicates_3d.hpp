@@ -277,26 +277,19 @@ TetSegmentIntersection<P> exiting_simplex_in_tet(
 
         auto is_pt = [&]() -> P
         {
-            const P& param0 = _tet[f[0]];
-            const P& param1 = _tet[f[1]];
-            const P& param2 = _tet[f[2]];
-
             const P d1 = _s.end() - _s.start();
-            const P v1 = param1 - param0;
-            const P v2 = param2 - param0;
+            const P v1 = _tet[f[1]] - _tet[f[0]];
+            const P v2 = _tet[f[2]] - _tet[f[0]];
 
             const P h = cross(d1, v2);
-            const FT a = dot(v1, h);
+            const FT a = FT(1.0) / dot(v1, h);
 
-            const FT f = FT(1.0) / a;
-            const P s = _s.start() - param0;
-
+            const P s = _s.start() - _tet[f[0]];
             const P q = cross(s, v1);
 
-            const FT t = f * dot(v2, q);
+            const FT t = a * dot(v2, q);
             return _s.start() + d1 * t;
         };
-
         assert(f.size()==3);
 
         // Primary direction must cut through the plane given by the face
