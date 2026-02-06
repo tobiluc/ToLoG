@@ -12,6 +12,9 @@ if (GTEST_FOUND)
         heap_tests.cpp
         keyvaluevector_tests.cpp
         octree_tests.cpp
+        OM_tests.cpp
+        ovm_tests.cpp
+        polygon_mesh_tests.cpp
         predicates_tests.cpp
         ray_tests.cpp
         simplex_tests.cpp
@@ -34,6 +37,29 @@ if (GTEST_FOUND)
         target_link_libraries(Eigen3::Eigen INTERFACE OpenMP::OpenMP_CXX)
     endif()
 
+    # Get OpenVolumeMesh
+    if (NOT TARGET OpenVolumeMesh::OpenVolumeMesh)
+        message(STATUS "Fetching OpenVolumeMesh")
+        FetchContent_Declare(ovm
+            GIT_REPOSITORY https://www.graphics.rwth-aachen.de:9000/OpenVolumeMesh/OpenVolumeMesh
+            GIT_TAG master
+            SOURCE_DIR "${EXTERNAL_DIR}/OpenVolumeMesh"
+            )
+        FetchContent_MakeAvailable(ovm)
+    endif()
+
+    # Get OpenMesh
+    if (NOT TARGET OpenMeshCore)
+       message(STATUS "Fetching OpenMesh")
+       FetchContent_Declare(om
+           GIT_REPOSITORY https://www.graphics.rwth-aachen.de:9000/OpenMesh/OpenMesh
+           GIT_TAG "OpenMesh-11.0"
+           SOURCE_DIR "${EXTERNAL_DIR}/OpenMesh"
+           )
+       FetchContent_MakeAvailable(om)
+    endif()
+
+
     # Create unittest executable
     add_executable(ToLoG-unittests ${UNITTEST_SRC})
     target_link_libraries(ToLoG-unittests
@@ -41,6 +67,17 @@ if (GTEST_FOUND)
         GTest::GTest
         GTest::Main
         Eigen3::Eigen
+        OpenVolumeMesh::OpenVolumeMesh
+        OpenMeshCore
+    )
+
+    # Set Output Directory
+    set(TESTS_OUTPUT_DIR
+        ${CMAKE_CURRENT_SOURCE_DIR}/Output
+    )
+    file(MAKE_DIRECTORY ${TESTS_OUTPUT_DIR})
+    target_compile_definitions(ToLoG-unittests PRIVATE
+        TESTS_OUTPUT_DIR="${TESTS_OUTPUT_DIR}"
     )
 
     if ( NOT WIN32)

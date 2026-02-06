@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <fstream>
 
-namespace ToLoG
+namespace ToLoG::IO
 {
 
 template<typename T>
