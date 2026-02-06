@@ -85,7 +85,7 @@ std::vector<FT> solve_quartic(FT a4, FT a3, FT a2, FT a1, FT a0)
 
     // Solve Cubic
     std::vector<FT> solnsCubic = solve_cubic(1.0, -a2, a1*a3 - 4.*a0, 4.*a0*a2 - a1*a1 - a0*a3*a3);
-    FT u = solnsCubic[0]; // Greatest real solution of cubic
+    FT u = solnsCubic.back(); // Greatest real solution of cubic
 
     // Solutions will be sorted from small to large.
     FT sigma = (a1 - a3*u*0.5)>0 ? 1. : -1.;

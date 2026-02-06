@@ -23,7 +23,7 @@ winding_number(const P& _p, const Segment<P>& _seg)
     return angle / (FT(2)*pi);
 }
 
-template<class P> requires(Traits<P>::dim==3)
+template<typename P> requires(Traits<P>::dim==3)
 inline typename Traits<P>::value_type winding_number(const P& _p, const Triangle<P>& _tri)
 {
     using FT = typename Traits<P>::value_type;
