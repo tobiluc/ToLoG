@@ -6,7 +6,7 @@
 TEST(PolygonMeshTest, CubeTest)
 {
     using P = ToLoG::Point<double, 3>;
-    using Mesh = ToLoG::PolygonMesh3<P>;
+    using Mesh = ToLoG::PolygonMesh<P>;
 
     Mesh cube = ToLoG::cube<Mesh>();
     EXPECT_EQ(cube.n_vertices(), 8);
@@ -23,7 +23,7 @@ TEST(PolygonMeshTest, CubeTest)
 TEST(PolygonMeshTest, CylinderTest)
 {
     using P = ToLoG::Point<double, 3>;
-    using Mesh = ToLoG::PolygonMesh3<P>;
+    using Mesh = ToLoG::PolygonMesh<P>;
 
     Mesh cylinder = ToLoG::cylinder<Mesh>();
 

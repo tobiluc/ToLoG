@@ -8,12 +8,12 @@ namespace ToLoG
 {
 
 template<typename P>
-requires(is_vector_type<P>::value && Traits<P>::dim==3)
-class PolygonMesh3
+requires(is_vector_type<P>::value)
+class PolygonMesh
 {
 private:
-    using vertex_index = Traits<PolygonMesh3<P>>::vertex_index;
-    using face_index = Traits<PolygonMesh3<P>>::face_index;
+    using vertex_index = Traits<PolygonMesh<P>>::vertex_index;
+    using face_index = Traits<PolygonMesh<P>>::face_index;
     using FT = Traits<P>::value_type;
 
     struct Face {
@@ -22,7 +22,7 @@ private:
         inline size_t valence() const {return vertices_.size();}
     };
 public:
-    PolygonMesh3() {}
+    PolygonMesh() {}
     inline vertex_index add_vertex(const P& _p) {
         points_.push_back(_p);
         return vertex_index(points_.size()-1);
@@ -53,7 +53,7 @@ private:
 };
 
 template<typename P>
-struct Traits<PolygonMesh3<P>>
+struct Traits<PolygonMesh<P>>
 {
     using vertex_index = int;
     using face_index = int;
@@ -85,11 +85,11 @@ M triangulated_faces(const M& _mesh)
     return m;
 }
 
-template<polygon_mesh_3 M>
-M cube(typename Traits<typename Traits<M>::vector_type>::value_type _size=1)
+template<polygon_mesh_3 M,
+    typename FT = typename Traits<typename Traits<M>::vector_type>::value_type>
+M cube(FT _size=1)
 {
     using P = typename Traits<M>::vector_type;
-    using FT = typename Traits<P>::value_type;
     using vertex_index = typename Traits<M>::vertex_index;
     using Face = std::vector<vertex_index>;
 
@@ -112,15 +112,12 @@ M cube(typename Traits<typename Traits<M>::vector_type>::value_type _size=1)
     return m;
 }
 
-template<polygon_mesh_3 M>
-M cylinder(
-    typename Traits<typename Traits<M>::vector_type>::value_type r1=0.5,
-    typename Traits<typename Traits<M>::vector_type>::value_type r2=0.5,
-    typename Traits<typename Traits<M>::vector_type>::value_type height=2,
+template<polygon_mesh_3 M,
+    typename FT = typename Traits<typename Traits<M>::vector_type>::value_type>
+M cylinder(FT r1=0.5, FT r2=0.5, FT height=2,
     int r_slices = 32, int h_slices = 1)
 {
     using P = typename Traits<M>::vector_type;
-    using FT = typename Traits<P>::value_type;
     using vertex_index = typename Traits<M>::vertex_index;
     using Face = std::vector<vertex_index>;
 
