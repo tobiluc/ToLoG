@@ -61,58 +61,82 @@ TEST(PredicatesTest, PointSupportingSimplexInTetTest)
 
     T tet(P(0,0,0), P(0,0,1), P(1,0,0), P(0,1,0));
     ToLoG::SimplexIndices i;
+    using TT = ToLoG::TetTopology;
+    TT::VAR s;
 
     i = ToLoG::supporting_simplex_in_tet(tet, P(-1,0,0));
+    s = ToLoG::supporting_simplex_in_tet_experimental(tet, P(-1,0,0));
     EXPECT_TRUE(i.empty());
+    EXPECT_EQ(s, TT::VAR::O);
 
     i = ToLoG::supporting_simplex_in_tet(tet, P(0,0,0));
+    s = ToLoG::supporting_simplex_in_tet_experimental(tet, P(0,0,0));
     EXPECT_TRUE(i.is_point());
     EXPECT_EQ(i[0], 0);
+    EXPECT_EQ(s, TT::VAR::A);
 
     i = ToLoG::supporting_simplex_in_tet(tet, P(0,0,1));
+    s = ToLoG::supporting_simplex_in_tet_experimental(tet, P(0,0,1));
     EXPECT_TRUE(i.is_point());
     EXPECT_EQ(i[0], 1);
+    EXPECT_EQ(s, TT::VAR::B);
 
     i = ToLoG::supporting_simplex_in_tet(tet, P(1,0,0));
+    s = ToLoG::supporting_simplex_in_tet_experimental(tet, P(1,0,0));
     EXPECT_TRUE(i.is_point());
     EXPECT_EQ(i[0], 2);
+    EXPECT_EQ(s, TT::VAR::C);
 
     i = ToLoG::supporting_simplex_in_tet(tet, P(0,1,0));
+    s = ToLoG::supporting_simplex_in_tet_experimental(tet, P(0,1,0));
     EXPECT_TRUE(i.is_point());
     EXPECT_EQ(i[0], 3);
+    EXPECT_EQ(s, TT::VAR::D);
 
     i = ToLoG::supporting_simplex_in_tet(tet, P(0,0,0.5));
+    s = ToLoG::supporting_simplex_in_tet_experimental(tet, P(0,0,0.5));
     EXPECT_TRUE(i.is_segment());
     EXPECT_EQ(i[0], 0);
     EXPECT_EQ(i[1], 1);
+    EXPECT_TRUE(TT::is_same_edge(static_cast<TT::HE>(s), TT::HE::AB));
 
     i = ToLoG::supporting_simplex_in_tet(tet, P(0.5,0,0));
+    s = ToLoG::supporting_simplex_in_tet_experimental(tet, P(0.5,0,0));
     EXPECT_EQ(i.size(), 2);
     EXPECT_EQ(i[0], 0);
     EXPECT_EQ(i[1], 2);
+    EXPECT_TRUE(TT::is_same_edge(static_cast<TT::HE>(s), TT::HE::AC));
 
     i = ToLoG::supporting_simplex_in_tet(tet, P(0,0.5,0));
+    s = ToLoG::supporting_simplex_in_tet_experimental(tet, P(0,0.5,0));
     EXPECT_TRUE(i.is_segment());
     EXPECT_EQ(i[0], 0);
     EXPECT_EQ(i[1], 3);
+    EXPECT_TRUE(TT::is_same_edge(static_cast<TT::HE>(s), TT::HE::AD));
 
     i = ToLoG::supporting_simplex_in_tet(tet, P(0.5,0,0.5));
+    s = ToLoG::supporting_simplex_in_tet_experimental(tet, P(0.5,0,0.5));
     EXPECT_TRUE(i.is_segment());
     EXPECT_EQ(i[0], 1);
     EXPECT_EQ(i[1], 2);
+    EXPECT_TRUE(TT::is_same_edge(static_cast<TT::HE>(s), TT::HE::BC));
 
     i = ToLoG::supporting_simplex_in_tet(tet, P(0.1,0,0.1));
+    s = ToLoG::supporting_simplex_in_tet_experimental(tet, P(0.1,0,0.1));
     EXPECT_TRUE(i.is_triangle());
     EXPECT_EQ(i[0], 0);
     EXPECT_EQ(i[1], 1);
     EXPECT_EQ(i[2], 2);
+    EXPECT_TRUE(TT::is_same_halfface(static_cast<TT::HF>(s), TT::HF::ABC));
 
     i = ToLoG::supporting_simplex_in_tet(tet, P(0.1,0.1,0.1));
+    s = ToLoG::supporting_simplex_in_tet_experimental(tet, P(0.1,0.1,0.1));
     EXPECT_TRUE(i.is_tet());
     EXPECT_EQ(i[0], 0);
     EXPECT_EQ(i[1], 1);
     EXPECT_EQ(i[2], 2);
     EXPECT_EQ(i[3], 3);
+    EXPECT_TRUE(TT::is_tet(s));
 }
 
 TEST(PredicatesTest, PointSupportingSimplexInInvertedTetTest)
@@ -181,26 +205,36 @@ TEST(PredicatesTest, ExactSimplexInTetRayTest)
     using P = ToLoG::Point<double,3>;
     using T = ToLoG::Tetrahedron<P>;
     using S = ToLoG::Segment<P>;
+    using TT = ToLoG::TetTopology;
 
     T tet(P(0,0,0), P(0,0,1), P(1,0,0), P(0,1,0));
     ToLoG::SimplexIndices i;
 
     i = ToLoG::supporting_simplex_in_tet(tet, S(P(0,0,0), P(1,0,0)));
+    auto i2 = ToLoG::supporting_simplex_in_tet_experimental(tet, S(P(0,0,0), P(1,0,0)));
     EXPECT_TRUE(i.is_segment());
     EXPECT_EQ(i[0], 0);
     EXPECT_EQ(i[1], 2);
+    EXPECT_TRUE(TT::is_halfedge(i2));
+    EXPECT_TRUE(TT::is_same_edge(static_cast<TT::HE>(i2), TT::HE::AC));
 
     i = ToLoG::supporting_simplex_in_tet(tet, S(P(0,0,0), P(100,0,100)));
+    i2 = ToLoG::supporting_simplex_in_tet_experimental(tet, S(P(0,0,0), P(100,0,100)));
     EXPECT_TRUE(i.is_triangle());
+    EXPECT_TRUE(TT::is_halfface(i2));
+    EXPECT_TRUE(TT::is_same_halfface(static_cast<TT::HF>(i2), TT::HF::ABC));
 
     i = ToLoG::supporting_simplex_in_tet(tet, S(P(0.2,0.1,0.3), P(-1,10,14)));
+    i2 = ToLoG::supporting_simplex_in_tet_experimental(tet, S(P(0.2,0.1,0.3), P(-1,10,14)));
     EXPECT_TRUE(i.is_tet());
+    EXPECT_EQ(i2, TT::VAR::ABCD);
 }
 
 TEST(PredicatesTest, SegmentThroughTetTest)
 {
     using P = ToLoG::Point<double,3>;
     using T = ToLoG::Tetrahedron<P>;
+    using TT = ToLoG::TetTopology;
     using S = ToLoG::Segment<P>;
     const double eps = std::numeric_limits<double>::epsilon();
 
@@ -213,51 +247,70 @@ TEST(PredicatesTest, SegmentThroughTetTest)
     // Segment coming from pos z to neg z should leave through origin
     S s(P(0,0,4), P(0,0,-1));
     auto i = ToLoG::exiting_simplex_in_tet(tet, s);
+    auto i2 = ToLoG::exiting_simplex_in_tet_experimental(tet, s);
     EXPECT_TRUE(i.simplex.is_point());
     EXPECT_EQ(i.simplex[0], 0);
     EXPECT_EQ(i.point, P(0,0,0));
+    EXPECT_EQ(i2.simplex, TT::VAR::A);
+    EXPECT_EQ(i2.point, P(0,0,0));
 
     // Segment leaving through face on z plane
     s = S(P(0.2,0.2,4), P(0.1,0.1,-1));
     i = ToLoG::exiting_simplex_in_tet(tet, s);
+    i2 = ToLoG::exiting_simplex_in_tet_experimental(tet, s);
     EXPECT_TRUE(i.simplex.is_triangle());
     EXPECT_EQ(i.simplex[0], 0);
     EXPECT_EQ(i.simplex[1], 2);
     EXPECT_EQ(i.simplex[2], 3);
+    EXPECT_EQ(i2.simplex, TT::VAR::CDA);
+    EXPECT_EQ(i2.pierce_face, TT::HF::CDA);
 
     // Endpoint is contained within tet
     s = S(P(-1,-1,-1), P(0.1,0.1,0.1));
     i = ToLoG::exiting_simplex_in_tet(tet, s);
+    i2 = ToLoG::exiting_simplex_in_tet_experimental(tet, s);
     EXPECT_TRUE(i.simplex.empty());
+    EXPECT_FALSE(TT::is_valid(i2.simplex));
 
     // Same direction as before, but we go further and leave through the diagonal face
     s = S(P(-1,-1,-1), P(1,1,1));
     i = ToLoG::exiting_simplex_in_tet(tet, s);
+    i2 = ToLoG::exiting_simplex_in_tet_experimental(tet, s);
     EXPECT_TRUE(i.simplex.is_triangle());
     EXPECT_EQ(i.simplex[0], 1);
     EXPECT_EQ(i.simplex[1], 3);
     EXPECT_EQ(i.simplex[2], 2);
     EXPECT_NEAR(ToLoG::squared_distance(i.point, P(1./3.,1./3.,1./3.)), 0, eps);
+    EXPECT_EQ(i2.simplex, TT::VAR::BDC);
+    EXPECT_NEAR(ToLoG::squared_distance(i2.point, P(1./3.,1./3.,1./3.)), 0, eps);
 
     // Opposite direction from previous case, entering through diagonal face
     // and leaving through vertex at origin
     s = S(P(1,1,1), P(-3,-3,-3));
     i = ToLoG::exiting_simplex_in_tet(tet, s);
+    i2 = ToLoG::exiting_simplex_in_tet_experimental(tet, s);
     EXPECT_TRUE(i.simplex.is_point());
     EXPECT_EQ(i.simplex[0], 0);
     EXPECT_EQ(i.point, P(0,0,0));
+    EXPECT_EQ(i2.simplex, TT::VAR::A);
+    EXPECT_EQ(i2.point, P(0,0,0));
 
     // Segment is exactly on diagonal face -> no leaving simplex
     s = S(P(0,0.5,0.5), P(0.5,0.5,0));
     i = ToLoG::exiting_simplex_in_tet(tet, s);
+    i2 = ToLoG::exiting_simplex_in_tet_experimental(tet, s);
     EXPECT_TRUE(i.simplex.empty());
+    EXPECT_FALSE(TT::is_valid(i2.simplex));
 
     // Same direction as before but we go further, leaving
     // through the edge shared by the diagonal face and the z plane
     s = S(P(0,0.5,0.5), P(0.75,0.5,-0.25));
     i = ToLoG::exiting_simplex_in_tet(tet, s);
+    i2 = ToLoG::exiting_simplex_in_tet_experimental(tet, s);
     EXPECT_TRUE(i.simplex.is_segment());
     EXPECT_NEAR(ToLoG::squared_distance(i.point, P(0.5,0.5,0)), 0, eps);
+    EXPECT_TRUE(TT::is_halfedge(i2.simplex));
+    EXPECT_TRUE(TT::is_same_edge(static_cast<TT::HE>(i2.simplex), TT::HE::CD));
 }
 
 TEST(PredicatesTest, SegmentThroughInvertedTetTest)
@@ -265,6 +318,7 @@ TEST(PredicatesTest, SegmentThroughInvertedTetTest)
     using P = ToLoG::Point<double,3>;
     using T = ToLoG::Tetrahedron<P>;
     using S = ToLoG::Segment<P>;
+    using TT = ToLoG::TetTopology;
 
     T tet(P(0,0,0), P(1,0,0), P(0,0,1), P(0,1,0));
 
@@ -272,20 +326,28 @@ TEST(PredicatesTest, SegmentThroughInvertedTetTest)
 
     S s(P(0,0,4), P(0,0,-1));
     auto i = ToLoG::exiting_simplex_in_tet(tet, s);
+    auto i2 = ToLoG::exiting_simplex_in_tet_experimental(tet, s);
     EXPECT_TRUE(i.simplex.is_point());
     EXPECT_EQ(i.simplex[0], 0);
     EXPECT_EQ(i.point, P(0,0,0));
+    EXPECT_EQ(i2.simplex, TT::VAR::A);
+    EXPECT_EQ(i2.point, P(0,0,0));
 
     s = S(P(0.2,0.2,4), P(0.1,0.1,-1));
     i = ToLoG::exiting_simplex_in_tet(tet, s);
+    i2 = ToLoG::exiting_simplex_in_tet_experimental(tet, s);
     EXPECT_TRUE(i.simplex.is_triangle());
     EXPECT_EQ(i.simplex[0], 0);
     EXPECT_EQ(i.simplex[1], 3);
     EXPECT_EQ(i.simplex[2], 1);
+    EXPECT_EQ(i2.simplex, TT::VAR::DBA);
 
     s = S(P(1,1,1), P(-3,-3,-3));
     i = ToLoG::exiting_simplex_in_tet(tet, s);
+    i2 = ToLoG::exiting_simplex_in_tet_experimental(tet, s);
     EXPECT_TRUE(i.simplex.is_point());
     EXPECT_EQ(i.simplex[0], 0);
     EXPECT_EQ(i.point, P(0,0,0));
+    EXPECT_EQ(i2.simplex, TT::VAR::A);
+    EXPECT_EQ(i2.point, P(0,0,0));
 }
