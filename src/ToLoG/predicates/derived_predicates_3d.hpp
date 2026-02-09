@@ -31,7 +31,7 @@ TetTopology::VAR supporting_simplex_in_tet(
 
     // Check against vertices directly
     for (TT::V v : {TT::V::A,TT::V::B,TT::V::C,TT::V::D}) {
-        if (_tet[v] == _p) {return static_cast<S>(v);}
+        if (_tet[v] == _p) {return TT::var(v);}
     }
 
     // Get tet ori and opposite tet ori
@@ -47,15 +47,15 @@ TetTopology::VAR supporting_simplex_in_tet(
     auto oris = std::array<ToLoG::ORI, 4>();
     for (TT::V v : {TT::V::A,TT::V::B,TT::V::C,TT::V::D}) {
         const auto i = TT::i(v);
-        const auto hf = TT::opp(v);
+        const auto hf = TT::opp_hf(v);
         oris[i] = sign_orient3d(_tet.triangle(hf), _p);
         if (oris[i] == opp_ori) {return S::O;}
         else if (oris[i] == ToLoG::ORI::ZERO) {zeros.push_back(hf);}
     }
 
     // Determine simplex of tet which contains p
-    if (zeros.size() == 2) {return static_cast<S>(TT::he(zeros[0], zeros[1]));}
-    else if (zeros.size() == 1) {return static_cast<S>(zeros[0]);}
+    if (zeros.size() == 2) {return TT::var(TT::he(zeros[0], zeros[1]));}
+    else if (zeros.size() == 1) {return TT::var(zeros[0]);}
     else if (zeros.size() == 0) {return S::ABCD;}
 
     // cannot happen
@@ -91,7 +91,7 @@ TetTopology::VAR supporting_simplex_in_tet(
 
     if (TT::is_halfface(ps)) {
         // _p lies on a face, evaluate ori of _q w.r.t. that face
-        const ORI hf_ori = sign_orient3d(_tet.triangle(static_cast<TT::HF>(ps)), _s.end());
+        const ORI hf_ori = sign_orient3d(_tet.triangle(TT::hf(ps)), _s.end());
         if (hf_ori == tet_ori) {return TT::VAR::ABCD;} // into tet
         if (hf_ori == ORI::ZERO) {return ps;} // along face
         return TT::VAR::O; // outside
@@ -99,7 +99,7 @@ TetTopology::VAR supporting_simplex_in_tet(
 
     if (TT::is_halfedge(ps)) {
         // _p lies on an edge, evaluate ori of _q w.r.t. the two incident faces
-        const auto he = static_cast<TT::HE>(ps);
+        const TT::HE he = TT::he(ps);
         const auto hfs = TT::incident_halffaces(TT::v0(he), TT::v1(he));
 
         // Evaluate oris
@@ -116,10 +116,10 @@ TetTopology::VAR supporting_simplex_in_tet(
             return TT::VAR::ABCD; // into tet
         }
         if (zero_hfs.size() == 1) {
-            return static_cast<TT::VAR>(zero_hfs[0]); // into face
+            return TT::var(zero_hfs[0]); // into face
         }
         if (zero_hfs.size() == 2) {
-            return static_cast<TT::VAR>(TT::he(zero_hfs[0], zero_hfs[1])); // into edge
+            return TT::var(TT::he(zero_hfs[0], zero_hfs[1])); // into edge
         }
     }
 
@@ -127,7 +127,7 @@ TetTopology::VAR supporting_simplex_in_tet(
         // _p corresponds to a vertex. Evaluate ori of _q w.r.t. the three incident faces
 
         // Get the three indicent faces
-        const auto hfs = TT::incident_halffaces(static_cast<TT::V>(ps));
+        const auto hfs = TT::incident_halffaces(TT::v(ps));
 
         // Evaluate oris
         std::array<ORI,3> oris;
@@ -142,10 +142,10 @@ TetTopology::VAR supporting_simplex_in_tet(
             return TT::VAR::ABCD; // into tet
         }
         if (zero_hfs.size() == 1) {
-            return static_cast<TT::VAR>(zero_hfs[0]); // into face
+            return TT::var(zero_hfs[0]); // into face
         }
         if (zero_hfs.size() == 2) {
-            return static_cast<TT::VAR>(TT::he(zero_hfs[0], zero_hfs[1])); // into edge
+            return TT::var(TT::he(zero_hfs[0], zero_hfs[1])); // into edge
         }
     }
 
@@ -222,7 +222,7 @@ TetSegmentIntersectionExp<P> exiting_simplex_in_tet(
 
         // Check if primary direction cuts through interior/center of triangle
         if (oris[0] == oris[1] && oris[0] == oris[2]) {
-            return {static_cast<TT::VAR>(hf), is_pt(), hf};
+            return {TT::var(hf), is_pt(), hf};
         }
 
         // Check if primary direction does not cut through triangle at all
@@ -237,12 +237,12 @@ TetSegmentIntersectionExp<P> exiting_simplex_in_tet(
         assert(zeros.size() == 1 || zeros.size() ==2);
         if (zeros.size() == 1) {
             // Edge
-            return {static_cast<TT::VAR>(zeros[0]), is_pt(), hf};
+            return {TT::var(zeros[0]), is_pt(), hf};
         } else if (zeros.size() == 2) {
             // Vertex
             const TT::V v = TT::v1(zeros[0]);
             assert(v == TT::v0(zeros[1]));
-            return {static_cast<TT::VAR>(v), _tet[v], hf};
+            return {TT::var(v), _tet[v], hf};
         }
     }
     return {TT::VAR::O};

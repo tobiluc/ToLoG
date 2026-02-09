@@ -105,6 +105,16 @@ public:
     inline constexpr static uint8_t i(V _v) {
         return b(_v)&3;
     }
+    // canonical halfedge index (lexographic)
+    inline constexpr static uint8_t i(HE _he) {
+        const uint8_t i0 = i(v0(_he));
+        const uint8_t i1 = i(v1(_he));
+        return (3*i0) + ((i1<i0)? i1 : (i1-1));
+    }
+    // canonical halfface index (hf[i] = opp_v(v[i]))
+    inline constexpr static uint8_t i(HF _hf) {
+        return i(opp_v(_hf));
+    }
     inline constexpr static V v(const bits _b) {
         return static_cast<V>(0b01000000|(_b&3));
     }
@@ -142,7 +152,7 @@ public:
         return is_halfface(_var)? static_cast<HF>(_var) : HF::O;
     }
     inline constexpr static bool is_same_halfface(HF _hf1, HF _hf2) {
-        return opp(_hf1)==opp(_hf2);
+        return opp_v(_hf1)==opp_v(_hf2);
     }
     inline constexpr static bool is_same_edge(HE _he1, HE _he2) {
         return _he1==_he2||_he1==opp(_he2);
@@ -177,10 +187,10 @@ public:
     inline constexpr static HE opp(HE _he) {
         return he(v(_he,1), v(_he,0));
     }
-    inline constexpr static V opp(HF _hf) {
+    inline constexpr static V opp_v(HF _hf) {
         return fourth_vertex(v(_hf,0), v(_hf,1), v(_hf,2));
     }
-    inline constexpr static HF opp(V v) {
+    inline constexpr static HF opp_hf(V v) {
         return v_opp_hf_[i(v)];
     }
     inline constexpr static HE he(HF _hf, uint8_t _idx) {
@@ -274,8 +284,30 @@ private:
         return v((0b01<<6)|(6-i(_v0)-i(_v1)-i(_v2)));
     }
 };
-// inline constexpr bool operator==(typename TetTopology::HF hf1, typename TetTopology::HF hf2) {
-//     return TetTopology::opp(hf1)==TetTopology::opp(hf2);
-// }
+
+template<typename Vertex, typename HalfEdge, typename HalfFace>
+class TetTopologyT
+{
+private:
+    using TT = TetTopology;
+public:
+    inline constexpr Vertex vertex(TT::V _v) const {
+        return TetTopology::is_valid(TT::var(_v))? v_[TetTopology::i(_v)] : Vertex();
+    }
+    inline constexpr HalfEdge halfedge(TT::HE _he) const {
+        return TetTopology::is_valid(TT::var(_he))? he_[TT::i(_he)] : HalfEdge();
+    }
+    inline constexpr HalfFace halfface(TT::HF _hf) const {
+        return TetTopology::is_valid(TT::var(_hf))? hf_[TT::i(_hf)] : HalfFace();
+    }
+    inline constexpr TT::V v(Vertex _vh) const {
+        for (int idx = 0; idx < 4; ++idx) {if (v_[idx] == _vh) {return TT::v(idx);}}
+        return TetTopology::V::O;
+    }
+protected:
+    std::array<Vertex,4> v_;
+    std::array<HalfEdge,12> he_;
+    std::array<HalfFace, 4> hf_;
+};
 
 }
