@@ -6,7 +6,7 @@
 namespace ToLoG
 {
 
-struct SimplexIndices
+struct [[deprecated("For its specific usage, replaced by tet_topology")]] SimplexIndices
 {
 public:
     SimplexIndices(const std::vector<int>& _indices)

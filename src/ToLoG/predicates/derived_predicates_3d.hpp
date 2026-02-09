@@ -22,7 +22,7 @@ ORI sign_orient3d(const Triangle<P>& _tri, const P& _p)
 }
 
 template<vector_3d P>
-TetTopology::VAR supporting_simplex_in_tet_experimental(
+TetTopology::VAR supporting_simplex_in_tet(
     const Tetrahedron<P>& _tet,
     const P& _p)
 {
@@ -70,13 +70,13 @@ TetTopology::VAR supporting_simplex_in_tet_experimental(
  * for all delta>0 there exists delta>eps>0 s.t. p + eps*(q-p) is contained in s.
  */
 template<vector_3d P>
-TetTopology::VAR supporting_simplex_in_tet_experimental(
+TetTopology::VAR supporting_simplex_in_tet(
     const Tetrahedron<P>& _tet,
     const Segment<P>& _s,
     std::optional<TetTopology::VAR> _p_simplex = std::nullopt)
 {
     using TT = TetTopology;
-    if (!_p_simplex.has_value()) {_p_simplex = supporting_simplex_in_tet_experimental(_tet, _s.start());}
+    if (!_p_simplex.has_value()) {_p_simplex = supporting_simplex_in_tet(_tet, _s.start());}
     const auto ps = _p_simplex.value();
     if (!TT::is_valid(ps) || (_s.start()==_s.end())) {return TT::VAR::O;}
 
@@ -161,8 +161,14 @@ struct TetSegmentIntersectionExp
     TetTopology::HF pierce_face; // piercing face
 };
 
+/**
+ * Returns the lowest dimensional Simplex of the Tetrahedron given by the tet's vertex indices
+ * on which the ray originating from _p and going in direction (_q - _p) lies (given by the segment s = (p,q)).
+ * Mathematically, returns the unique lowest dimensional simplex s s.t.
+ * for all delta>0 there exists delta>eps>0 s.t. p + eps*(q-p) is contained in s.
+ */
 template<vector_3d P>
-TetSegmentIntersectionExp<P> exiting_simplex_in_tet_experimental(
+TetSegmentIntersectionExp<P> exiting_simplex_in_tet(
     const Tetrahedron<P>& _tet,
     const Segment<P>& _s, std::optional<TetTopology::HF> _exclude_f = std::nullopt)
 {
@@ -243,11 +249,11 @@ TetSegmentIntersectionExp<P> exiting_simplex_in_tet_experimental(
 }
 
 template<vector_3d P>
-TetSegmentIntersectionExp<P> entering_simplex_in_tet_experimental(
+TetSegmentIntersectionExp<P> entering_simplex_in_tet(
     const Tetrahedron<P>& _tet,
     const Segment<P>& _s)
 {
-    return exiting_simplex_in_tet_experimental(_tet, _s.reversed());
+    return exiting_simplex_in_tet(_tet, _s.reversed());
 }
 
 /**
@@ -258,7 +264,8 @@ TetSegmentIntersectionExp<P> entering_simplex_in_tet_experimental(
  * If _p is outside the tet, returns {}. If _p is strictly inside the tet, returns {0,1,2,3}.
  */
 template<vector_3d P>
-SimplexIndices supporting_simplex_in_tet(
+[[deprecated("Replaced by supporting_simplex_in_tet")]]
+SimplexIndices supporting_simplex_in_tet_DEPR(
     const Tetrahedron<P>& _tet,
     const P& _p)
 {
@@ -320,12 +327,13 @@ SimplexIndices supporting_simplex_in_tet(
  * for all delta>0 there exists delta>eps>0 s.t. p + eps*(q-p) is contained in s.
  */
 template<vector_3d P>
-SimplexIndices supporting_simplex_in_tet(
+[[deprecated("Replaced by supporting_simplex_in_tet")]]
+SimplexIndices supporting_simplex_in_tet_DEPR(
     const Tetrahedron<P>& _tet,
     const Segment<P>& _s,
     std::optional<SimplexIndices> _p_simplex = std::nullopt)
 {
-    if (!_p_simplex.has_value()) {_p_simplex = supporting_simplex_in_tet(_tet, _s.start());}
+    if (!_p_simplex.has_value()) {_p_simplex = supporting_simplex_in_tet_DEPR(_tet, _s.start());}
     const auto& vs = _p_simplex.value();
     if (vs.empty() || (_s.start()==_s.end())) {return {};}
 
@@ -475,7 +483,8 @@ struct TetSegmentIntersection
 /// It is expected that q lies outside the tet, and p lies on the opposite side of the face
 /// compared to q.
 template<vector_3d P>
-TetSegmentIntersection<P> exiting_simplex_in_tet(
+[[deprecated("Replaced by exiting_simplex_in_tet")]]
+TetSegmentIntersection<P> exiting_simplex_in_tet_DEPR(
     const Tetrahedron<P>& _tet,
     const Segment<P>& _s, std::optional<std::array<int,3>> _exclude_f = std::nullopt)
 {
@@ -557,11 +566,12 @@ TetSegmentIntersection<P> exiting_simplex_in_tet(
 }
 
 template<vector_3d P>
-TetSegmentIntersection<P> entering_simplex_in_tet(
+[[deprecated("Replaced by entering_simplex_in_tet")]]
+TetSegmentIntersection<P> entering_simplex_in_tet_DEPR(
     const Tetrahedron<P>& _tet,
     const Segment<P>& _s)
 {
-    return exiting_simplex_in_tet(_tet, _s.reversed());
+    return exiting_simplex_in_tet_DEPR(_tet, _s.reversed());
 }
 
 }

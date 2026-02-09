@@ -55,7 +55,7 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/math/winding_number.hpp
 
     src/ToLoG/detail/intersects.inl.hpp
-    src/ToLoG/mesh/mesh_concepts.hpp
+    src/ToLoG/mesh/polygon_mesh_concepts.hpp
     src/ToLoG/predicates/derived_predicates_3d.hpp
     src/ToLoG/mesh/simplex_indices.hpp
     src/ToLoG/mesh/polygon_mesh.hpp

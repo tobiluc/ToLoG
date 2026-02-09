@@ -2,7 +2,7 @@
 #include <ToLoG/Traits_fwd.hpp>
 #include <ToLoG/utils/indices.hpp>
 #include <vector>
-#include <ToLoG/mesh/mesh_concepts.hpp>
+#include <ToLoG/mesh/polygon_mesh_concepts.hpp>
 
 namespace ToLoG
 {
@@ -114,7 +114,7 @@ M cube(FT _size=1)
 
 template<polygon_mesh_3 M,
     typename FT = typename Traits<typename Traits<M>::vector_type>::value_type>
-M cylinder(FT r1=0.5, FT r2=0.5, FT height=2,
+M cylinder(std::function<FT(FT)> _rt = [](FT t){return FT(0.5);} , FT height=2,
     int r_slices = 32, int h_slices = 1)
 {
     using P = typename Traits<M>::vector_type;
@@ -129,7 +129,7 @@ M cylinder(FT r1=0.5, FT r2=0.5, FT height=2,
     for (int k = 0; k <= h_slices; ++k) {
         FT t = FT(k) / h_slices;
         FT z = t * height;
-        FT r = (1.0 - t) * r1 + t * r2;
+        FT r = _rt(t);
 
         rings[k].reserve(r_slices);
 

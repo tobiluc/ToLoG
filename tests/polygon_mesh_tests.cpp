@@ -25,8 +25,8 @@ TEST(PolygonMeshTest, CylinderTest)
     using P = ToLoG::Point<double, 3>;
     using Mesh = ToLoG::PolygonMesh<P>;
 
-    Mesh cylinder = ToLoG::cylinder<Mesh>();
+    Mesh mesh = ToLoG::cylinder<Mesh>();
 
     EXPECT_EQ(ToLoG::IO::write_polygon_mesh_obj(
-        std::filesystem::path(TESTS_OUTPUT_DIR)/"cylinder.obj", cylinder), 0);
+        std::filesystem::path(TESTS_OUTPUT_DIR)/"cylinder.obj", mesh), 0);
 }

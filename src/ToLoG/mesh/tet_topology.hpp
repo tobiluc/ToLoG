@@ -1,8 +1,6 @@
 #pragma once
 #include <array>
 #include <cassert>
-#include <iostream>
-#include <ostream>
 
 namespace ToLoG
 {
@@ -63,12 +61,16 @@ public:
         ABCD=0b11111100
     };
     enum class V : bits {
+        O=0b00000000,
+
         A=static_cast<bits>(VAR::A),
         B=static_cast<bits>(VAR::B),
         C=static_cast<bits>(VAR::C),
         D=static_cast<bits>(VAR::D)
     };
     enum class HE : bits {
+        O=0b00000000,
+
         AB=static_cast<bits>(VAR::AB),
         AC=static_cast<bits>(VAR::AC),
         AD=static_cast<bits>(VAR::AD),
@@ -83,6 +85,8 @@ public:
         DC=static_cast<bits>(VAR::DC)
     };
     enum class HF : bits {
+        O=0b00000000,
+
         BDC=static_cast<bits>(VAR::BDC),
         CDA=static_cast<bits>(VAR::CDA),
         DBA=static_cast<bits>(VAR::DBA),
@@ -118,6 +122,24 @@ public:
     }
     inline constexpr static bool is_valid(VAR _var) {
         return (b(_var)&0b11000000)!=0b00000000;
+    }
+    inline constexpr static VAR var(V _v) {
+        return static_cast<VAR>(_v);
+    }
+    inline constexpr static VAR var(HE _he) {
+        return static_cast<VAR>(_he);
+    }
+    inline constexpr static VAR var(HF _hf) {
+        return static_cast<VAR>(_hf);
+    }
+    inline constexpr static V v(const VAR _var) {
+        return is_vertex(_var)? static_cast<V>(_var) : V::O;
+    }
+    inline constexpr static HE he(const VAR _var) {
+        return is_halfedge(_var)? static_cast<HE>(_var) : HE::O;
+    }
+    inline constexpr static HF hf(const VAR _var) {
+        return is_halfface(_var)? static_cast<HF>(_var) : HF::O;
     }
     inline constexpr static bool is_same_halfface(HF _hf1, HF _hf2) {
         return opp(_hf1)==opp(_hf2);
@@ -192,10 +214,12 @@ public:
             for (int j = 0; j < 3; ++j) {
                 if (hfs1[i] == hfs2[j]) {
                     hfs[idx++] = hfs1[i];
+                    if (idx==2) {return hfs;}
                     break;
                 }
             }
         }
+        assert(false);
         return hfs;
     }
     inline constexpr static const std::array<HE,3> incident_halfedges(V v) {

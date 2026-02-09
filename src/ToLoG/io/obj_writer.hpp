@@ -2,7 +2,7 @@
 #include <ToLoG/AABBTree.hpp>
 #include <filesystem>
 #include <fstream>
-#include <ToLoG/mesh/mesh_concepts.hpp>
+#include <ToLoG/mesh/polygon_mesh_concepts.hpp>
 
 namespace ToLoG::IO
 {
