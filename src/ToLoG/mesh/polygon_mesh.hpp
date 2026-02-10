@@ -33,7 +33,9 @@ public:
         return vertex_index(points_.size()-1);
     }
     inline edge_index add_edge(vertex_index _v0, vertex_index _v1) {
-        edges_.push_back({_v0, _v1});
+        Edge e;
+        e.vertices_ = {_v0, _v1};
+        edges_.push_back(e);
         return edge_index(edges_.size()-1);
     }
     inline face_index add_face(const std::vector<vertex_index>& _f) {
@@ -64,7 +66,7 @@ public:
     }
 private:
     std::vector<P> points_;
-    std::vector<std::pair<vertex_index,vertex_index>> edges_;
+    std::vector<Edge> edges_;
     std::vector<Face> faces_;
 };
 
