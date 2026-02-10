@@ -19,10 +19,12 @@ int read_polygon_mesh_ply(
     happly::PLYData ply(_path);
     std::vector<vertex_index> vhs;
 
+    if (!ply.hasElement("vertex")) {return 0;}
     for (const auto& p : ply.getVertexPositions()) {
         vhs.push_back(_mesh.add_vertex(P(p[0],p[1],p[2])));
     }
 
+    if (!ply.hasElement("face")) {return 0;}
     for (const auto& f : ply.getFaceIndices()) {
         std::vector<vertex_index> f_vhs;
         for (auto i : f) {f_vhs.push_back(vhs[i]);}
