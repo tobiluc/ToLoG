@@ -52,25 +52,20 @@ int read_polygon_mesh_obj(const std::filesystem::path& _path,
         // Face
         else if (tag == "f")
         {
-            std::vector<vertex_index> face;
+            std::vector<vertex_index> vhs;
             std::string token;
-            while (iss >> token)
-            {
-                // "1", "1/2", "1/2/3", "1//3"
-                // ignore vt and vn for now)
-                std::istringstream t(token);
-                int idx;
-                t >> idx;
-
-                // OBJ is 1-based
-                face.push_back(vertices[idx-1]);
+            while (iss >> token) {
+                size_t pos = token.find('/');
+                if (pos != std::string::npos) {
+                    token = token.substr(0, pos); // Only use vertex index (no other data)
+                }
+                vhs.push_back(vertex_index(std::stoi(token)-1));
             }
-
-            if (face.size() >= 3) {
-                _mesh.add_face(face);
+            if (vhs.size() >= 3) {
+                _mesh.add_face(vhs);
             } else {
                 std::cerr << "Warning: Ignore face with valence "
-                          << face.size() << " in OBJ reader" << std::endl;
+                          << vhs.size() << " in OBJ reader" << std::endl;
             }
         }
     }
