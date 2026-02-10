@@ -60,6 +60,11 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/mesh/simplex_indices.hpp
     src/ToLoG/mesh/polygon_mesh.hpp
     src/ToLoG/mesh/tet_topology.hpp
+    src/ToLoG/io/obj_reader.hpp
+    src/ToLoG/io/medit_reader.hpp
+    src/ToLoG/mesh/polyhedral_mesh_concepts.hpp
+    src/ToLoG/mesh/mesh_concepts.hpp
+    src/ToLoG/io/ply_reader.hpp
 )
 add_library ("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS ${PROJECT_NAME})
 

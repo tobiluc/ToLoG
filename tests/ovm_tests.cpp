@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <ToLoG/utils/OVM_Traits.hpp>
 #include <ToLoG/Core.hpp>
+#include <ToLoG/io/medit_reader.hpp>
 
 #include <OpenVolumeMesh/Core/OpenVolumeMeshHandle.hh>
 
@@ -15,4 +16,17 @@ TEST(OVMTest, OVMTest1)
 
 
     EXPECT_TRUE((std::is_same<ToLoG::Traits<TetMesh>::vector_type,OpenVolumeMesh::Vec3d>::value));
+}
+
+TEST(OVMTest, OVMReadTetMeshTest)
+{
+    using Vec3d = OpenVolumeMesh::Vec3d;
+    using TetMesh = OpenVolumeMesh::TetrahedralGeometryKernel<Vec3d, OpenVolumeMesh::TetrahedralMeshTopologyKernel>;
+    TetMesh mesh;
+
+    ToLoG::Traits<TetMesh>::vertex_index vh;
+
+    EXPECT_EQ(ToLoG::IO::read_polyhedral_mesh_medit(
+        "/Users/tobiaskohler/Desktop/tetmesh.mesh", mesh), 0);
+
 }

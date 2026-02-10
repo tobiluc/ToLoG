@@ -1,6 +1,7 @@
 #pragma once
 #include <array>
 #include <cassert>
+#include <iostream>
 
 namespace ToLoG
 {
@@ -115,8 +116,18 @@ public:
     inline constexpr static uint8_t i(HF _hf) {
         return i(opp_v(_hf));
     }
-    inline constexpr static V v(const bits _b) {
-        return static_cast<V>(0b01000000|(_b&3));
+    inline constexpr static HE i2he(int _i) {
+        if (_i<0||_i>11) {return HE::O;}
+        uint8_t i0 = _i/3;
+        uint8_t i1 = (_i%3+1);
+        if (i1<=i0) {i1 -= 1;}
+        return he(i2v(i0), i2v(i1));
+    }
+    inline constexpr static V i2v(int _i) {
+        return (_i>=0&&_i<4)? v(static_cast<uint8_t>(_i)) : V::O;
+    }
+    inline constexpr static HF i2hf(int _i) {
+        return (_i>=0&&_i<4)? opp_hf(i2v(_i)) : HF::O;
     }
     inline constexpr static bool is_vertex(VAR _var) {
         return (b(_var)&0b11000000)==0b01000000;
@@ -190,8 +201,8 @@ public:
     inline constexpr static V opp_v(HF _hf) {
         return fourth_vertex(v(_hf,0), v(_hf,1), v(_hf,2));
     }
-    inline constexpr static HF opp_hf(V v) {
-        return v_opp_hf_[i(v)];
+    inline constexpr static HF opp_hf(V _v) {
+        return is_valid(var(_v))? v_opp_hf_[i(_v)] : HF::O;
     }
     inline constexpr static HE he(HF _hf, uint8_t _idx) {
         return he(v(_hf,_idx), v(_hf,(_idx+1)%3));
@@ -262,6 +273,7 @@ public:
     // }
 
 private:
+    inline constexpr static V v(const bits _b) {return static_cast<V>(0b01000000|(_b&3));}
     inline constexpr static HE he(const bits _b) {return static_cast<HE>(_b);}
     inline constexpr static HF hf(const bits _b) {return static_cast<HF>(_b);}
     constexpr static const std::array<std::array<HF,3>,4> v_inc_hf_ = {{
@@ -292,17 +304,34 @@ private:
     using TT = TetTopology;
 public:
     inline constexpr Vertex vertex(TT::V _v) const {
-        return TetTopology::is_valid(TT::var(_v))? v_[TetTopology::i(_v)] : Vertex();
+        return TT::is_valid(TT::var(_v))? v_[TT::i(_v)] : Vertex();
     }
     inline constexpr HalfEdge halfedge(TT::HE _he) const {
-        return TetTopology::is_valid(TT::var(_he))? he_[TT::i(_he)] : HalfEdge();
+        return TT::is_valid(TT::var(_he))? he_[TT::i(_he)] : HalfEdge();
     }
     inline constexpr HalfFace halfface(TT::HF _hf) const {
-        return TetTopology::is_valid(TT::var(_hf))? hf_[TT::i(_hf)] : HalfFace();
+        return TT::is_valid(TT::var(_hf))? hf_[TT::i(_hf)] : HalfFace();
+    }
+    inline constexpr const std::array<Vertex,4>& vertices() const {
+        return v_;
+    }
+    inline constexpr const std::array<HalfEdge,12>& halfedges() const {
+        return he_;
+    }
+    inline constexpr const std::array<HalfFace,4>& halffaces() const {
+        return hf_;
     }
     inline constexpr TT::V v(Vertex _vh) const {
-        for (int idx = 0; idx < 4; ++idx) {if (v_[idx] == _vh) {return TT::v(idx);}}
-        return TetTopology::V::O;
+        for (int idx = 0; idx < 4; ++idx) {if (v_[idx] == _vh) {return TT::i2v(idx);}}
+        return TT::V::O;
+    }
+    inline constexpr TT::HE he(HalfEdge _heh) const {
+        for (int idx = 0; idx < 12; ++idx) {if (he_[idx] == _heh) {return TT::i2he(idx);}}
+        return TT::HE::O;
+    }
+    inline constexpr TT::HF hf(HalfFace _hfh) const {
+        for (int idx = 0; idx < 4; ++idx) {if (hf_[idx] == _hfh) {return TT::i2hf(idx);}}
+        return TT::HF::O;
     }
 protected:
     std::array<Vertex,4> v_;
