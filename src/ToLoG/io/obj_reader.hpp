@@ -40,12 +40,14 @@ int read_polygon_mesh_obj(const std::filesystem::path& _path,
         // Line
         else if (tag == "l")
         {
-            int idx;
-            iss >> idx;
-            vertex_index v0(idx-1);
-            iss >> idx;
-            vertex_index v1(idx-1);
-            _mesh.add_edge(v0, v1);
+            std::vector<vertex_index> vhs;
+            std::string token;
+            while (iss >> token) {
+                vhs.push_back(vertex_index(std::stoi(token)-1));
+            }
+            for (int i = 0; i < vhs.size()-1; ++i) {
+                _mesh.add_edge(vhs[i], vhs[i+1]);
+            }
         }
         // Face
         else if (tag == "f")
