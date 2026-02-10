@@ -47,7 +47,7 @@ int read_polygon_mesh_obj(const std::filesystem::path& _path,
             vertex_index v0 = vertices[idx-1];
             iss >> idx;
             vertex_index v1 = vertices[idx-1];
-            // edge?
+            _mesh.add_edge(v0, v1);
         }
         // Face
         else if (tag == "f")

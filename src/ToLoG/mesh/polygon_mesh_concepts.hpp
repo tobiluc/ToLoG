@@ -31,9 +31,11 @@ concept polygon_mesh =
         std::vector<typename Traits<M>::vertex_index> vertex_indices
     ) {
     {rm.add_vertex(point)} -> std::same_as<typename Traits<M>::vertex_index>;
+    {rm.add_edge(vertex_index, vertex_index)} -> std::same_as<typename Traits<M>::edge_index>;
     {rm.add_face(vertex_indices)} -> std::same_as<typename Traits<M>::face_index>;
 
     {crm.n_vertices()} -> std::same_as<size_t>;
+    {crm.n_edges()} -> std::same_as<size_t>;
     {crm.n_faces()} -> std::same_as<size_t>;
 
     {crm.point(vertex_index)} -> std::same_as<const typename Traits<M>::vector_type&>;

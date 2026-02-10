@@ -13,6 +13,7 @@ class PolygonMesh
 {
 private:
     using vertex_index = Traits<PolygonMesh<P>>::vertex_index;
+    using edge_index = Traits<PolygonMesh<P>>::edge_index;
     using face_index = Traits<PolygonMesh<P>>::face_index;
     using FT = Traits<P>::value_type;
 
@@ -27,12 +28,19 @@ public:
         points_.push_back(_p);
         return vertex_index(points_.size()-1);
     }
+    inline edge_index add_edge(vertex_index _v0, vertex_index _v1) {
+        edges_.push_back({_v0, _v1});
+        return edge_index(edges_.size()-1);
+    }
     inline face_index add_face(const std::vector<vertex_index>& _f) {
         faces_.push_back(Face{_f});
         return face_index(faces_.size()-1);
     }
     inline size_t n_vertices() const {
         return points_.size();
+    }
+    inline size_t n_edges() const {
+        return edges_.size();
     }
     inline size_t n_faces() const {
         return faces_.size();
@@ -49,6 +57,7 @@ public:
     }
 private:
     std::vector<P> points_;
+    std::vector<std::pair<vertex_index,vertex_index>> edges_;
     std::vector<Face> faces_;
 };
 
@@ -56,6 +65,7 @@ template<typename P>
 struct Traits<PolygonMesh<P>>
 {
     using vertex_index = int;
+    using edge_index = int;
     using face_index = int;
     using vector_type = P;
 };
