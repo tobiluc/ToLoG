@@ -18,6 +18,12 @@ concept polygon_mesh_face =
         {f.valence()} -> std::convertible_to<size_t>;
     };
 
+template<class Edge, class VertexIndex>
+concept polygon_mesh_edge =
+    requires(const Edge& e, int idx) {
+        {e.vertex(idx)} -> std::same_as<VertexIndex>;
+    };
+
 // Works with ToLoG::PolygonMesh3 and
 template<class M>
 concept polygon_mesh =
@@ -43,6 +49,11 @@ concept polygon_mesh =
     {crm.faces()} -> std::ranges::range;
     requires polygon_mesh_face<
         std::ranges::range_reference_t<decltype(crm.faces())>,
+        typename Traits<M>::vertex_index>;
+
+    {crm.edges()} -> std::ranges::range;
+    requires polygon_mesh_edge<
+        std::ranges::range_reference_t<decltype(crm.edges())>,
         typename Traits<M>::vertex_index>;
 
     {rm.clear()};

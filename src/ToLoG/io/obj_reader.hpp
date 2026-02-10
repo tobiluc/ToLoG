@@ -19,7 +19,6 @@ int read_polygon_mesh_obj(const std::filesystem::path& _path,
     std::ifstream file(_path);
     if (!file) {return 1;}
 
-    std::vector<vertex_index> vertices;
     std::string line;
 
     while (std::getline(file, line))
@@ -36,17 +35,16 @@ int read_polygon_mesh_obj(const std::filesystem::path& _path,
             FT x, y, z;
             iss >> x >> y >> z;
 
-            vertex_index v = _mesh.add_vertex(P(x, y, z));
-            vertices.push_back(v);
+            _mesh.add_vertex(P(x, y, z));
         }
         // Line
         else if (tag == "l")
         {
             int idx;
             iss >> idx;
-            vertex_index v0 = vertices[idx-1];
+            vertex_index v0(idx-1);
             iss >> idx;
-            vertex_index v1 = vertices[idx-1];
+            vertex_index v1(idx-1);
             _mesh.add_edge(v0, v1);
         }
         // Face

@@ -22,6 +22,10 @@ private:
         inline const std::vector<vertex_index>& vertices() const {return vertices_;}
         inline size_t valence() const {return vertices_.size();}
     };
+    struct Edge {
+        std::array<vertex_index,2> vertices_;
+        inline vertex_index vertex(int _i) const {return vertices_[_i];}
+    };
 public:
     PolygonMesh() {}
     inline vertex_index add_vertex(const P& _p) {
@@ -47,6 +51,9 @@ public:
     }
     inline const P& point(vertex_index _vi) const {
         return points_[_vi];
+    }
+    inline const std::vector<Edge>& edges() const {
+        return edges_;
     }
     inline const std::vector<Face>& faces() const {
         return faces_;
