@@ -187,6 +187,13 @@ public:
         return std::ref(values_[idx]);
     }
 
+    inline const V& get_or_set(const K& _key, const V& _val) {
+        std::optional<std::reference_wrapper<const V>> g = get(_key);
+        if (g.has_value()) {return g.value();}
+        this->operator[](_key) = _val;
+        return _val;
+    }
+
     inline const V& get_or_default(const K& key, const V& _default) const {
         size_t idx = find(key);
         if (idx == nullidx) {return _default;}

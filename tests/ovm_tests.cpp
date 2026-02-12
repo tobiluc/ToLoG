@@ -26,7 +26,7 @@ TEST(OVMTest, OVMReadTetMeshTest)
 
     ToLoG::Traits<TetMesh>::vertex_index vh;
 
-    EXPECT_EQ(ToLoG::IO::read_polyhedral_mesh_medit(
-        "/Users/tobiaskohler/Desktop/tetmesh.mesh", mesh), 0);
+    // EXPECT_EQ(ToLoG::IO::read_polyhedral_mesh_medit(
+    //     "/Users/tobiaskohler/Desktop/tetmesh.mesh", mesh), 0);
 
 }

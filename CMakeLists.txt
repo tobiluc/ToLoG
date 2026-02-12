@@ -65,6 +65,8 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/mesh/polyhedral_mesh_concepts.hpp
     src/ToLoG/mesh/mesh_concepts.hpp
     src/ToLoG/io/ply_reader.hpp
+    src/ToLoG/utils/std_pair_hash.hpp
+
 )
 add_library ("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS ${PROJECT_NAME})
 

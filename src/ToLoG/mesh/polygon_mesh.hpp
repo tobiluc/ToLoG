@@ -1,8 +1,10 @@
 #pragma once
+#include "ToLoG/HashMap.hpp"
 #include <ToLoG/Traits_fwd.hpp>
 #include <ToLoG/utils/indices.hpp>
 #include <vector>
 #include <ToLoG/mesh/polygon_mesh_concepts.hpp>
+#include <ToLoG/utils/std_pair_hash.hpp>
 
 namespace ToLoG
 {
@@ -17,33 +19,96 @@ private:
     using face_index = Traits<PolygonMesh<P>>::face_index;
     using FT = Traits<P>::value_type;
 
+    struct Vertex {
+    private:
+        P position_;
+    public:
+        Vertex(const P& _position) : position_(_position) {}
+        Vertex() {}
+        inline const P& position() const {return position_;}
+    };
     struct Face {
+    private:
         std::vector<vertex_index> vertices_;
+    public:
+        Face(const std::vector<vertex_index>& _vertices) : vertices_(_vertices) {}
+        Face() {}
         inline const std::vector<vertex_index>& vertices() const {return vertices_;}
         inline size_t valence() const {return vertices_.size();}
     };
     struct Edge {
+    private:
         std::array<vertex_index,2> vertices_;
+    public:
+        Edge(vertex_index _v0, vertex_index _v1) : vertices_({_v0, _v1}) {}
         inline vertex_index vertex(int _i) const {return vertices_[_i];}
     };
+
+public:
+    class VertexVertexIterator {
+    private:
+        const PolygonMesh* mesh_;
+        vertex_index vh_;
+        size_t i_;
+    public:
+        VertexVertexIterator(const PolygonMesh* _mesh,
+            vertex_index _vh, size_t _i)
+            : mesh_(_mesh), vh_(_vh), i_(_i) {}
+        vertex_index operator*() const {
+            const edge_index eh = mesh_->v_e_map_[index(vh_)][i_];
+            const Edge& e = mesh_->edge(eh);
+            vertex_index v0 = e.vertex(0);
+            vertex_index v1 = e.vertex(1);
+            return (v0 == vh_) ? v1 : v0;
+        }
+        VertexVertexIterator& operator++() {
+            ++i_;
+            return *this;
+        }
+        bool operator==(const VertexVertexIterator& _o) const {
+            return i_ == _o.i_ &&
+                   vh_ == _o.vh_ &&
+                   mesh_ == _o.mesh_;
+        }
+        bool operator!=(const VertexVertexIterator& _o) const {
+            return !(*this == _o);
+        }
+        bool is_valid() const {
+            return i_ < mesh_->v_e_map_[index(vh_)].size();
+        }
+    };
+
 public:
     PolygonMesh() {}
     inline vertex_index add_vertex(const P& _p) {
-        points_.push_back(_p);
-        return vertex_index(points_.size()-1);
+        vertices_.emplace_back(_p);
+        v_e_map_.emplace_back();
+        return vertex_index(vertices_.size()-1);
     }
     inline edge_index add_edge(vertex_index _v0, vertex_index _v1) {
-        Edge e;
-        e.vertices_ = {_v0, _v1};
-        edges_.push_back(e);
-        return edge_index(edges_.size()-1);
+        if (v_e_map_.size() <= std::max(index(_v0), index(_v1))) {
+            v_e_map_.resize(std::max(index(_v0), index(_v1)));
+        }
+        for (edge_index eh : v_e_map_[index(_v0)]) {
+            const Edge& e = edge(eh);
+            if ((e.vertex(0)==_v0 && e.vertex(1)==_v1) ||
+                (e.vertex(1)==_v0 && e.vertex(0)==_v1)) {
+                return eh;
+            }
+        }
+        edges_.emplace_back(_v0, _v1);
+        edge_index eh(edges_.size()-1);
+        v_e_map_[index(_v0)].push_back(eh);
+        v_e_map_[index(_v1)].push_back(eh);
+        return eh;
     }
     inline face_index add_face(const std::vector<vertex_index>& _f) {
-        faces_.push_back(Face{_f});
+        faces_.emplace_back(_f);
+        for (int i = 0; i < _f.size()-1; ++i) {add_edge(_f[i], _f[i+1]);}
         return face_index(faces_.size()-1);
     }
     inline size_t n_vertices() const {
-        return points_.size();
+        return vertices_.size();
     }
     inline size_t n_edges() const {
         return edges_.size();
@@ -52,7 +117,19 @@ public:
         return faces_.size();
     }
     inline const P& point(vertex_index _vi) const {
-        return points_[_vi];
+        return vertices_[_vi].position();
+    }
+    inline const Vertex& vertex(vertex_index _vi) const {
+        return vertices_[index(_vi)];
+    }
+    inline const Edge& edge(edge_index _ei) const {
+        return edges_[index(_ei)];
+    }
+    inline const Face& face(face_index _fi) const {
+        return faces_[index(_fi)];
+    }
+    inline const std::vector<Vertex>& vertices() const {
+        return vertices_;
     }
     inline const std::vector<Edge>& edges() const {
         return edges_;
@@ -61,13 +138,18 @@ public:
         return faces_;
     }
     inline void clear() {
-        points_.clear();
+        vertices_.clear();
+        edges_.clear();
         faces_.clear();
     }
+    inline VertexVertexIterator vv_iter(vertex_index _vi) const {
+        return VertexVertexIterator(this, _vi, 0);
+    }
 private:
-    std::vector<P> points_;
+    std::vector<Vertex> vertices_;
     std::vector<Edge> edges_;
     std::vector<Face> faces_;
+    std::vector<std::vector<edge_index>> v_e_map_;
 };
 
 template<typename P>
