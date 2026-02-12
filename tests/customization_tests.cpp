@@ -15,38 +15,46 @@
 struct CustomVec3d
 {
     CustomVec3d(double x, double y, double z) {
-        data[0] = x;
-        data[1] = y;
-        data[2] = z;
+        data_[0] = x;
+        data_[1] = y;
+        data_[2] = z;
     }
     CustomVec3d() : CustomVec3d(0,0,0) {}
-    inline double operator[](int i) const {return data[i];}
-    inline double& operator[](int i) {return data[i];}
+    inline double operator[](int i) const {return data_[i];}
+    inline double& operator[](int i) {return data_[i];}
     inline bool operator==(const CustomVec3d& v) const {
-        return data[0]==v.data[0]&&data[1]==v.data[1]&&data[2]==v.data[2];
+        return data_[0]==v.data_[0]&&data_[1]==v.data_[1]&&data_[2]==v.data_[2];
     }
     inline CustomVec3d operator+(const CustomVec3d& v) const {
         return CustomVec3d(
-            data[0]+v.data[0],
-            data[1]+v.data[1],
-            data[2]+v.data[2]
+            data_[0]+v.data_[0],
+            data_[1]+v.data_[1],
+            data_[2]+v.data_[2]
             );
     }
     inline CustomVec3d operator-(const CustomVec3d& v) const {
         return CustomVec3d(
-            data[0]-v.data[0],
-            data[1]-v.data[1],
-            data[2]-v.data[2]
+            data_[0]-v.data_[0],
+            data_[1]-v.data_[1],
+            data_[2]-v.data_[2]
             );
     }
-    inline CustomVec3d operator/(const double& s) const {
+    inline CustomVec3d operator/(double s) const {
         return CustomVec3d(
-            data[0]/s,
-            data[1]/s,
-            data[2]/s
+            data_[0]/s,
+            data_[1]/s,
+            data_[2]/s
             );
     }
-    double data[3];
+    inline CustomVec3d operator*(double s) const {
+        return CustomVec3d(
+            data_[0]*s,
+            data_[1]*s,
+            data_[2]*s
+            );
+    }
+    const double* data() const {return data_;}
+    double data_[3];
 };
 inline std::ostream& operator<<(std::ostream& _os, const CustomVec3d& _v)
 {
@@ -55,9 +63,6 @@ inline std::ostream& operator<<(std::ostream& _os, const CustomVec3d& _v)
 
 namespace ToLoG
 {
-template<>
-struct is_vector_type<CustomVec3d> : std::true_type {};
-
 template<>
 struct Traits<CustomVec3d>
 {
@@ -79,7 +84,6 @@ TEST(GeometryCoreTest, CustomVec3dTest)
 
     // Traits
     EXPECT_EQ((ToLoG::Traits<CustomVec3d>::dim), 3);
-    EXPECT_TRUE(ToLoG::is_vector_type<CustomVec3d>::value);
 
     // Vector Utils
     EXPECT_EQ(ToLoG::squared_norm(p), 14);

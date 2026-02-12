@@ -1,9 +1,6 @@
 #pragma once
 
-template<typename FT, int DIM>
-struct is_vector_type<Point<FT, DIM>> : std::true_type {};
-
-template<typename P>
+template<vector_type P>
 struct Traits<AABB<P>>
 {
     using vector_type = P;
@@ -17,25 +14,25 @@ struct Traits<Point<FT,DIM>>
     constexpr static int dim = DIM;
 };
 
-template<typename P>
+template<vector_type P>
 struct Traits<Segment<P>>
 {
     using vector_type = P;
 };
 
-template<typename P>
+template<vector_type P>
 struct Traits<Triangle<P>>
 {
     using vector_type = P;
 };
 
-template<typename P>
+template<vector_type P>
 struct Traits<Sphere<P>>
 {
     using vector_type = P;
 };
 
-template<typename P>
+template<vector_type P>
 struct Traits<Tetrahedron<P>>
 {
     using vector_type = P;

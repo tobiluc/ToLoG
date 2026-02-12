@@ -12,12 +12,6 @@ TEST(GeometryCoreTest, TraitsTest3d)
     EXPECT_EQ((ToLoG::Traits<Point>::dim), 3);
     EXPECT_TRUE((std::is_same<ToLoG::Traits<Point>::value_type, double>::value));
     EXPECT_TRUE((std::is_same<ToLoG::Traits<Point>::vector_type, Point>::value));
-
-    EXPECT_TRUE((ToLoG::is_vector_type<Point>::value));
-    EXPECT_FALSE((ToLoG::is_vector_type<AABB>::value));
-    EXPECT_FALSE((ToLoG::is_vector_type<Triangle>::value));
-    EXPECT_FALSE((ToLoG::is_vector_type<Segment>::value));
-    EXPECT_FALSE((ToLoG::is_vector_type<Sphere>::value));
 }
 
 TEST(GeometryCoreTest, PointTest)
@@ -204,6 +198,8 @@ TEST(GeometryCoreTest, TetrahedronTest)
     Point d(0,1,0);
 
     ToLoG::Tetrahedron<Point> tet(a,b,c,d);
+
+    ToLoG::incenter(a, b, c, d);
 }
 
 TEST(GeometryCoreTest, AABBDistanceTest)

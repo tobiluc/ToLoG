@@ -1,6 +1,6 @@
 #pragma once
 
-template<typename PointT>
+template<vector_type PointT>
 inline std::array<typename Traits<PointT>::value_type,3> barycentric_coordinates(const PointT& _p, const Triangle<PointT>& _tri)
 {
     using FT = Traits<PointT>::value_type;

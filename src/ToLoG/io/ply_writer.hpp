@@ -66,8 +66,8 @@ int write_aabb_tree_ply(const std::filesystem::path& _path, const AABBTree<T>& _
     return 0;
 }
 
-template<typename P, typename T>
-requires(is_vector_type<P>::value && (Traits<P>::dim==2||Traits<P>::dim==3))
+template<vector_type P, typename T>
+requires(Traits<P>::dim==2||Traits<P>::dim==3)
 int write_triangles_ply(const std::filesystem::path& _path,
                         const std::vector<P>& _vertices,
                         const std::vector<T>& _triangles)

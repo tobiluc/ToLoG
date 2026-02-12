@@ -6,9 +6,6 @@ namespace ToLoG
 {
 
 template<typename FT, int DIM>
-struct is_vector_type<Eigen::Vector<FT,DIM>> : std::true_type {};
-
-template<typename FT, int DIM>
 struct Traits<Eigen::Vector<FT,DIM>>
 {
     using value_type = FT;

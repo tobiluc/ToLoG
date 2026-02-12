@@ -130,7 +130,7 @@ public:
     Point(Args&&... args)
         : data_{ static_cast<FT>(args)... }
     {}
-    inline size_t size() const {
+    inline constexpr size_t size() const noexcept {
         return static_cast<size_t>(DIM);
     }
     inline FT& operator[](const int& _i) {
@@ -195,7 +195,7 @@ private:
 template<typename FT, int DIM>
 using Vector = Point<FT, DIM>;
 
-template<typename P> requires(is_vector_type<P>::value)
+template<vector_type P>
 class Segment
 {
 public:
@@ -218,7 +218,7 @@ private:
     P start_, end_;
 };
 
-template<typename P> requires(is_vector_type<P>::value)
+template<vector_type P>
 class Triangle
 {
 private:
@@ -252,8 +252,7 @@ private:
     P t_[3];
 };
 
-template<typename P>
-requires(is_vector_type<P>::value)
+template<vector_type P>
 class Sphere
 {
 public:
@@ -282,7 +281,7 @@ private:
     FT radius_;
 };
 
-template<typename P> requires(is_vector_type<P>::value)
+template<vector_type P>
 class Tetrahedron
 {
 public:
@@ -340,8 +339,7 @@ template<typename PrimT>
 Traits<PrimT>::vector_type centroid(const PrimT& _prim);
 #include "detail/centroid.inl.hpp"
 
-template<int N, typename PointT, typename PrimT>
-requires(is_vector_type<PointT>::value)
+template<int N, vector_type PointT, typename PrimT>
 std::array<typename Traits<PointT>::value_type,N> barycentric_coordinates(const PointT& _p, const PrimT& _prim);
 #include "detail/barycentric.inl.hpp"
 

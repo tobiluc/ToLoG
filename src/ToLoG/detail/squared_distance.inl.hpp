@@ -1,13 +1,12 @@
 #pragma once
 
-template<class P>
-requires(is_vector_type<P>::value)
+template<vector_type P>
 inline auto squared_distance(const P& _p, const P& _q)
 {
     return squared_norm(static_cast<P>(_p - _q));
 }
 
-template<class P>
+template<vector_type P>
 inline auto squared_distance(const AABB<P>& _a, const AABB<P>& _b)
 {
     using FT = typename Traits<P>::value_type;
@@ -25,7 +24,7 @@ inline auto squared_distance(const AABB<P>& _a, const AABB<P>& _b)
     return d2;
 }
 
-template<typename PointT>
+template<vector_type PointT>
 inline Traits<PointT>::value_type squared_distance(const PointT& _p, const AABB<PointT>& _aabb)
 {
     using FT = Traits<PointT>::value_type;
@@ -41,7 +40,7 @@ inline Traits<PointT>::value_type squared_distance(const PointT& _p, const AABB<
     return res;
 }
 
-template<typename PointT>
+template<vector_type PointT>
 inline Traits<PointT>::value_type squared_distance(const PointT& _p, const Segment<PointT>& _s)
 {
     using FT = Traits<PointT>::value_type;
@@ -55,7 +54,7 @@ inline Traits<PointT>::value_type squared_distance(const PointT& _p, const Segme
     return squared_norm(_p - closest);
 }
 
-template<typename PointT>
+template<vector_type PointT>
 inline Traits<PointT>::value_type squared_distance(const PointT& _p, const Sphere<PointT>& _s)
 {
     using FT = Traits<PointT>::value_type;
@@ -63,7 +62,7 @@ inline Traits<PointT>::value_type squared_distance(const PointT& _p, const Spher
     return d*d;
 }
 
-template<typename PointT>
+template<vector_type PointT>
 inline Traits<PointT>::value_type squared_distance(const PointT& _p, const Triangle<PointT>& _tri)
 {
     using FT = Traits<PointT>::value_type;
@@ -85,7 +84,7 @@ inline Traits<PointT>::value_type squared_distance(const PointT& _p, const Trian
     });
 }
 
-template<typename PointT>
+template<vector_type PointT>
 inline Traits<PointT>::value_type squared_distance(const PointT& _p, const Tetrahedron<PointT>& _tet)
 {
     using FT = Traits<PointT>::value_type;

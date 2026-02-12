@@ -1,15 +1,20 @@
 #pragma once
 
-template<class P>
-inline typename Traits<P>::value_type area(const Triangle<P>& _tri) {
+template<vector_type P>
+inline typename Traits<P>::value_type area(const P& _p0, const P& _p1, const P& _p2) {
     using FT = typename Traits<P>::value_type;
-    P u = _tri[1] - _tri[0];
-    P v = _tri[2] - _tri[0];
+    P u = _p1 - _p0;
+    P v = _p2 - _p0;
     FT uu = dot(u,u);
     FT vv = dot(v,v);
     FT uv = dot(u,v);
     FT det = uu * vv - uv * uv;
     return std::sqrt<FT>(std::max<FT>(det, FT(0))) / FT(2);
+}
+
+template<class P>
+inline typename Traits<P>::value_type area(const Triangle<P>& _tri) {
+    return area(_tri[0], _tri[1], _tri[2]);
 }
 
 template<class P> requires(Traits<P>::dim==3)
