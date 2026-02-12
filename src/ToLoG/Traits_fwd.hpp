@@ -9,13 +9,13 @@ struct Traits {};
 
 template<typename V, typename FT>
 concept vector_type_t =
-    requires(const V& p, V& rp, int i, FT ft) {
+    requires(const V& p, const V& q, V& rp, int i, FT ft) {
         {p.operator[](i)} -> std::convertible_to<FT>;
         {rp.operator[](i)} -> std::same_as<FT&>;
-        {p.operator+(p)} -> std::convertible_to<V>;
-        {p.operator-(p)} -> std::convertible_to<V>;
-        {p.operator*(ft)} -> std::convertible_to<V>;
-        {p.operator/(ft)} -> std::convertible_to<V>;
+        {p+q} -> std::convertible_to<V>;
+        {p-q} -> std::convertible_to<V>;
+        {p*ft} -> std::convertible_to<V>;
+        {p/ft} -> std::convertible_to<V>;
     };
 ;
 
