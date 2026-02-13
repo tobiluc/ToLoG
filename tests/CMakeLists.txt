@@ -49,18 +49,6 @@ if (GTEST_FOUND)
         FetchContent_MakeAvailable(ovm)
     endif()
 
-    # Get OpenMesh
-    # if (NOT TARGET OpenMeshCore)
-    #    message(STATUS "Fetching OpenMesh")
-    #    FetchContent_Declare(om
-    #        GIT_REPOSITORY https://www.graphics.rwth-aachen.de:9000/OpenMesh/OpenMesh
-    #        GIT_TAG "OpenMesh-11.0"
-    #        SOURCE_DIR "${EXTERNAL_DIR}/OpenMesh"
-    #        )
-    #    FetchContent_MakeAvailable(om)
-    # endif()
-
-
     # Create unittest executable
     add_executable(ToLoG-unittests ${UNITTEST_SRC})
     target_link_libraries(ToLoG-unittests
@@ -69,7 +57,6 @@ if (GTEST_FOUND)
         GTest::Main
         Eigen3::Eigen
         OpenVolumeMesh::OpenVolumeMesh
-        # OpenMeshCore
     )
 
     # Set Output Directory
