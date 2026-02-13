@@ -190,6 +190,7 @@ TEST(GeometryCoreTest, PointDistanceTest2d)
 
 TEST(GeometryCoreTest, TetrahedronTest)
 {
+    constexpr double eps = std::numeric_limits<double>::epsilon();
     using Point = ToLoG::Point<double,3>;
 
     Point a(0,0,0);
@@ -200,6 +201,12 @@ TEST(GeometryCoreTest, TetrahedronTest)
     ToLoG::Tetrahedron<Point> tet(a,b,c,d);
 
     ToLoG::incenter(a, b, c, d);
+
+    EXPECT_NEAR(ToLoG::dihedral_angle(a, b, c, d), 0.5*M_PI, eps);
+    EXPECT_NEAR(ToLoG::dihedral_angle(c, a, b, d), 0.5*M_PI, eps);
+    EXPECT_NEAR(ToLoG::dihedral_angle(d, a, c, b), 0.5*M_PI, eps);
+
+    EXPECT_NEAR(ToLoG::angle(b-a, c-a), 0.5*M_PI, eps);
 }
 
 TEST(GeometryCoreTest, AABBDistanceTest)

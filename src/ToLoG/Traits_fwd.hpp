@@ -22,13 +22,13 @@ concept vector_type_t =
 template<typename V>
 concept vector_type = vector_type_t<V, typename Traits<V>::value_type>;
 
-template<typename P, int k>
-concept vector_kd = vector_type_t<P, double> && Traits<P>::dim == k;
+template<typename P, int k, typename FT>
+concept vector_kt = vector_type_t<P,FT> && Traits<P>::dim == k;
 
 template<typename P>
-concept vector_3d = vector_kd<P,3>;
+concept vector_3d = vector_kt<P,3,double>;
 
 template<typename P>
-concept vector_2d = vector_kd<P,2>;
+concept vector_2d = vector_kt<P,2,double>;
 
 }
