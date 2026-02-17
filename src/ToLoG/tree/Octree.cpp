@@ -1,5 +1,4 @@
 #include <ToLoG/tree/Octree.hpp>
-#include <iostream>
 
 namespace ToLoG
 {
@@ -17,7 +16,8 @@ namespace ToLoG
 // For 0,1,2 they are sorted from the right instead
 static constexpr inline uint8_t MORTON_SHIFTS[3] = {2,1,0};
 
-static constexpr inline uint64_t expand_bits(uint32_t v) {
+static constexpr inline uint64_t expand_bits(uint32_t v)
+{
     v = (v | (v << 16)) & 0x030000FF;
     v = (v | (v << 8)) & 0x0300F00F;
     v = (v | (v << 4)) & 0x030C30C3;
@@ -25,7 +25,8 @@ static constexpr inline uint64_t expand_bits(uint32_t v) {
     return v;
 }
 
-static constexpr inline Octree::NodeCode encode(const Octree::NodeCoords& _coords) {
+static constexpr inline Octree::NodeCode encode(const Octree::NodeCoords& _coords)
+{
     assert(depth < (1u << NUM_DEPTH_BITS));
 
     uint64_t morton = (expand_bits(_coords.x) << MORTON_SHIFTS[0])
@@ -35,7 +36,8 @@ static constexpr inline Octree::NodeCode encode(const Octree::NodeCoords& _coord
            | (morton & ((1ULL << NUM_MORTON_BITS) - 1));
 }
 
-static constexpr inline uint32_t compact_bits(uint64_t v) {
+static constexpr inline uint32_t compact_bits(uint64_t v)
+{
     v &= 0x09249249;
     v = (v ^ (v >> 2)) & 0x030C30C3;
     v = (v ^ (v >> 4)) & 0x0300F00F;
@@ -44,7 +46,8 @@ static constexpr inline uint32_t compact_bits(uint64_t v) {
     return (uint32_t)v;
 }
 
-static constexpr inline Octree::NodeCoords decode(Octree::NodeCode code) {
+static constexpr inline Octree::NodeCoords decode(Octree::NodeCode code)
+{
     uint64_t morton = code & ((1ULL << NUM_MORTON_BITS) - 1);
     return {
         .x = compact_bits(morton >> MORTON_SHIFTS[0]),
@@ -199,6 +202,16 @@ Octree::NodeCoords Octree::node_child_coords(
         .y = _node_coords.y * 2 + ((_child_idx >> MORTON_SHIFTS[1]) & 1),
         .z = _node_coords.z * 2 + ((_child_idx >> MORTON_SHIFTS[2]) & 1),
         .depth = _node_coords.depth + 1
+    };
+}
+
+Octree::Point Octree::node_size_at_depth(uint32_t depth) const
+{
+    FT scale = node_scale_at_depth(depth);
+    return {
+        scale * (tree_bounds_.max()[0] - tree_bounds_.min()[0]),
+        scale * (tree_bounds_.max()[1] - tree_bounds_.min()[1]),
+        scale * (tree_bounds_.max()[2] - tree_bounds_.min()[2])
     };
 }
 
