@@ -1,5 +1,6 @@
 #pragma once
-#include <ToLoG/Core.hpp>
+#include "ToLoG/Traits_fwd.hpp"
+#include <ranges>
 #include <ToLoG/mesh/mesh_concepts.hpp>
 
 namespace ToLoG
@@ -62,5 +63,7 @@ concept polygon_mesh =
 template<class M>
 concept polygon_mesh_3 = polygon_mesh<M>
     && Traits<typename Traits<M>::vector_type>::dim==3;
+
+
 
 }

@@ -20,7 +20,7 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/predicates/predicates_wrapper.hpp
 
     src/ToLoG/Core.hpp
-    src/ToLoG/AABBTree.hpp
+    src/ToLoG/tree/AABBTree.hpp
     src/ToLoG/DSU.hpp
     src/ToLoG/HashMap.hpp
     src/ToLoG/Heap.hpp
@@ -28,8 +28,8 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/utils/KeyValueVector.hpp
     src/ToLoG/utils/enumerate.hpp
 
-    src/ToLoG/unstable/Octree.hpp
-    src/ToLoG/unstable/Octree.cpp
+    src/ToLoG/tree/Octree.hpp
+    src/ToLoG/tree/Octree.cpp
     src/ToLoG/unstable/marching_cubes.cpp
     src/ToLoG/unstable/marching_cubes.hpp
 
@@ -66,6 +66,9 @@ add_library("${PROJECT_NAME}" STATIC
     src/ToLoG/mesh/mesh_concepts.hpp
     src/ToLoG/io/ply_reader.hpp
     src/ToLoG/utils/std_pair_hash.hpp
+
+    src/ToLoG/tree/octree_to_polygon_mesh.hpp
+    src/ToLoG/tree/aabbtree_to_polygon_mesh.hpp
 
 )
 add_library ("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS ${PROJECT_NAME})

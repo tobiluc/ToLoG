@@ -205,6 +205,11 @@ public:
         return res;
     }
 
+    uint32_t nearest_neighbor(const Point& _q) const
+    {
+        return k_nearest_neighbors(_q, 1).at(0);
+    }
+
     template<typename PrimT>
     requires(std::is_same<typename Traits<PrimT>::vector_type,Point>::value)
     bool intersecting(const PrimT& _q,

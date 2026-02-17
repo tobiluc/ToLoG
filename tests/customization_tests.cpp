@@ -73,7 +73,7 @@ struct Traits<CustomVec3d>
 }
 
 #include <ToLoG/Core.hpp>
-#include <ToLoG/AABBTree.hpp>
+#include <ToLoG/tree/AABBTree.hpp>
 
 TEST(GeometryCoreTest, CustomVec3dTest)
 {

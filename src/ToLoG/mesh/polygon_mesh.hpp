@@ -1,4 +1,5 @@
 #pragma once
+#include "ToLoG/Core.hpp"
 #include "ToLoG/HashMap.hpp"
 #include <ToLoG/Traits_fwd.hpp>
 #include <ToLoG/utils/indices.hpp>
@@ -157,6 +158,7 @@ struct Traits<PolygonMesh<P>>
     using vertex_index = int;
     using edge_index = int;
     using face_index = int;
+
     using vector_type = P;
 };
 
@@ -270,6 +272,16 @@ M cylinder(std::function<FT(FT)> _rt = [](FT t){return FT(0.5);} , FT height=2,
     }
 
     return m;
+}
+
+template<polygon_mesh Mesh>
+inline AABB<typename Traits<Mesh>::vector_type> aabb(const Mesh& _mesh)
+{
+    AABB<typename Traits<Mesh>::vector_type> bbox;
+    for (uint32_t i = 0; i < _mesh.n_vertices(); ++i) {
+        bbox.expand(_mesh.point(typename Traits<Mesh>::vertex_index(i)));
+    }
+    return bbox;
 }
 
 }

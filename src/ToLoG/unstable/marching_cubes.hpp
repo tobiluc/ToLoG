@@ -8,9 +8,10 @@ namespace ToLoG
 class MarchingCubes3d
 {
 public:
-    using Point = Point<double,3>;
+    using FT = float;
+    using Point = Point<FT,3>;
     using AABB = AABB<Point>;
-    using SDF = std::function<double(const Point&)>;
+    using SDF = std::function<FT(const Point&)>;
 
     struct TriangleMesh {
         std::vector<Point> vertices;
@@ -36,7 +37,7 @@ private:
 
 public:
     /// Using an Octree
-    static TriangleMesh generate_adaptive(const SDF& sdf, const Settings& settings);
+    // static TriangleMesh generate_adaptive(const SDF& sdf, const Settings& settings);
 
 };
 

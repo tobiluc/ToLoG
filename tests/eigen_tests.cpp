@@ -1,4 +1,4 @@
-#include "ToLoG/AABBTree.hpp"
+#include "ToLoG/tree/AABBTree.hpp"
 #include <gtest/gtest.h>
 #include <ToLoG/utils/Eigen_Traits.hpp>
 #include <ToLoG/Core.hpp>
