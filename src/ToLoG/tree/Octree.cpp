@@ -27,7 +27,7 @@ static constexpr inline uint64_t expand_bits(uint32_t v)
 
 static constexpr inline Octree::NodeCode encode(const Octree::NodeCoords& _coords)
 {
-    assert(depth < (1u << NUM_DEPTH_BITS));
+    assert(_coords.depth < (1u << NUM_DEPTH_BITS));
 
     uint64_t morton = (expand_bits(_coords.x) << MORTON_SHIFTS[0])
                     | (expand_bits(_coords.y) << MORTON_SHIFTS[1])
