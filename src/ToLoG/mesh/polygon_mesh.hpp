@@ -87,7 +87,7 @@ public:
     }
     inline edge_index add_edge(vertex_index _v0, vertex_index _v1) {
         if (v_e_map_.size() <= std::max(index(_v0), index(_v1))) {
-            v_e_map_.resize(std::max(index(_v0), index(_v1)));
+            v_e_map_.resize(std::max(index(_v0), index(_v1))+1);
         }
         for (edge_index eh : v_e_map_[index(_v0)]) {
             const Edge& e = edge(eh);
