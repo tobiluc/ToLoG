@@ -7,21 +7,67 @@ if (GTEST_FOUND)
         customization_tests.cpp
         dsu_tests.cpp
         enumerate_tests.cpp
+        eigen_tests.cpp
         hash_tests.cpp
         heap_tests.cpp
         keyvaluevector_tests.cpp
         octree_tests.cpp
+        OM_tests.cpp
+        ovm_tests.cpp
+        polygon_mesh_tests.cpp
         predicates_tests.cpp
         ray_tests.cpp
         simplex_tests.cpp
         sparse_tests.cpp
+        tet_topology_tests.cpp
         winding_number_tests.cpp
         unittests.cpp
     )
 
+    # Get Eigen
+    if(NOT TARGET Eigen3::Eigen)
+        FetchContent_Declare(Eigen3 SYSTEM
+            GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+            GIT_TAG 3.4.0
+            GIT_SHALLOW TRUE
+            SOURCE_SUBDIR cmake
+        )
+        FetchContent_MakeAvailable(Eigen3)
+        add_library(Eigen3::Eigen INTERFACE IMPORTED)
+        set_target_properties(Eigen3::Eigen PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${eigen3_SOURCE_DIR})
+        target_link_libraries(Eigen3::Eigen INTERFACE OpenMP::OpenMP_CXX)
+    endif()
+
+    # Get OpenVolumeMesh
+    if (NOT TARGET OpenVolumeMesh::OpenVolumeMesh)
+        message(STATUS "Fetching OpenVolumeMesh")
+        FetchContent_Declare(ovm
+            GIT_REPOSITORY https://www.graphics.rwth-aachen.de:9000/OpenVolumeMesh/OpenVolumeMesh
+            GIT_TAG master
+            SOURCE_DIR "${EXTERNAL_DIR}/OpenVolumeMesh"
+            )
+        FetchContent_MakeAvailable(ovm)
+    endif()
+
     # Create unittest executable
     add_executable(ToLoG-unittests ${UNITTEST_SRC})
-    target_link_libraries(ToLoG-unittests ToLoG::ToLoG GTest::GTest GTest::Main)
+    target_link_libraries(ToLoG-unittests
+        ToLoG::ToLoG
+        GTest::GTest
+        GTest::Main
+        Eigen3::Eigen
+        OpenVolumeMesh::OpenVolumeMesh
+    )
+
+    # Set Output Directory
+    set(TESTS_OUTPUT_DIR
+        ${CMAKE_CURRENT_SOURCE_DIR}/Output
+    )
+    file(MAKE_DIRECTORY ${TESTS_OUTPUT_DIR})
+    target_compile_definitions(ToLoG-unittests PRIVATE
+        TESTS_OUTPUT_DIR="${TESTS_OUTPUT_DIR}"
+    )
+
     if ( NOT WIN32)
       target_link_libraries(ToLoG-unittests pthread)
     endif()

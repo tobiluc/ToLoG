@@ -2,47 +2,61 @@
 # Add Library
 #================================================
 add_library("${PROJECT_NAME}" STATIC
-    src/ToLoG/predicates/predicates.c
-    src/ToLoG/predicates/predicates_wrapper.cpp
-    src/ToLoG/predicates/predicates_wrapper.hpp
+    ToLoG/predicates/predicates.c
+    ToLoG/predicates/predicates_wrapper.cpp
+    ToLoG/predicates/predicates_wrapper.hpp
 
-    src/ToLoG/Core.hpp
-    src/ToLoG/AABBTree.hpp
-    src/ToLoG/DSU.hpp
-    src/ToLoG/HashMap.hpp
-    src/ToLoG/Heap.hpp
+    ToLoG/Core.hpp
+    ToLoG/tree/AABBTree.hpp
+    ToLoG/DSU.hpp
+    ToLoG/HashMap.hpp
+    ToLoG/Heap.hpp
 
-    src/ToLoG/utils/KeyValueVector.hpp
-    src/ToLoG/utils/enumerate.hpp
+    ToLoG/utils/KeyValueVector.hpp
+    ToLoG/utils/enumerate.hpp
 
-    src/ToLoG/unstable/Octree.hpp
-    src/ToLoG/unstable/Octree.cpp
-    src/ToLoG/unstable/marching_cubes.cpp
-    src/ToLoG/unstable/marching_cubes.hpp
+    ToLoG/tree/Octree.hpp
+    ToLoG/tree/Octree.cpp
+    ToLoG/unstable/marching_cubes.cpp
+    ToLoG/unstable/marching_cubes.hpp
 
-    src/ToLoG/unstable/SimplexSolver.hpp
-    src/ToLoG/optimization/Sparse.hpp
-    src/ToLoG/unstable/LinearProgram.hpp
-    src/ToLoG/unstable/SimplexSolver.cpp
-    src/ToLoG/io/obj_writer.hpp
-    src/ToLoG/io/happly.hpp
-    src/ToLoG/io/ply_writer.hpp
-    src/ToLoG/utils/indices.hpp
+    ToLoG/unstable/SimplexSolver.hpp
+    ToLoG/optimization/Sparse.hpp
+    ToLoG/unstable/LinearProgram.hpp
+    ToLoG/unstable/SimplexSolver.cpp
+    ToLoG/io/obj_writer.hpp
+    ToLoG/io/happly.hpp
+    ToLoG/io/ply_writer.hpp
+    ToLoG/utils/indices.hpp
 
-    src/ToLoG/detail/Traits.inl.hpp
-    src/ToLoG/detail/squared_distance.inl.hpp
-    src/ToLoG/detail/barycentric.inl.hpp
-    src/ToLoG/detail/aabb.inl.hpp
-    src/ToLoG/detail/centroid.inl.hpp
-    src/ToLoG/Traits_fwd.hpp
-    src/ToLoG/detail/vector.inl.hpp
-    src/ToLoG/Ray.hpp
-    src/ToLoG/math/polynomial_roots.hpp
-    src/ToLoG/detail/triangle.inl.hpp
-    src/ToLoG/math/winding_number.hpp
-    src/ToLoG/mesh/delauney_triangulation.hpp
-    src/ToLoG/detail/intersects.inl.hpp
-    src/ToLoG/mesh/mesh_types.hpp
+    ToLoG/detail/Traits.inl.hpp
+    ToLoG/detail/squared_distance.inl.hpp
+    ToLoG/detail/barycentric.inl.hpp
+    ToLoG/detail/aabb.inl.hpp
+    ToLoG/detail/centroid.inl.hpp
+    ToLoG/Traits_fwd.hpp
+    ToLoG/detail/vector.inl.hpp
+    ToLoG/Ray.hpp
+    ToLoG/math/polynomial_roots.hpp
+    ToLoG/detail/volume.inl.hpp
+    ToLoG/math/winding_number.hpp
+
+    ToLoG/detail/intersects.inl.hpp
+    ToLoG/mesh/polygon_mesh_concepts.hpp
+    ToLoG/predicates/derived_predicates_3d.hpp
+
+    ToLoG/mesh/polygon_mesh.hpp
+    ToLoG/mesh/tet_topology.hpp
+    ToLoG/io/obj_reader.hpp
+    ToLoG/io/medit_reader.hpp
+    ToLoG/mesh/polyhedral_mesh_concepts.hpp
+    ToLoG/mesh/mesh_concepts.hpp
+    ToLoG/io/ply_reader.hpp
+    ToLoG/utils/std_pair_hash.hpp
+
+    ToLoG/tree/octree_to_polygon_mesh.hpp
+    ToLoG/tree/aabbtree_to_polygon_mesh.hpp
+    ToLoG/utils/glm_Traits.hpp
 )
 add_library ("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS ${PROJECT_NAME})
 
@@ -52,17 +66,18 @@ add_library ("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS ${PROJECT_NAME})
 include_directories (${INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PUBLIC
 OpenMP::OpenMP_CXX
+rapidobj::rapidobj
 )
 
 #=========================
 # Define what to include
 #=========================
 target_include_directories(${PROJECT_NAME} PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/src>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 )
 
-set_source_files_properties(src/ToLoG/predicates/predicates.c
+set_source_files_properties(ToLoG/predicates/predicates.c
     PROPERTIES
     # make "if MSVC" work
     COMPILE_DEFINITIONS "$<$<CXX_COMPILER_ID:MSVC>:MSVC=1>"
@@ -73,16 +88,6 @@ set_source_files_properties(src/ToLoG/predicates/predicates.c
     COMPILE_FLAGS "$<$<CXX_COMPILER_ID:AppleClang>:-Wno-deprecated-non-prototype -Wno-incompatible-pointer-types-discards-qualifiers>"
     LANGUAGE C
 )
-
-#=========================
-# Testing
-#=========================
-set(TOLOG_BUILD_UNIT_TESTS true CACHE BOOL "Whether to build the unit tests.")
-if (TOLOG_BUILD_UNIT_TESTS)
-    enable_testing()
-    find_package(GTest REQUIRED)
-    add_subdirectory(tests)
-endif()
 
 #=========================
 # Fake successful finder run if compiling as a dependent project (Whatever that means...)

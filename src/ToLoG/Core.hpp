@@ -6,6 +6,7 @@
 #include <cmath>
 #include <span>
 #include <ToLoG/predicates/predicates_wrapper.hpp>
+#include <ToLoG/mesh/tet_topology.hpp>
 
 namespace ToLoG
 {
@@ -21,6 +22,7 @@ class AABB
 {
 private:
     static constexpr int DIM = Traits<P>::dim;
+    using FT = Traits<P>::value_type;
 public:
     AABB() {
         make_empty();
@@ -57,6 +59,26 @@ public:
             min_[i] = std::min(min_[i], _p[i]);
             max_[i] = std::max(max_[i], _p[i]);
         }
+    }
+    inline FT squared_diagonal() const {
+        FT diag(0);
+        for (int i=0;i<Traits<P>::dim;i++) {
+            FT d = max_[i]-min_[i];
+            diag += d*d;
+        }
+        return diag;
+    }
+    inline FT diagonal() const {
+        return std::sqrt<FT>(squared_diagonal());
+    }
+    inline AABB<P> scaled(FT _s) const {
+        AABB<P> sbox;
+        for (int i=0;i<Traits<P>::dim;i++) {
+            FT d = static_cast<FT>(0.5)*(max_[i]-min_[i])*(_s-static_cast<FT>(1.0));
+            sbox.min_[i] = min_[i] - d;
+            sbox.max_[i] = max_[i] + d;
+        }
+        return sbox;
     }
     inline const P& min() const {
         return min_;
@@ -108,7 +130,7 @@ public:
     Point(Args&&... args)
         : data_{ static_cast<FT>(args)... }
     {}
-    inline size_t size() const {
+    inline constexpr size_t size() const noexcept {
         return static_cast<size_t>(DIM);
     }
     inline FT& operator[](const int& _i) {
@@ -173,7 +195,7 @@ private:
 template<typename FT, int DIM>
 using Vector = Point<FT, DIM>;
 
-template<typename P> requires(is_vector_type<P>::value)
+template<vector_type P>
 class Segment
 {
 public:
@@ -181,15 +203,14 @@ public:
     Segment(const P& _start, const P& _end) :
         start_(_start), end_(_end)
     {}
-    inline const P& start() const {
-        return start_;
-    }
-    inline const P& end() const {
-        return end_;
-    }
-    inline Segment reversed() const {
-        return Segment(end_, start_);
-    }
+    inline const P& start() const {return start_;}
+    inline const P& end() const {return end_;}
+    inline Segment reversed() const {return Segment(end_, start_);}
+
+    inline P& start() {return start_;}
+    inline P& end() {return end_;}
+    inline void reverse() {std::swap(start_, end_);}
+
     inline bool operator==(const Segment<P>& _s) const {
         return start_ == _s.start_ && end_ == _s.end_;
     }
@@ -197,7 +218,7 @@ private:
     P start_, end_;
 };
 
-template<typename P> requires(is_vector_type<P>::value)
+template<vector_type P>
 class Triangle
 {
 private:
@@ -210,11 +231,17 @@ public:
         t_[1] = _b;
         t_[2] = _c;
     }
-    inline const P& operator[](const int& _i) const {
+    inline const P& operator[](int _i) const {
         return t_[_i];
     }
-    inline Segment<P> edge(int _i) const {
+    inline Segment<P> segment(int _i) const {
         return Segment<P>(t_[_i], t_[(_i+1)%3]);
+    }
+    inline Triangle<P> reversed() const {
+        return Triangle<P>(t_[2], t_[1], t_[0]);
+    }
+    inline void reverse() {
+        std::swap(t_[0],t_[2]);
     }
     inline bool operator==(const Triangle<P>& _tri) const {
         return t_[0] == _tri[0]
@@ -225,8 +252,7 @@ private:
     P t_[3];
 };
 
-template<typename P>
-requires(is_vector_type<P>::value)
+template<vector_type P>
 class Sphere
 {
 public:
@@ -255,7 +281,7 @@ private:
     FT radius_;
 };
 
-template<typename P> requires(is_vector_type<P>::value)
+template<vector_type P>
 class Tetrahedron
 {
 public:
@@ -271,14 +297,28 @@ public:
     inline const P& operator[](const int& _i) const {
         return t_[_i];
     }
-    inline Segment<P> edge(int _i, int _j) const {
+    inline const P& operator[](const TetTopology::V& _v) const {
+        return t_[TetTopology::i(_v)];
+    }
+    inline Segment<P> segment(int _i, int _j) const {
         return Segment<P>(t_[_i], t_[_j]);
     }
-    inline Triangle<P> face(int _i, int _j, int _k) const {
+    inline Segment<P> segment(const TetTopology::HE& _he) const {
+        return Segment<P>(
+            this->operator[](TetTopology::v0(_he)),
+            this->operator[](TetTopology::v1(_he)));
+    }
+    inline Triangle<P> triangle(int _i, int _j, int _k) const {
         return Triangle<P>(t_[_i], t_[_j], t_[_k]);
     }
+    inline Triangle<P> triangle(const TetTopology::HF& _hf) const {
+        return Triangle<P>(
+            this->operator[](TetTopology::v0(_hf)),
+            this->operator[](TetTopology::v1(_hf)),
+            this->operator[](TetTopology::v2(_hf)));
+    }
     inline bool operator==(const Tetrahedron<P>& _tet) const {
-        return t_[0] == _tet[0]
+        return    t_[0] == _tet[0]
                && t_[1] == _tet[1]
                && t_[2] == _tet[2]
                && t_[3] == _tet[3];
@@ -289,7 +329,7 @@ private:
 
 #include "detail/Traits.inl.hpp"
 #include "detail/vector.inl.hpp"
-#include "detail/triangle.inl.hpp"
+#include "detail/volume.inl.hpp"
 
 template<typename PrimT>
 AABB<typename Traits<PrimT>::vector_type> aabb(const PrimT& _prim);
@@ -299,8 +339,7 @@ template<typename PrimT>
 Traits<PrimT>::vector_type centroid(const PrimT& _prim);
 #include "detail/centroid.inl.hpp"
 
-template<int N, typename PointT, typename PrimT>
-requires(is_vector_type<PointT>::value)
+template<int N, vector_type PointT, typename PrimT>
 std::array<typename Traits<PointT>::value_type,N> barycentric_coordinates(const PointT& _p, const PrimT& _prim);
 #include "detail/barycentric.inl.hpp"
 

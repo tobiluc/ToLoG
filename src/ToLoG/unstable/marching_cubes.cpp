@@ -1,5 +1,5 @@
 #include <ToLoG/unstable/marching_cubes.hpp>
-#include <ToLoG/unstable/Octree.hpp>
+#include <ToLoG/tree/Octree.hpp>
 #include <iostream>
 
 namespace ToLoG
@@ -376,44 +376,44 @@ struct PointHash {
     }
 };
 
-MarchingCubes3d::TriangleMesh MarchingCubes3d::generate_adaptive(const SDF& sdf, const Settings& settings)
-{
-    TriangleMesh mesh;
+// MarchingCubes3d::TriangleMesh MarchingCubes3d::generate_adaptive(const SDF& sdf, const Settings& settings)
+// {
+//     TriangleMesh mesh;
 
-    // Init. Octree
-    Octree3d tree(settings.bounds, std::max(settings.nx,std::max(settings.ny,settings.nz)), settings.maxDepth);
+//     // Init. Octree
+//     Octree tree(settings.bounds, std::max(settings.nx,std::max(settings.ny,settings.nz)), settings.maxDepth);
 
-    std::unordered_map<Point,double,PointHash> cachedVals;
+//     std::unordered_map<Point,FT,PointHash> cachedVals;
 
-    // Refine the tree
-    for (u32 idx = 0; idx < tree.n_nodes(); ++idx) {
-        if (tree.node_depth(idx) < settings.maxDepth) {
+//     // Refine the tree
+//     for (uint32_t idx = 0; idx < tree.n_nodes(); ++idx) {
+//         if (tree.node_depth(idx) < settings.maxDepth) {
 
-            // Evaluate function at node corners
-            AABB b = tree.node_bounding_box(idx);
-            bool pos = false, neg = false;
-            for (const auto& corner : b.corners()) {
-                float val = 0.0f;
-                if (cachedVals.contains(corner)) {val = cachedVals.at(corner);}
-                else {val = sdf(corner);}
-                pos |= (val > 0);
-                neg |= (val < 0);
-            }
-            if (pos && neg) {
-                // Refine Node - this appends a new node at the end so it is considered in the same loop
-                tree.refine_node(idx);
-            }
-        }
-    }
+//             // Evaluate function at node corners
+//             AABB b = tree.node_bounding_box(idx);
+//             bool pos = false, neg = false;
+//             for (const auto& corner : b.corners()) {
+//                 FT val = 0.0f;
+//                 if (cachedVals.contains(corner)) {val = cachedVals.at(corner);}
+//                 else {val = sdf(corner);}
+//                 pos |= (val > 0);
+//                 neg |= (val < 0);
+//             }
+//             if (pos && neg) {
+//                 // Refine Node - this appends a new node at the end so it is considered in the same loop
+//                 tree.refine_node(idx);
+//             }
+//         }
+//     }
 
-    // Now, generate on each leaf node (unrefined)
-    for (u32 idx = 0; idx < tree.n_nodes(); ++idx) {
-        if (!tree.isRefined(idx)) {
-            generate(sdf, mesh, tree.node_bounding_box(idx));
-        }
-    }
+//     // Now, generate on each leaf node (unrefined)
+//     for (uint32_t idx = 0; idx < tree.n_nodes(); ++idx) {
+//         if (!tree.isRefined(idx)) {
+//             generate(sdf, mesh, tree.node_bounding_box(idx));
+//         }
+//     }
 
-    return mesh;
-}
+//     return mesh;
+// }
 
 }

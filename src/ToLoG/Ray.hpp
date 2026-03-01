@@ -5,14 +5,14 @@
 namespace ToLoG
 {
 
-template<typename P> requires(is_vector_type<P>::value)
+template<vector_type P>
 class Ray
 {
 public:
     Ray(P _o, P _d) : o_(_o), d_(normalized(_d)) {}
     inline const P& origin() const {return o_;}
     inline const P& dir() const {return d_;}
-    inline P point(Traits<P>::value_type _t) const {return o_ + scaled(d_, _t);}
+    inline P point(Traits<P>::value_type _t) const {return o_ + d_*_t;}
 private:
     P o_;
     P d_;
@@ -26,10 +26,10 @@ struct Traits<Ray<Point>>
     constexpr static int dim = Traits<Point>::dim;
 };
 
-template<typename Point, typename Object> requires(is_vector_type<Point>::value)
+template<vector_type Point, typename Object>
 std::vector<typename Traits<Point>::value_type> ray_intersection_times(const Ray<Point>& _ray, const Object& _obj);
 
-template<typename Point> requires(is_vector_type<Point>::value)
+template<vector_type Point>
 std::vector<typename Traits<Point>::value_type> ray_intersection_times(const Ray<Point>& _ray, const Sphere<Point>& _sphere)
 {
     using FT = typename Traits<Point>::value_type;
@@ -40,7 +40,7 @@ std::vector<typename Traits<Point>::value_type> ray_intersection_times(const Ray
     return solve_quadratic(a, b, c);
 }
 
-template<typename Point> requires(is_vector_type<Point>::value)
+template<vector_type Point>
 std::vector<typename Traits<Point>::value_type> ray_intersection_times(const Ray<Point>& _ray, const AABB<Point>& _box)
 {
     using FT = typename Traits<Point>::value_type;

@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <ToLoG/AABBTree.hpp>
+#include <ToLoG/tree/AABBTree.hpp>
 #include <random>
 #include "ToLoG/HashMap.hpp"
 #include "ToLoG/io/ply_writer.hpp"

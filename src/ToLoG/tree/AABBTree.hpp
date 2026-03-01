@@ -101,7 +101,7 @@ public:
             }
 
             // compute centroids and choose split axis = longest axis of node bbox
-            uint32_t split_axis = argmax(node.aabb.max()-node.aabb.min());
+            uint32_t split_axis = argmax(static_cast<Point>(node.aabb.max()-node.aabb.min()));
 
             // compute median by nth_element using centroid of prim AABBs
             // nth_element on the subrange prim_indices_[t.begin .. t.begin+t.n)
@@ -205,6 +205,11 @@ public:
         return res;
     }
 
+    uint32_t nearest_neighbor(const Point& _q) const
+    {
+        return k_nearest_neighbors(_q, 1).at(0);
+    }
+
     template<typename PrimT>
     requires(std::is_same<typename Traits<PrimT>::vector_type,Point>::value)
     bool intersecting(const PrimT& _q,
@@ -236,6 +241,15 @@ public:
             }
         }
         return !_res.empty();
+    }
+
+    template<typename PrimT>
+        requires(std::is_same<typename Traits<PrimT>::vector_type,Point>::value)
+    std::vector<uint32_t> intersecting(const PrimT& _q) const
+    {
+        std::vector<uint32_t> res;
+        intersecting(_q, res);
+        return res;
     }
 
     /// Locates the first primitive which contains the query point q

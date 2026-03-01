@@ -12,12 +12,6 @@ TEST(GeometryCoreTest, TraitsTest3d)
     EXPECT_EQ((ToLoG::Traits<Point>::dim), 3);
     EXPECT_TRUE((std::is_same<ToLoG::Traits<Point>::value_type, double>::value));
     EXPECT_TRUE((std::is_same<ToLoG::Traits<Point>::vector_type, Point>::value));
-
-    EXPECT_TRUE((ToLoG::is_vector_type<Point>::value));
-    EXPECT_FALSE((ToLoG::is_vector_type<AABB>::value));
-    EXPECT_FALSE((ToLoG::is_vector_type<Triangle>::value));
-    EXPECT_FALSE((ToLoG::is_vector_type<Segment>::value));
-    EXPECT_FALSE((ToLoG::is_vector_type<Sphere>::value));
 }
 
 TEST(GeometryCoreTest, PointTest)
@@ -41,6 +35,9 @@ TEST(GeometryCoreTest, PointTest)
 
     ASSERT_LT(Point(2,5,1), p);
     ASSERT_LT(p, Point(3,4,-4));
+
+    p = Point(3.2, 4.9, -5.6);
+    EXPECT_EQ(ToLoG::rounded(p), Point(3,5,-6));
 }
 
 TEST(GeometryCoreTest, AABBTest)
@@ -63,6 +60,29 @@ TEST(GeometryCoreTest, AABBTest)
     aabb = ToLoG::aabb(tri);
     Sphere sphere(a, 4);
     aabb = ToLoG::aabb(sphere);
+}
+
+TEST(CoreTest, BarycentricTest)
+{
+    using P = ToLoG::Point<double, 3>;
+    using Tri = ToLoG::Triangle<P>;
+    using Tet = ToLoG::Tetrahedron<P>;
+
+    Tri tri(P(0,0.5,0), P(0,0,1), P(2,0,0));
+    for (int i = 0; i < 3; ++i) {
+        auto b = ToLoG::barycentric_coordinates(tri[i], tri);
+        for (int j = 0; j < 3; ++j) {
+            EXPECT_EQ(b[j], (i==j)? 1.0 : 0.0);
+        }
+    }
+
+    Tet tet(P(0,0.25,0), P(0,0,3.5), P(10,0,0), P(0,9.5,0));
+    for (int i = 0; i < 4; ++i) {
+        auto b = ToLoG::barycentric_coordinates(tet[i], tet);
+        for (int j = 0; j < 4; ++j) {
+            EXPECT_EQ(b[j], (i==j)? 1.0 : 0.0);
+        }
+    }
 }
 
 TEST(GeometryCoreTest, CentroidTest)
@@ -101,9 +121,9 @@ TEST(GeometryCoreTest, Triangle2dTest)
     EXPECT_EQ(AABB({Point(0,0),Point(3,4)}), ToLoG::aabb(tri));
     EXPECT_EQ(6, area(tri));
     EXPECT_EQ(12, circumference(tri));
-    EXPECT_EQ(Segment(a,b), tri.edge(0));
-    EXPECT_EQ(Segment(b,c), tri.edge(1));
-    EXPECT_EQ(Segment(c,a), tri.edge(2));
+    EXPECT_EQ(Segment(a,b), tri.segment(0));
+    EXPECT_EQ(Segment(b,c), tri.segment(1));
+    EXPECT_EQ(Segment(c,a), tri.segment(2));
 }
 
 TEST(GeometryCoreTest, AABBPointsTest)
@@ -129,6 +149,24 @@ TEST(GeometryCoreTest, AABBPointsTest)
     EXPECT_EQ(corners[7], Point(4,-3,10));
 }
 
+TEST(CoreTest, TriangleArea3dTest)
+{
+    using P = ToLoG::Point<double,3>;
+    using T = ToLoG::Triangle<P>;
+
+    auto area3d = [](const P& A, const P& B, const P& C) -> double {
+        return 0.5 * ToLoG::norm(ToLoG::cross((C-A),(B-A)));
+    };
+    constexpr double eps = std::numeric_limits<double>::epsilon();
+
+    P a(1,2,3);
+    P b(0,-14,31.123);
+    P c(-9,0,-3);
+
+    EXPECT_NEAR(ToLoG::area(T(a,b,c)), area3d(a,b,c), eps);
+    EXPECT_NEAR(ToLoG::area(T(a,c,b)), area3d(a,c,b), eps);
+}
+
 TEST(GeometryCoreTest, PointDistanceTest2d)
 {
     using Point = ToLoG::Point<double, 2>;
@@ -152,6 +190,7 @@ TEST(GeometryCoreTest, PointDistanceTest2d)
 
 TEST(GeometryCoreTest, TetrahedronTest)
 {
+    constexpr double eps = std::numeric_limits<double>::epsilon();
     using Point = ToLoG::Point<double,3>;
 
     Point a(0,0,0);
@@ -160,6 +199,14 @@ TEST(GeometryCoreTest, TetrahedronTest)
     Point d(0,1,0);
 
     ToLoG::Tetrahedron<Point> tet(a,b,c,d);
+
+    ToLoG::incenter(a, b, c, d);
+
+    EXPECT_NEAR(ToLoG::dihedral_angle(a, b, c, d), 0.5*M_PI, eps);
+    EXPECT_NEAR(ToLoG::dihedral_angle(c, a, b, d), 0.5*M_PI, eps);
+    EXPECT_NEAR(ToLoG::dihedral_angle(d, a, c, b), 0.5*M_PI, eps);
+
+    EXPECT_NEAR(ToLoG::angle(b-a, c-a), 0.5*M_PI, eps);
 }
 
 TEST(GeometryCoreTest, AABBDistanceTest)
