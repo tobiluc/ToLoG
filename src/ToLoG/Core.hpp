@@ -282,6 +282,50 @@ private:
 };
 
 template<vector_type P>
+class Ellipsoid
+{
+public:
+    using FT = typename Traits<P>::value_type;
+    static constexpr int DIM = Traits<P>::dim;
+
+    Ellipsoid() {
+    }
+    Ellipsoid(const P& _center, const std::array<P,DIM>& _axes) :
+        center_(_center)
+    {
+        for (int i = 0; i < DIM; ++i) {
+            directions_[i] = normalized(_axes[i]);
+            radii_[i] = norm(_axes[i]);
+        }
+#ifndef NDEBUG
+        for (int i = 0; i < DIM; ++i) {
+            assert(!is_near_zero(radii_[i]));
+            for (int j = i+1; j < DIM; ++j) {
+                assert(is_near_zero(dot(_axes[i], _axes[j])));
+            }
+        }
+#endif
+    }
+    inline const P& center() const {
+        return center_;
+    }
+    inline const P& direction(int i) const {
+        return directions_[i];
+    }
+    inline FT radius(int i) const {
+        return radii_[i];
+    }
+    inline bool operator==(const Ellipsoid<P>& _e) const {
+        return center_ == _e.center_ && directions_ == _e.directions_
+            && radii_ == _e.radii_;
+    }
+private:
+    P center_;
+    std::array<P,DIM> directions_;
+    std::array<FT,DIM> radii_;
+};
+
+template<vector_type P>
 class Tetrahedron
 {
 public:

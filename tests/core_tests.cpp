@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include <ToLoG/Core.hpp>
 
+constexpr double eps = std::numeric_limits<double>::epsilon();
+
 TEST(GeometryCoreTest, TraitsTest3d)
 {
     using Point = ToLoG::Point<double, 3>;
@@ -157,7 +159,6 @@ TEST(CoreTest, TriangleArea3dTest)
     auto area3d = [](const P& A, const P& B, const P& C) -> double {
         return 0.5 * ToLoG::norm(ToLoG::cross((C-A),(B-A)));
     };
-    constexpr double eps = std::numeric_limits<double>::epsilon();
 
     P a(1,2,3);
     P b(0,-14,31.123);
@@ -190,7 +191,6 @@ TEST(GeometryCoreTest, PointDistanceTest2d)
 
 TEST(GeometryCoreTest, TetrahedronTest)
 {
-    constexpr double eps = std::numeric_limits<double>::epsilon();
     using Point = ToLoG::Point<double,3>;
 
     Point a(0,0,0);
@@ -219,9 +219,23 @@ TEST(GeometryCoreTest, AABBDistanceTest)
     AABB b2({Point(0.5,0.5), Point(2,1)});
     AABB b3({Point(-10,-10), Point(-8,10)});
 
-    constexpr double eps = std::numeric_limits<double>::epsilon();
     EXPECT_NEAR(ToLoG::squared_distance(b0, b1), 0.25, eps);
     EXPECT_EQ(ToLoG::squared_distance(b0, b2), 0);
     EXPECT_EQ(ToLoG::squared_distance(b1, b2), 0);
     EXPECT_NEAR(ToLoG::squared_distance(b0, b3), 64, eps);
+}
+
+TEST(GeometryCoreTest, EllipsoidTest)
+{
+    using Point = ToLoG::Point<double,3>;
+    using Axis = Point;
+    using Ellipsoid = ToLoG::Ellipsoid<Point>;
+
+    Ellipsoid e(Point(1,0,0), {Axis(1,0,0),Axis(0,2,0),Axis(0,0,3)});
+    EXPECT_NEAR(e.radius(0), 1, eps);
+    EXPECT_NEAR(e.radius(1), 2, eps);
+    EXPECT_NEAR(e.radius(2), 3, eps);
+    EXPECT_TRUE(ToLoG::intersects(e, e.center()));
+    EXPECT_TRUE(ToLoG::intersects(e, Point(0.1,0.2,0.3)));
+    EXPECT_FALSE(ToLoG::intersects(e, Point(0,2,3)));
 }
