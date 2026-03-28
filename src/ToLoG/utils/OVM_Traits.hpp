@@ -38,7 +38,8 @@ struct Traits<OpenVolumeMesh::TetrahedralGeometryKernel<P, OpenVolumeMesh::Tetra
 class OVMTetTopology : public TetTopologyT<
     OpenVolumeMesh::VertexHandle,
     OpenVolumeMesh::HalfEdgeHandle,
-    OpenVolumeMesh::HalfFaceHandle>
+    OpenVolumeMesh::HalfFaceHandle,
+    OpenVolumeMesh::CellHandle>
 {
 private:
     template<typename P>
@@ -73,6 +74,7 @@ public:
                 he_[TT::i(TT::opp(he))] = heh.opposite_handle();
             }
         }
+        c_ = _ch;
     }
 
     template<typename P>

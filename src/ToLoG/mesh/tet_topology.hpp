@@ -103,6 +103,15 @@ public:
         ADB=static_cast<bits>(VAR::ADB),
         CAB=static_cast<bits>(VAR::CAB)
     };
+    inline constexpr static std::array<V,4> all_vertices() {
+        return {V::A,V::B,V::C,V::D};
+    }
+    inline constexpr static std::array<HE,12> all_halfedges() {
+        return {HE::AB,HE::AC,HE::AB,HE::BA,HE::BC,HE::BD,HE::CA,HE::CB,HE::CD,HE::DA,HE::DB,HE::DC};
+    }
+    inline constexpr static std::array<HF,4> all_halffaces() {
+        return {HF::BDC,HF::CDA,HF::DBA,HF::ABC};
+    }
     inline constexpr static uint8_t i(V _v) {
         return b(_v)&3;
     }
@@ -297,7 +306,7 @@ private:
     }
 };
 
-template<typename Vertex, typename HalfEdge, typename HalfFace>
+template<typename Vertex, typename HalfEdge, typename HalfFace, typename Cell>
 class TetTopologyT
 {
 private:
@@ -312,6 +321,15 @@ public:
     inline constexpr HalfFace halfface(TT::HF _hf) const {
         return TT::is_valid(TT::var(_hf))? hf_[TT::i(_hf)] : HalfFace();
     }
+    inline constexpr Vertex operator[](TT::V _v) const {
+        return vertex(_v);
+    }
+    inline constexpr HalfEdge operator[](TT::HE _he) const {
+        return halfedge(_he);
+    }
+    inline constexpr HalfFace operator[](TT::HF _hf) const {
+        return halfface(_hf);
+    }
     inline constexpr const std::array<Vertex,4>& vertices() const {
         return v_;
     }
@@ -320,6 +338,18 @@ public:
     }
     inline constexpr const std::array<HalfFace,4>& halffaces() const {
         return hf_;
+    }
+    inline constexpr const Cell& cell() const {
+        return c_;
+    }
+    inline constexpr std::array<Vertex,2> vertices(TT::HE _he) const {
+        return {vertex(TT::v0(_he)),vertex(TT::v1(_he))};
+    }
+    inline constexpr std::array<Vertex,3> vertices(TT::HF _hf) const {
+        return {vertex(TT::v0(_hf)),vertex(TT::v1(_hf)),vertex(TT::v2(_hf))};
+    }
+    inline constexpr std::array<HalfEdge,3> halfedges(TT::HF _hf) const {
+        return {halfedge(TT::he0(_hf)),halfedge(TT::he1(_hf)),halfedge(TT::he2(_hf))};
     }
     inline constexpr TT::V v(Vertex _vh) const {
         for (int idx = 0; idx < 4; ++idx) {if (v_[idx] == _vh) {return TT::i2v(idx);}}
@@ -337,6 +367,7 @@ protected:
     std::array<Vertex,4> v_;
     std::array<HalfEdge,12> he_;
     std::array<HalfFace, 4> hf_;
+    Cell c_;
 };
 
 }

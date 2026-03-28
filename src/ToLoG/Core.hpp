@@ -338,6 +338,14 @@ public:
         t_[2] = _c;
         t_[3] = _d;
     }
+    Tetrahedron(std::span<const P> _t)
+    {
+        assert(_t.size() == 4);
+        t_[0] = _t[0];
+        t_[1] = _t[1];
+        t_[2] = _t[2];
+        t_[3] = _t[3];
+    }
     inline const P& operator[](const int& _i) const {
         return t_[_i];
     }
