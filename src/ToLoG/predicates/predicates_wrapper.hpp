@@ -92,7 +92,7 @@ static inline ORI sign_orient3d(const double* pa, const double* pb, const double
 
 template<vector_3d P>
 static inline double point_orient3d(const P& a, const P& b, const P& c, const P& d) {
-    return orient3d(a.data, b.data, c.data, d.data);
+    return orient3d(a.data(), b.data(), c.data(), d.data());
 }
 
 class PredicatesInitalizer

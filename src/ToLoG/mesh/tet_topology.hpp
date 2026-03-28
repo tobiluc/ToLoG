@@ -330,6 +330,13 @@ public:
     inline constexpr HalfFace operator[](TT::HF _hf) const {
         return halfface(_hf);
     }
+    inline constexpr std::optional<std::variant<Vertex,HalfEdge,HalfFace,Cell>> operator[](TT::VAR _var) const {
+        if (TT::is_vertex(_var)) {return vertex(TT::v(_var));}
+        if (TT::is_halfedge(_var)) {return halfedge(TT::he(_var));}
+        if (TT::is_halfface(_var)) {return halfface(TT::hf(_var));}
+        if (TT::is_tet(_var)) {return cell();}
+        return std::nullopt;
+    }
     inline constexpr const std::array<Vertex,4>& vertices() const {
         return v_;
     }
