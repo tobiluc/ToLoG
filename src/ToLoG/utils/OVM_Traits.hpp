@@ -79,7 +79,7 @@ public:
 
     template<typename P>
     static OpenVolumeMesh::CellPropertyT<OVMTetTopology> create_property(const TetMesh<P>& _mesh) {
-        auto prop = _mesh.template create_private_cell_property<OVMTetTopology>();
+        auto prop = _mesh.template create_private_cell_property<OVMTetTopology>("", OVMTetTopology());
         for (auto c_it = _mesh.c_iter(); c_it.is_valid(); ++c_it) {
             prop[*c_it] = OVMTetTopology(_mesh, *c_it);
         }
