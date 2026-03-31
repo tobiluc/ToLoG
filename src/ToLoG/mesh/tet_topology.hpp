@@ -145,7 +145,7 @@ public:
         return (b(_var)&0b11000000)==0b10000000;
     }
     inline constexpr static bool is_halfface(VAR _var) {
-        return (b(_var)&0b11000000)==0b11000000;
+        return (b(_var)&0b11000000)==0b11000000 && !is_tet(_var);
     }
     inline constexpr static bool is_tet(VAR _var) {
         return (b(_var)&0b11111100)==0b11111100;
