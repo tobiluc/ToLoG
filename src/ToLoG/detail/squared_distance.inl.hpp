@@ -51,7 +51,7 @@ inline Traits<PointT>::value_type squared_distance(const PointT& _p, const Segme
     PointT ap = _p - _s.start();
     FT t = std::clamp(dot(ap,ab) / squared_norm(ab), FT(0), FT(1));
     PointT closest = _s.start() + ab*t;
-    return squared_norm(_p - closest);
+    return squared_norm(static_cast<PointT>(_p - closest));
 }
 
 template<vector_type PointT>
@@ -72,15 +72,15 @@ inline Traits<PointT>::value_type squared_distance(const PointT& _p, const Trian
 
     // If inside triangle, project onto triangle plane
     if (bary[0] >= 0 && bary[1] >= 0 && bary[2] >= 0) {
-        Point<FT,DIM> q = _tri[0] + (_tri[1] - _tri[0])*bary[0] + (_tri[2] - _tri[0])*bary[1]; // closest point
-        return squared_norm(_p - q);
+        PointT q = _tri[0] + (_tri[1] - _tri[0])*bary[0] + (_tri[2] - _tri[0])*bary[1]; // closest point
+        return squared_norm(static_cast<PointT>(_p - q));
     }
 
     // Otherwise, closest point is on an edge
     return std::min({
-        squared_distance(_p, _tri.edge(0)),
-        squared_distance(_p, _tri.edge(1)),
-        squared_distance(_p, _tri.edge(2))
+        squared_distance(_p, _tri.segment(0)),
+        squared_distance(_p, _tri.segment(1)),
+        squared_distance(_p, _tri.segment(2))
     });
 }
 
@@ -98,9 +98,9 @@ inline Traits<PointT>::value_type squared_distance(const PointT& _p, const Tetra
 
     // Otherwise, closest point lies on a face triangle
     return std::min({
-        squared_distance(_p, _tet.face(0,1,2)),
-        squared_distance(_p, _tet.face(0,1,3)),
-        squared_distance(_p, _tet.face(0,2,3)),
-        squared_distance(_p, _tet.face(1,2,3))
+        squared_distance(_p, _tet.triangle(0,1,2)),
+        squared_distance(_p, _tet.triangle(0,1,3)),
+        squared_distance(_p, _tet.triangle(0,2,3)),
+        squared_distance(_p, _tet.triangle(1,2,3))
     });
 }
