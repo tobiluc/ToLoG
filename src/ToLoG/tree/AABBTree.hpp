@@ -255,25 +255,38 @@ public:
     /// Locates the first primitive which contains the query point q
     std::optional<uint32_t> locate(const Point& _q) const
     {
-        // First, locate the node
-        uint32_t node_i(0);
-        while (true) {
-            if (is_leaf_node(node_i)) {break;}
-            if (intersects(nodes_[nodes_[node_i].left].aabb, _q)) {
-                node_i = nodes_[node_i].left;
-            } else if (intersects(nodes_[nodes_[node_i].left+1].aabb, _q)) {
-                node_i = nodes_[node_i].left+1;
+        std::stack<uint32_t> stack;
+        stack.push(0);
+
+        while (!stack.empty())
+        {
+            uint32_t node_i = stack.top();
+            stack.pop();
+
+            // If the point is not in the bounding box, it will not
+            // be in any primitive
+            if (!intersects(nodes_[node_i].aabb, _q)) {
+                continue;
+            }
+
+            if (is_leaf_node(node_i)) {
+                // If we have no more children, we look through all the primitives in the node
+                for (uint32_t i = nodes_[node_i].start; i < nodes_[node_i].end; ++i) {
+                    uint32_t prim = prim_idx_buffer_[i];
+                    if (intersects(primitives_[prim], _q)) {
+                        return prim;
+                    }
+                }
             } else {
-                return std::nullopt;
+                // Search both children
+                uint32_t left  = nodes_[node_i].left;
+                uint32_t right = left + 1;
+
+                stack.push(left);
+                stack.push(right);
             }
         }
 
-        // Locate the primitive within the node
-        for(uint32_t i=nodes_[node_i].start; i < nodes_[node_i].end; ++i) {
-            if (intersects(primitives_[prim_idx_buffer_[i]], _q)) {
-                return prim_idx_buffer_[i];
-            }
-        }
         return std::nullopt;
     }
 
