@@ -215,11 +215,15 @@ public:
     bool intersecting(const PrimT& _q,
         std::vector<uint32_t>& _res) const
     {
+        _res.clear();
         AABB q_aabb = aabb(_q);
         if (n_nodes()==0 || !intersects(q_aabb,nodes_[0].aabb)) {return false;}
+
         std::stack<uint32_t> node_stack;
         node_stack.push(0);
-        while (!node_stack.empty()) {
+
+        while (!node_stack.empty())
+        {
             uint32_t node_i = node_stack.top();
             node_stack.pop();
 
