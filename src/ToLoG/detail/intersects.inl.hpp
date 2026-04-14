@@ -104,3 +104,86 @@ inline bool intersects(const P& _q, const Tetrahedron<P>& _tet)
 {
     return intersects(_tet, _q);
 }
+
+template<vector_type P> requires(Traits<P>::dim==2)
+inline bool intersects(const Segment<P>& _seg, const P& _p)
+{
+    AABB<P> seg_aabb({_seg.start(), _seg.end()});
+    return point_orient2d(_seg.start(), _seg.end(), _p) == 0.0
+           && intersects(seg_aabb, _p);
+}
+
+template<vector_type P> requires(Traits<P>::dim==2)
+inline bool intersects(const P& _p, const Segment<P>& _seg)
+{
+    return intersects(_seg, _p);
+}
+
+template<vector_type P> requires(Traits<P>::dim==2)
+inline bool intersects(const Segment<P>& _s0, const Segment<P>& _s1)
+{
+    const P& a = _s0.start();
+    const P& b = _s0.end();
+    const P& c = _s1.start();
+    const P& d = _s1.end();
+
+    const double o1 = point_orient2d(a, b, c);
+    const double o2 = point_orient2d(a, b, d);
+    const double o3 = point_orient2d(c, d, a);
+    const double o4 = point_orient2d(c, d, b);
+
+    return ((o1 > 0.0 && o2 < 0.0 || o1 < 0.0 && o2 > 0.0) &&
+            (o3 > 0.0 && o4 < 0.0 || o3 < 0.0 && o4 > 0.0))
+        || (o1 == 0.0 && intersects(_s0, c))
+        || (o2 == 0.0 && intersects(_s0, d))
+        || (o3 == 0.0 && intersects(_s1, a))
+        || (o4 == 0.0 && intersects(_s1, b));
+}
+
+template<vector_type P> requires(Traits<P>::dim==2)
+inline bool intersects(const Segment<P>& _seg, const Triangle<P>& _tri)
+{
+    return intersects(_seg.start(), _tri)
+        || intersects(_seg.end(), _tri)
+        || intersects(_seg, _tri.segment(0))
+        || intersects(_seg, _tri.segment(1))
+        || intersects(_seg, _tri.segment(2));
+}
+
+template<vector_type P> requires(Traits<P>::dim==2)
+inline bool intersects(const Triangle<P>& _tri, const Segment<P>& _seg)
+{
+    return intersects(_seg, _tri);
+}
+
+template<vector_type P> requires(Traits<P>::dim==3)
+inline bool intersects(const Segment<P>& _seg, const Triangle<P>& _tri)
+{
+    double o0, o1, o2;
+    o0 = point_orient3d(_tri[0], _tri[1], _tri[2], _seg.start());
+    o1 = point_orient3d(_tri[0], _tri[1], _tri[2], _seg.end());
+    if ((o0>0.0&&o1>0.0) || (o0<0.0&&o1<0.0)) {return false;}
+    if (o0==0.0&&o1==0.0) [[unlikely]] {
+        // coplanar -> project to 2d
+        using FT = typename Traits<P>::value_type;
+        using P2 = Point<FT,2>;
+        auto proj2 = [&](const P& _p, int _a) -> P2 {
+            return P2(_p[(_a+1)%3], _p[(_a+2)%3]);
+        };
+        const AABB<P> tri_aabb({_tri[0], _tri[1], _tri[2]});
+        int a = argmax(static_cast<P>(tri_aabb.max()-tri_aabb.min()));
+        Segment<P2> seg2(proj2(_seg.start(), a), proj2(_seg.end(), a));
+        Triangle<P2> tri2(proj2(_tri[0], a), proj2(_tri[1], a), proj2(_tri[2], a));
+        return intersects(seg2, tri2);
+    }
+    o0 = point_orient3d(_tri[0], _tri[1], _seg.start(), _seg.end());
+    o1 = point_orient3d(_tri[1], _tri[2], _seg.start(), _seg.end());
+    o2 = point_orient3d(_tri[2], _tri[0], _seg.start(), _seg.end());
+    return !((o0>0.0||o1>0.0||o2>0.0) && (o0<0.0||o1<0.0||o2<0.0));
+}
+
+template<vector_type P> requires(Traits<P>::dim==3)
+inline bool intersects(const Triangle<P>& _tri, const Segment<P>& _seg)
+{
+    return intersects<P>(_seg, _tri);
+}
