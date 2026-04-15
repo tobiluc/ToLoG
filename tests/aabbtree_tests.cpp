@@ -128,4 +128,28 @@ TEST(TreeTest, PointBetweenTwoSpheresTest)
     EXPECT_FALSE(tree.locate(Point(0,0,0)).has_value());
 }
 
+TEST(TreeTest, TriangleTreeAndSegmentsTest)
+{
+    using Point = Point<double,3>;
+    using Segment = Segment<Point>;
+    using Triangle = Triangle<Point>;
+    using Tree = AABBTree<Triangle>;
+
+    Tree tree;
+    std::vector<Triangle> tris;
+    tris.emplace_back(Point(0,0,0),Point(0,0,1),Point(1,0,0));
+    tris.emplace_back(Point(0,0,1),Point(1,0,0),Point(1,0,1));
+    tris.emplace_back(Point(0,3,0),Point(0,3,1),Point(1,3,0));
+    tree.build_tree(tris);
+
+    Segment seg(Point(0.5,2,0.5), Point(0.5,-2,0.5));
+
+    EXPECT_TRUE(intersects(tris[0], seg));
+    EXPECT_TRUE(intersects(tris[1], seg));
+    EXPECT_FALSE(intersects(tris[2], seg));
+
+    auto inds = tree.intersecting(seg);
+    EXPECT_EQ(inds.size(), 2);
+}
+
 }

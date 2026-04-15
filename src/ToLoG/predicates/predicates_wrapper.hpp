@@ -80,6 +80,13 @@ static inline ORI sign_orient2d(const double* pa, const double* pb, const double
 }
 
 template<vector_2d P>
+static inline ORI sign_orient2d(const P& a, const P& b, const P& c) {
+    const double result = orient2d(a.data(), b.data(), c.data());
+    return static_cast<ORI>((result > 0.0)-(result < 0.0));
+}
+
+template<vector_2d P>
+[[deprecated("use sign_orient2d")]]
 static inline double point_orient2d(const P& a, const P& b, const P& c) {
     return orient2d(a.data(), b.data(), c.data());
 }
@@ -91,6 +98,13 @@ static inline ORI sign_orient3d(const double* pa, const double* pb, const double
 }
 
 template<vector_3d P>
+static inline ORI sign_orient3d(const P& a, const P& b, const P& c, const P& d) {
+    const double result = orient3d(a.data(), b.data(), c.data(), d.data());
+    return static_cast<ORI>((result > 0.0)-(result < 0.0));
+}
+
+template<vector_3d P>
+[[deprecated("use sign_orient3d")]]
 static inline double point_orient3d(const P& a, const P& b, const P& c, const P& d) {
     return orient3d(a.data(), b.data(), c.data(), d.data());
 }

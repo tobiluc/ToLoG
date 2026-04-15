@@ -7,6 +7,7 @@ namespace ToLoG::IO
 {
 
 template<polygon_mesh_3 Mesh>
+[[deprecated("use rapidobj")]]
 int write_polygon_mesh_obj(const std::filesystem::path& _path,
     const Mesh& _mesh)
 {

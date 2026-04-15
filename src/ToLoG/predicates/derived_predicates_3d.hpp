@@ -11,13 +11,13 @@ namespace ToLoG
 template<vector_3d P>
 ORI sign_orient3d(const Tetrahedron<P>& _tet)
 {
-    return sign_orient3d(_tet[0].data(),_tet[1].data(),_tet[2].data(),_tet[3].data());
+    return sign_orient3d(_tet[0] ,_tet[1] ,_tet[2] ,_tet[3]);
 }
 
 template<vector_3d P>
 ORI sign_orient3d(const Triangle<P>& _tri, const P& _p)
 {
-    return sign_orient3d(_tri[0].data(),_tri[1].data(),_tri[2].data(),_p.data());
+    return sign_orient3d(_tri[0], _tri[1], _tri[2], _p);
 }
 
 template<vector_3d P>

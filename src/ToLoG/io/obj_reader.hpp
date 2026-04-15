@@ -9,6 +9,7 @@ namespace ToLoG::IO
 {
 
 template<polygon_mesh_3 Mesh>
+[[deprecated("use rapidobj")]]
 int read_polygon_mesh_obj(const std::filesystem::path& _path,
     Mesh& _mesh)
 {

@@ -9,6 +9,7 @@ namespace ToLoG::IO
 {
 
 template<polygon_mesh_3 Mesh>
+[[deprecated("use happly directly")]]
 int write_polygon_mesh_ply(
     const std::filesystem::path& _path,
     const Mesh& _mesh)
