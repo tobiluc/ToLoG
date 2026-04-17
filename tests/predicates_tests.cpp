@@ -1,4 +1,4 @@
-#include "ToLoG/predicates/derived_predicates_3d.hpp"
+#include <ToLoG/geometry/predicates/derived_predicates_3d.hpp>
 #include <gtest/gtest.h>
 #include <ToLoG/Core.hpp>
 

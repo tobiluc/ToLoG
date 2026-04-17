@@ -1,7 +1,7 @@
 #pragma once
 #include <array>
 #include <cassert>
-#include <iostream>
+#include <variant>
 
 namespace ToLoG
 {

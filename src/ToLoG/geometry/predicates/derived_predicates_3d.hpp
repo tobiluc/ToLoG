@@ -1,5 +1,5 @@
 #pragma once
-#include <ToLoG/predicates/predicates_wrapper.hpp>
+#include <ToLoG/geometry/predicates/predicates_wrapper.hpp>
 #include <ToLoG/Core.hpp>
 #include <ToLoG/utils/indices.hpp>
 #include <iostream>
@@ -153,7 +153,7 @@ TetTopology::VAR supporting_simplex_in_tet(
 }
 
 template<vector_3d P>
-struct TetSegmentIntersectionExp
+struct TetSegmentIntersection
 {
     TetTopology::VAR simplex; // vertex, edge or face
     P point; // intersection point of segment with piercing pierce_face
@@ -167,7 +167,7 @@ struct TetSegmentIntersectionExp
  * for all delta>0 there exists delta>eps>0 s.t. p + eps*(q-p) is contained in s.
  */
 template<vector_3d P>
-TetSegmentIntersectionExp<P> exiting_simplex_in_tet(
+TetSegmentIntersection<P> exiting_simplex_in_tet(
     const Tetrahedron<P>& _tet,
     const Segment<P>& _s, std::optional<TetTopology::HF> _exclude_f = std::nullopt)
 {
@@ -248,7 +248,7 @@ TetSegmentIntersectionExp<P> exiting_simplex_in_tet(
 }
 
 template<vector_3d P>
-TetSegmentIntersectionExp<P> entering_simplex_in_tet(
+TetSegmentIntersection<P> entering_simplex_in_tet(
     const Tetrahedron<P>& _tet,
     const Segment<P>& _s)
 {

@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <ToLoG/predicates/predicates_wrapper.hpp>
+#include <ToLoG/geometry/predicates/predicates_wrapper.hpp>
 
 int main(int argc, char** argv)
 {

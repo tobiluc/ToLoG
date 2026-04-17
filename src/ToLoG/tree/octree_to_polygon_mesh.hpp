@@ -7,7 +7,7 @@
 namespace ToLoG
 {
 
-template<vector_type P>
+template<vector P>
 requires(Traits<P>::dim==3)
 QuadMesh<P> octree_to_polygon_mesh(const Octree& _tree)
 {

@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <ToLoG/Ray.hpp>
+#include <ToLoG/geometry/ray_intersection_times.hpp>
 
 TEST(RayTest, RayTest1)
 {

@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 #include <ToLoG/utils/OVM_Traits.hpp>
 #include <ToLoG/Core.hpp>
-#include <ToLoG/io/medit_reader.hpp>
 
 #include <OpenVolumeMesh/Core/OpenVolumeMeshHandle.hh>
 

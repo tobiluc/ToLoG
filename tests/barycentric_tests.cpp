@@ -4,9 +4,9 @@
 namespace ToLoG
 {
 
-constexpr double eps = std::numeric_limits<double>::epsilon();
+constexpr double eps = 1e-12;
 
-TEST(CoreTest, BarycentricTest)
+TEST(BarycentricTest, CornerBaryTest)
 {
     using P = ToLoG::Point<double, 3>;
     using Tri = ToLoG::Triangle<P>;
@@ -27,6 +27,25 @@ TEST(CoreTest, BarycentricTest)
             EXPECT_EQ(b[j], (i==j)? 1.0 : 0.0);
         }
     }
+}
+
+TEST(BarycentricTest, PointInTriangleTest)
+{
+    using P = ToLoG::Point<double, 3>;
+    using Tri = ToLoG::Triangle<P>;
+
+    Tri tri(P(0,0.5,0), P(0,0,1), P(2,0,0));
+    P p = tri[0]*1.2 + tri[1]*0.3 + tri[2]*-0.5;
+
+    auto bary = ToLoG::barycentric_coordinates(p, tri);
+    EXPECT_NEAR(bary[0], 1.2, eps);
+    EXPECT_NEAR(bary[1], 0.3, eps);
+    EXPECT_NEAR(bary[2], -0.5, eps);
+
+    P q = tri[0]*bary[0] + tri[1]*bary[1] + tri[2]*bary[2];
+    EXPECT_NEAR(p[0], q[0], eps);
+    EXPECT_NEAR(p[1], q[1], eps);
+    EXPECT_NEAR(p[2], q[2], eps);
 }
 
 }

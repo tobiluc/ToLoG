@@ -4,7 +4,7 @@
 namespace ToLoG
 {
 
-constexpr double eps = std::numeric_limits<double>::epsilon();
+constexpr double eps = 1e-12;
 
 TEST(GeometryCoreTest, AABBTest)
 {

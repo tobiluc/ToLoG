@@ -2,61 +2,10 @@
 # Add Library
 #================================================
 add_library("${PROJECT_NAME}" STATIC
-    ToLoG/predicates/predicates.c
-    ToLoG/predicates/predicates_wrapper.cpp
-    ToLoG/predicates/predicates_wrapper.hpp
-
-    ToLoG/Core.hpp
-    ToLoG/tree/AABBTree.hpp
-    ToLoG/DSU.hpp
-    ToLoG/HashMap.hpp
-    ToLoG/Heap.hpp
-
-    ToLoG/utils/KeyValueVector.hpp
-    ToLoG/utils/enumerate.hpp
-
-    ToLoG/tree/Octree.hpp
+    ToLoG/geometry/predicates/predicates.c
+    ToLoG/geometry/predicates/predicates_wrapper.cpp
     ToLoG/tree/Octree.cpp
     ToLoG/unstable/marching_cubes.cpp
-    ToLoG/unstable/marching_cubes.hpp
-
-    ToLoG/unstable/SimplexSolver.hpp
-    ToLoG/optimization/Sparse.hpp
-    ToLoG/unstable/LinearProgram.hpp
-    ToLoG/unstable/SimplexSolver.cpp
-    ToLoG/io/obj_writer.hpp
-    ToLoG/io/happly.hpp
-    ToLoG/io/ply_writer.hpp
-    ToLoG/utils/indices.hpp
-
-    ToLoG/detail/Traits.inl.hpp
-    ToLoG/detail/squared_distance.inl.hpp
-    ToLoG/detail/barycentric.inl.hpp
-    ToLoG/detail/aabb.inl.hpp
-    ToLoG/detail/centroid.inl.hpp
-    ToLoG/Traits_fwd.hpp
-    ToLoG/detail/vector.inl.hpp
-    ToLoG/Ray.hpp
-    ToLoG/math/polynomial_roots.hpp
-    ToLoG/detail/volume.inl.hpp
-    ToLoG/math/winding_number.hpp
-
-    ToLoG/detail/intersects.inl.hpp
-    ToLoG/mesh/polygon_mesh_concepts.hpp
-    ToLoG/predicates/derived_predicates_3d.hpp
-
-    ToLoG/mesh/polygon_mesh.hpp
-    ToLoG/mesh/tet_topology.hpp
-    ToLoG/io/obj_reader.hpp
-    ToLoG/io/medit_reader.hpp
-    ToLoG/mesh/polyhedral_mesh_concepts.hpp
-    ToLoG/mesh/mesh_concepts.hpp
-    ToLoG/io/ply_reader.hpp
-    ToLoG/utils/std_pair_hash.hpp
-
-    ToLoG/tree/octree_to_polygon_mesh.hpp
-    ToLoG/tree/aabbtree_to_polygon_mesh.hpp
-    ToLoG/utils/glm_Traits.hpp
 )
 add_library ("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS ${PROJECT_NAME})
 
@@ -77,7 +26,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 )
 
-set_source_files_properties(ToLoG/predicates/predicates.c
+set_source_files_properties(ToLoG/geometry/predicates/predicates.c
     PROPERTIES
     # make "if MSVC" work
     COMPILE_DEFINITIONS "$<$<CXX_COMPILER_ID:MSVC>:MSVC=1>"

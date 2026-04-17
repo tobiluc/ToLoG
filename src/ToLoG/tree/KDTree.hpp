@@ -7,7 +7,7 @@
 namespace ToLoG
 {
 
-template<vector_type P>
+template<vector P>
 class KDTree
 {
 private:

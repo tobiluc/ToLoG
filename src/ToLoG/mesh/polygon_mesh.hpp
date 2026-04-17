@@ -10,7 +10,7 @@
 namespace ToLoG
 {
 
-template<vector_type P>
+template<vector P>
 class PolygonMesh
 {
 private:
@@ -154,7 +154,7 @@ private:
     std::vector<std::vector<edge_index>> v_e_map_;
 };
 
-template<vector_type P>
+template<vector P>
 struct Traits<PolygonMesh<P>>
 {
     using vertex_index = int;
