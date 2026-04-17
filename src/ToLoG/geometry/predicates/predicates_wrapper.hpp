@@ -2,7 +2,7 @@
 
 #include <cassert>
 #include <ostream>
-#include <ToLoG/Traits_fwd.hpp>
+#include <ToLoG/vector_concepts.hpp>
 
 namespace ToLoG
 {

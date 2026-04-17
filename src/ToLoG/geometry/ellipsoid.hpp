@@ -1,5 +1,5 @@
 #pragma once
-#include <ToLoG/Traits_fwd.hpp>
+#include <ToLoG/vector_concepts.hpp>
 #include <array>
 
 namespace ToLoG

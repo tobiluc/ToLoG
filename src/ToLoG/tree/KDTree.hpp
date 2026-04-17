@@ -40,7 +40,7 @@ private:
 public:
     KDTree() {}
 
-    KDTree(const std::vector<P>& _points, const uint32_t _leaf_size = 32)
+    KDTree(std::span<const P> _points, const uint32_t _leaf_size = 32)
     {
         build(_points, _leaf_size);
     }
@@ -53,7 +53,7 @@ public:
         indices.clear();
     }
 
-    void build(const std::vector<P>& _points, const uint32_t _leaf_size = 32)
+    void build(std::span<const P> _points, const uint32_t _leaf_size = 32)
     {
         clear();
         points_ = _points;

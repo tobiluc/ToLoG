@@ -1,5 +1,5 @@
 #pragma once
-#include <ToLoG/Traits_fwd.hpp>
+#include <ToLoG/vector_concepts.hpp>
 #include <algorithm>
 
 namespace ToLoG
@@ -19,11 +19,18 @@ public:
             data_[i] = _data[i];
         }
     }
-    template<typename... Args,
-             typename = std::enable_if_t<sizeof...(Args) == DIM>>
+    template<typename... Args>
+        requires (sizeof...(Args) == DIM) &&
+            (std::convertible_to<Args, FT> && ...)
     Point(Args&&... args)
-        : data_{ static_cast<FT>(args)... }
+        : data_{static_cast<FT>(args)...}
     {}
+    template<typename P> requires(Traits<P>::dim == DIM)
+    Point(const P& _p) {
+        for (int i = 0; i < DIM; ++i) {
+            data_[i] = static_cast<FT>(_p[i]);
+        }
+    }
     inline constexpr size_t size() const noexcept {
         return static_cast<size_t>(DIM);
     }
@@ -64,9 +71,17 @@ public:
     inline const FT* data() const {
         return data_;
     }
-    inline bool operator==(const Point<FT,DIM>& _p) const {
+    template<vector_of_dim<DIM> P>
+    inline Point<FT,DIM>& operator=(const P& _rhs) {
         for (int i = 0; i < DIM; ++i) {
-            if (data_[i] != _p.data_[i]) {
+            data_[i] = static_cast<FT>(_rhs[i]);
+        }
+        return *this;
+    }
+    template<vector_of_dim<DIM> P>
+    inline bool operator==(const P& _p) const {
+        for (int i = 0; i < DIM; ++i) {
+            if (data_[i] != _p[i]) {
                 return false;
             }
         }

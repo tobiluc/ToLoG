@@ -1,5 +1,4 @@
 #pragma once
-#include <ToLoG/Traits_fwd.hpp>
 #include <ToLoG/geometry/segment.hpp>
 
 namespace ToLoG

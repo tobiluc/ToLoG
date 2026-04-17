@@ -47,13 +47,14 @@ TEST(OctreeTest, ChildOrderTest)
 
 TEST(OctreeTest, SimpleRefinementTest)
 {
-    using AABB = AABB<Point<float,3>>;
+    using P = Point<float,3>;
+    using AABB = AABB<P>;
     AABB aabb({{0,0,0}, {1,1,1}});
     Octree tree(aabb, 2, 5);
 
     // Before the Refinement
     EXPECT_EQ(tree.node_coords(0).depth, 0);
-    EXPECT_EQ(tree.node_aabb(tree.node_coords(0)), AABB({{0,0,0},{.5,.5,.5}}));
+    EXPECT_EQ(tree.node_aabb(tree.node_coords(0)), AABB({P(0,0,0),P(.5,.5,.5)}));
     EXPECT_TRUE(tree.locate(Octree::Point(0.3,0.3,0.3)).has_value());
     EXPECT_TRUE(tree.locate(Octree::Point(0.9,0.9,0.9)).has_value());
 
