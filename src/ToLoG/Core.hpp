@@ -86,6 +86,12 @@ public:
     inline const P& max() const {
         return max_;
     }
+    inline P& min() {
+        return min_;
+    }
+    inline P& max() {
+        return max_;
+    }
     inline bool contains(const AABB<P>& _box) const {
         for (int i = 0; i < DIM; ++i) {
             if (_box.max_[i] < min_[i] || max_[i] < _box.min_[i]) {
@@ -394,6 +400,10 @@ Traits<PrimT>::vector_type centroid(const PrimT& _prim);
 template<int N, vector_type PointT, typename PrimT>
 std::array<typename Traits<PointT>::value_type,N> barycentric_coordinates(const PointT& _p, const PrimT& _prim);
 #include "detail/barycentric.inl.hpp"
+
+template<typename Prim>
+Traits<Prim>::vector_type closest_point(const Prim& _prim, const typename Traits<Prim>::vector_type& _p);
+#include "detail/closest_point.inl.hpp"
 
 template<typename Prim1, typename Prim2>
 requires(std::is_same<

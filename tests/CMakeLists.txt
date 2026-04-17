@@ -2,7 +2,10 @@ if (GTEST_FOUND)
     include(GoogleTest)
 
     FILE(GLOB UNITTEST_SRC
+        aabb_tests.cpp
         aabbtree_tests.cpp
+        barycentric_tests.cpp
+        centroid_tests.cpp
         core_tests.cpp
         customization_tests.cpp
         dsu_tests.cpp
@@ -10,6 +13,8 @@ if (GTEST_FOUND)
         eigen_tests.cpp
         hash_tests.cpp
         heap_tests.cpp
+        intersects_tests.cpp
+        kdtree_tests.cpp
         keyvaluevector_tests.cpp
         octree_tests.cpp
         OM_tests.cpp
@@ -19,7 +24,10 @@ if (GTEST_FOUND)
         ray_tests.cpp
         simplex_tests.cpp
         sparse_tests.cpp
+        squared_distance_tests.cpp
         tet_topology_tests.cpp
+        vector_math_tests.cpp
+        volume_tests.cpp
         winding_number_tests.cpp
         unittests.cpp
     )

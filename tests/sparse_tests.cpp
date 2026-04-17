@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <ToLoG/unstable/SimplexSolver.hpp>
+#include <ToLoG/optimization/Sparse.hpp>
 
 namespace ToLoG
 {

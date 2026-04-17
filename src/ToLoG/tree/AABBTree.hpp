@@ -210,6 +210,68 @@ public:
         return k_nearest_neighbors(_q, 1).at(0);
     }
 
+    void radius_search(const Point& _q,
+                    const FT _radius,
+                std::vector<uint32_t>& _res) const
+    {
+        _res.clear();
+        if (nodes_.empty()) {return;}
+        const FT r_squared = _radius*_radius;
+
+        struct IdxD {
+            uint32_t idx;
+            FT d;
+            inline bool operator<(const IdxD& _id) const {return d < _id.d;}
+            inline bool operator>(const IdxD& _id) const {return d > _id.d;}
+        };
+
+        // Node & Distance Lower Bound
+        std::priority_queue<IdxD,std::vector<IdxD>,std::greater<IdxD>> pq;
+
+        pq.push({0, FT(0)}); // push root
+
+        while(!pq.empty())
+        {
+            auto [node_idx, lb] = pq.top();
+            pq.pop();
+
+            if(lb > r_squared) {
+                break;
+            }
+
+            const Node& N = nodes_[node_idx];
+
+            if(is_leaf_node(node_idx)) {
+                for(uint32_t i=N.start;i<N.end;i++){
+                    uint32_t pid = prim_idx_buffer_[i];
+                    const FT d = squared_distance(_q, primitives_[pid]);
+                    if(d <= r_squared) {
+                        _res.push_back(pid);
+                    }
+                }
+            } else {
+                FT lbL = squared_distance(_q, nodes_[N.left].aabb);
+                if(lbL <= r_squared) {
+                    pq.push({N.left, lbL}); // left child
+                }
+
+                FT lbR = squared_distance(_q, nodes_[N.left+1].aabb);
+                if(lbR <= r_squared) {
+                    pq.push({N.left+1, lbR}); // right child
+                }
+            }
+        }
+    }
+
+    std::vector<uint32_t> radius_search(
+        const Point& _q,
+        const FT _radius) const
+    {
+        std::vector<uint32_t> res;
+        radius_search(_q, _radius, res);
+        return res;
+    }
+
     template<typename PrimT>
     requires(std::is_same<typename Traits<PrimT>::vector_type,Point>::value)
     bool intersecting(const PrimT& _q,

@@ -34,7 +34,7 @@ inline P normalized(const P& _v) {
     using FT = typename Traits<P>::value_type;
     FT n = norm(_v);
     if (n == 0) [[unlikely]] {
-        std::cerr << "Warning: Normalizing with 0 norm" << std::endl;
+        //std::cerr << "Warning: Normalizing with 0 norm" << std::endl;
         return P(FT(0),FT(0),FT(0));
     }
     return _v / n;

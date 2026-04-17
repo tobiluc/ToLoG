@@ -38,3 +38,29 @@ inline AABB<P> aabb(const Tetrahedron<P>& _tet)
 {
     return AABB<P>({_tet[0], _tet[1], _tet[2], _tet[3]});
 }
+
+template<vector_type P>
+inline AABB<P> aabb(const Ellipsoid<P>& _ell)
+{
+    using FT = typename Traits<P>::value_type;
+    constexpr int DIM = Traits<P>::dim;
+
+    std::array<FT, DIM> extent = {0};
+
+    for (int i = 0; i < DIM; ++i) {
+        for (int j = 0; j < DIM; ++j) {
+            FT v = _ell.radius(i) * _ell.direction(i)[j];
+            extent[j] += v * v;
+        }
+    }
+
+    AABB<P> box;
+    for (int j = 0; j < DIM; ++j) {
+        extent[j] = std::sqrt(extent[j]);
+        box.min()[j] = _ell.center()[j] - extent[j];
+        box.max()[j] = _ell.center()[j] + extent[j];
+    }
+
+    return box;
+}
+

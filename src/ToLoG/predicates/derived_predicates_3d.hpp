@@ -36,7 +36,7 @@ TetTopology::VAR supporting_simplex_in_tet(
     // Get tet ori and opposite tet ori
     const ORI tet_ori = sign_orient3d(_tet);
     if (tet_ori == ORI::ZERO) {
-        std::cerr << "Warning: Cannot evaluate exact_simplex_of_point_in_tet in tet with volume zero" << std::endl;
+        //std::cerr << "Warning: Cannot evaluate exact_simplex_of_point_in_tet in tet with volume zero" << std::endl;
         return S::O;
     }
     const ORI opp_ori = (tet_ori==ORI::CCW)? ORI::CW : ORI::CCW;
@@ -83,7 +83,7 @@ TetTopology::VAR supporting_simplex_in_tet(
 
     const ORI tet_ori = sign_orient3d(_tet);
     if (tet_ori == ORI::ZERO) {
-        std::cerr << "Warning: Cannot evaluate exact_simplex_of_ray_in_tet in tet with volume zero" << std::endl;
+        //std::cerr << "Warning: Cannot evaluate exact_simplex_of_ray_in_tet in tet with volume zero" << std::endl;
         return {};
     }
     const ORI opp_ori = (tet_ori==ORI::CCW)? ORI::CW : ORI::CCW;
@@ -177,7 +177,7 @@ TetSegmentIntersectionExp<P> exiting_simplex_in_tet(
 
     const ORI tet_ori = sign_orient3d(_tet);
     if (tet_ori == ORI::ZERO) {
-        std::cerr << "Warning: Cannot evaluate intersection_simplex_from_within_tet in tet with volume zero" << std::endl;
+        //std::cerr << "Warning: Cannot evaluate intersection_simplex_from_within_tet in tet with volume zero" << std::endl;
         return {TT::VAR::O};
     }
     const ORI opp_ori = (tet_ori==ORI::CCW)? ORI::CW : ORI::CCW;
