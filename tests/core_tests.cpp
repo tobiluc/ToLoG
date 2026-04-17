@@ -42,7 +42,7 @@ TEST(CoreTest, PointAssignmentTest)
 TEST(CoreTest, Point1)
 {
     using P = Point<int,1>;
-    P p = 3;
+    P p(3);
     EXPECT_EQ(p[0], 3);
     P q(p);
     EXPECT_EQ(p, q);

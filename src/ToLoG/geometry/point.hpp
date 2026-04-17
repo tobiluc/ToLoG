@@ -8,6 +8,15 @@ namespace ToLoG
 template<typename FT, int DIM> requires(DIM > 0)
 class Point
 {
+private:
+    template<typename P>
+    static constexpr bool assignable =
+        requires(const P& p, int i) {
+            {p[i]} -> std::convertible_to<FT>;
+        } && requires {
+            typename Traits<P>;
+            Traits<P>::dim == DIM;
+        };
 public:
     Point() {
         for (int i=0;i<DIM;++i) {
@@ -25,7 +34,7 @@ public:
     Point(Args&&... args)
         : data_{static_cast<FT>(args)...}
     {}
-    template<typename P> requires(Traits<P>::dim == DIM)
+    template<typename P> requires(assignable<P>)
     Point(const P& _p) {
         for (int i = 0; i < DIM; ++i) {
             data_[i] = static_cast<FT>(_p[i]);
@@ -40,17 +49,19 @@ public:
     inline const FT& operator[](const int& _i) const {
         return data_[_i];
     }
-    inline Point<FT,DIM> operator-(const Point<FT,DIM>& _rhs) const {
+    template<typename P> requires(assignable<P>)
+    inline Point<FT,DIM> operator-(const P& _rhs) const {
         Point<FT,DIM> res = *this;
         for (int i = 0; i < DIM; ++i) {
-            res.data_[i] -= _rhs.data_[i];
+            res.data_[i] -= _rhs[i];
         }
         return res;
     }
-    inline Point<FT,DIM> operator+(const Point<FT,DIM>& _rhs) const {
+    template<typename P> requires(assignable<P>)
+    inline Point<FT,DIM> operator+(const P& _rhs) const {
         Point<FT,DIM> res = *this;
         for (int i = 0; i < DIM; ++i) {
-            res.data_[i] += _rhs.data_[i];
+            res.data_[i] += _rhs[i];
         }
         return res;
     }
@@ -71,14 +82,14 @@ public:
     inline const FT* data() const {
         return data_;
     }
-    template<vector_of_dim<DIM> P>
+    template<typename P> requires(assignable<P>)
     inline Point<FT,DIM>& operator=(const P& _rhs) {
         for (int i = 0; i < DIM; ++i) {
             data_[i] = static_cast<FT>(_rhs[i]);
         }
         return *this;
     }
-    template<vector_of_dim<DIM> P>
+    template<typename P> requires(assignable<P>)
     inline bool operator==(const P& _p) const {
         for (int i = 0; i < DIM; ++i) {
             if (data_[i] != _p[i]) {
@@ -87,11 +98,13 @@ public:
         }
         return true;
     }
-    inline bool operator<(const Point& _rhs) const {
-        return std::lexicographical_compare(
-            data_, data_+DIM,
-            _rhs.data_, _rhs.data_+DIM
-            );
+    template<typename P> requires(assignable<P>)
+    inline bool operator<(const P& _rhs) const {
+        for (int i = 0; i < DIM; ++i) {
+            if (data_[i] < _rhs[i]) {return true;}
+            if (_rhs[i] < data_[i]) {return false;}
+        }
+        return false;
     }
     friend inline std::ostream& operator<<(std::ostream& _os, const Point& _p) {
         if constexpr(DIM == 0) {return _os;}

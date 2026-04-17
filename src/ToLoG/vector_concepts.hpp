@@ -33,9 +33,6 @@ concept vector_of_dim = vector<P> && Traits<P>::dim == DIM;
 template<typename P, typename FT, int DIM>
 concept vector_of_type_and_dim = vector_of_type<P,FT> && vector_of_dim<P,DIM>;
 
-template<typename P1, typename P2>
-concept vector_like = vector_of_type_and_dim<P2, typename Traits<P1>::value_type, Traits<P1>::dim>;
-
 template<typename P>
 concept vector_3d = vector_of_type_and_dim<P,double,3>;
 
