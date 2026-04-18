@@ -1,4 +1,4 @@
-#include "ToLoG/math/epsilon.hpp"
+#include "epsilon.hpp"
 #include <gtest/gtest.h>
 #include <ToLoG/Core.hpp>
 

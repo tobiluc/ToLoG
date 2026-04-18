@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <ToLoG/Traits_fwd.hpp>
+#include "epsilon.hpp"
 
 // Minimal Example for using a custom Vector Type. Must have:
 /* Default Constructor
@@ -87,7 +88,7 @@ TEST(CustomizationTest, CustomVec3dTest)
 
     // Vector Utils
     EXPECT_EQ(ToLoG::squared_norm(p), 14);
-    EXPECT_EQ(ToLoG::norm(p), std::sqrt(14.0));
+    EXPECT_NEAR(ToLoG::norm(p), std::sqrt(14.0), ToLoG::epsilon);
     EXPECT_EQ(ToLoG::dot(p,q), 10);
     EXPECT_EQ(ToLoG::cross(p,q), CustomVec3d(-4,8,-4));
     EXPECT_EQ(ToLoG::filled<CustomVec3d>(-7), CustomVec3d(-7,-7,-7));

@@ -28,7 +28,7 @@ std::vector<double> ray_intersection_times(const Ray<Point>& _ray, const AABB<Po
         double a = _box.min()[i];
         double b = _box.max()[i];
 
-        if (std::abs(d)<=1e-14) { // Ray parallel to slab
+        if (d==0.0) { // Ray parallel to slab
             if (o < a || o > b) {
                 return {}; // no intersection
             }

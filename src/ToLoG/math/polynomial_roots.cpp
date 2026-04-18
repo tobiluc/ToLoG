@@ -1,5 +1,4 @@
 #include <ToLoG/math/polynomial_roots.hpp>
-#include <ToLoG/math/epsilon.hpp>
 
 namespace ToLoG
 {
@@ -7,14 +6,14 @@ namespace ToLoG
 std::vector<double> solve_quadratic(double a, double b, double c)
 {
     // Handle degenerate linear case
-    if (is_near_zero(a)) {
-        if (is_near_zero(b)) {return {};}
+    if (a == 0.0) {
+        if (b == 0.0) {return {};}
         return {-c/b};
     }
 
     double discriminant = b*b - 4*a*c;
 
-    if (is_near_zero(discriminant)) {
+    if (discriminant == 0.0) {
         // 1 solution
         return {-b/(static_cast<double>(2.0)*a)};
     } else if (discriminant > static_cast<double>(0.0)) {
@@ -31,7 +30,7 @@ std::vector<double> solve_quadratic(double a, double b, double c)
 std::vector<double> solve_cubic(double a3, double a2, double a1, double a0)
 {
     // Handle degenerate quadratic case
-    if (is_near_zero(a3)) {
+    if (a3 == 0.0) {
         return solve_quadratic(a2, a1, a0);
     }
 
@@ -45,14 +44,14 @@ std::vector<double> solve_cubic(double a3, double a2, double a1, double a0)
     double r = (a1*a2 - 3.*a0)/6. - tmp2*tmp2*tmp2;
 
     tmp = r*r + q*q*q;
-    if (tmp > epsilon)
+    if (tmp > 0.0)
     {
         // Case r^2 + q^3 > 0 => One real solution
         double A = std::cbrt<double>(std::abs(r) + std::sqrt<double>(tmp));
         double t1 = (r>=0)? A - q/A : q/A - A;
         return {(t1 - a2/double(3.))};
     }
-    else if (tmp < -epsilon)
+    else if (tmp < 0.0)
     {
         // Case r^2 + q^3 <= 0 => Three real solutions
         double theta = (q==0)? 0. : std::acos<double>(r/std::pow<double>(-q, 1.5));
@@ -73,7 +72,7 @@ std::vector<double> solve_cubic(double a3, double a2, double a1, double a0)
     else
     {
         // Case r^2 + q^3 = 0
-        if (is_near_zero(r) && is_near_zero(q)) {
+        if (r == 0.0 && q == 0.0) {
             return {-tmp2};
         } else {
             tmp = std::cbrt(r);
@@ -87,7 +86,7 @@ std::vector<double> solve_cubic(double a3, double a2, double a1, double a0)
 std::vector<double> solve_quartic(double a4, double a3, double a2, double a1, double a0)
 {
     // Handle degenerate cubic case
-    if (is_near_zero(a4)) {
+    if (a4 == 0.0) {
         return solve_cubic(a3, a2, a1, a0);
     }
 
@@ -123,7 +122,7 @@ std::vector<double> solve_quartic(double a4, double a3, double a2, double a1, do
     // Remove duplicates
     std::vector<double> unique = {roots[0]};
     for (int i = 1; i < 4; ++i) {
-        if (!is_near_zero(roots[i] - unique.back())) {
+        if (roots[i] != unique.back()) {
             unique.push_back(roots[i]);
         }
     }

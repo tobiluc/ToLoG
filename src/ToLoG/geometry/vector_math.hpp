@@ -30,7 +30,14 @@ inline typename Traits<P>::value_type squared_norm(const P& _p) {
 
 template<vector P>
 inline typename Traits<P>::value_type norm(const P& _p) {
-    return std::sqrt<typename Traits<P>::value_type>(dot(_p, _p));
+    using FT = typename Traits<P>::value_type;
+    FT M(0);
+    for (int i = 0; i < Traits<P>::dim; ++i) {
+        M = std::max(M, std::abs(_p[i]));
+    }
+    if (M == FT(0)) {return FT(0);}
+    P q = _p / M;
+    return M * std::sqrt(dot(q, q));
 }
 
 template<vector P> requires(Traits<P>::dim==3)

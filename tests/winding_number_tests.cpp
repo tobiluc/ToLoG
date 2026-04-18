@@ -2,7 +2,7 @@
 #include <ToLoG/Core.hpp>
 #include <ToLoG/math/winding_number.hpp>
 #include <ToLoG/geometry/predicates/predicates.hpp>
-#include <ToLoG/math/epsilon.hpp>
+#include "epsilon.hpp"
 
 namespace ToLoG
 {
