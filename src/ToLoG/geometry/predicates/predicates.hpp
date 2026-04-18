@@ -88,6 +88,33 @@ static inline ORI sign_orient2d(const P& a, const P& b, const P& c) {
     return sign_ori(orient2d(a.data(), b.data(), c.data()));
 }
 
+template<vector_3_double P>
+static inline ORI sign_orient2d_xy(const P& a, const P& b, const P& c) {
+    using FT = Traits<P>::value_type;
+    FT pa[2] = {a[0],a[1]};
+    FT pb[2] = {b[0],b[1]};
+    FT pc[2] = {c[0],c[1]};
+    return sign_ori(orient2d(pa, pb, pc));
+}
+
+template<vector_3_double P>
+static inline ORI sign_orient2d_yz(const P& a, const P& b, const P& c) {
+    using FT = Traits<P>::value_type;
+    FT pa[2] = {a[1],a[2]};
+    FT pb[2] = {b[1],b[2]};
+    FT pc[2] = {c[1],c[2]};
+    return sign_ori(orient2d(pa, pb, pc));
+}
+
+template<vector_3_double P>
+static inline ORI sign_orient2d_xz(const P& a, const P& b, const P& c) {
+    using FT = Traits<P>::value_type;
+    FT pa[2] = {a[0],a[2]};
+    FT pb[2] = {b[0],b[2]};
+    FT pc[2] = {c[0],c[2]};
+    return sign_ori(orient2d(pa, pb, pc));
+}
+
 static inline ORI sign_incircle(const double* pa, const double* pb, const double* pc, const double* pd) {
     return sign_ori(incircle(pa, pb, pc, pd));
 }

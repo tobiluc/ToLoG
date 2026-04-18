@@ -29,4 +29,17 @@ TEST(IntersectsTest, EllipsoidTest)
     EXPECT_NEAR(bbox.max()[2], 3, epsilon);
 }
 
+TEST(IntersectsTest, PointSegment3d)
+{
+    using P = ToLoG::Point<double,3>;
+    using S = ToLoG::Segment<P>;
+
+    S seg(P(1,2,3), P(2,3,4));
+    EXPECT_TRUE(intersects(seg, P(1.5,2.5,3.5)));
+    EXPECT_TRUE(intersects(seg, P(1,2,3)));
+    EXPECT_TRUE(intersects(seg, P(2,3,4)));
+    EXPECT_FALSE(intersects(seg, P(1.6,2.5,3.4)));
+    EXPECT_FALSE(intersects(seg, P(4,6,8)));
+}
+
 }

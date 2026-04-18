@@ -1,6 +1,7 @@
 #pragma once
 #include <ToLoG/geometry/Shapes.hpp>
 #include <ToLoG/geometry/predicates/predicates.hpp>
+#include <ToLoG/geometry/predicates/is_degenerate.hpp>
 
 namespace ToLoG
 {
@@ -42,8 +43,24 @@ bool intersects(const P& _q, const AABB<P>& _box)
 }
 
 template<vector_2_double P>
+bool intersects(const Segment<P>& _seg, const P& _p)
+{
+    return sign_orient2d(_seg.start(), _seg.end(), _p) == ORI::ZERO
+           && intersects(AABB<P>({_seg.start(), _seg.end()}), _p);
+}
+
+template<vector_2_double P>
+bool intersects(const P& _p, const Segment<P>& _seg)
+{
+    return intersects(_seg, _p);
+}
+
+template<vector_2_double P>
 bool intersects(const Triangle<P>& _tri, const P& _q)
 {
+    if (is_degenerate(_tri)) [[unlikely]] {
+        return intersects(_tri.segment(0), _q) || intersects(_tri.segment(1), _q);
+    }
     const ORI o0 = sign_orient2d(_tri[0],_tri[1],_q);
     const ORI o1 = sign_orient2d(_tri[1],_tri[2],_q);
     const ORI o2 = sign_orient2d(_tri[2],_tri[0],_q);
@@ -57,9 +74,15 @@ bool intersects(const P& _q, const Triangle<P>& _tri)
     return intersects(_tri, _q);
 }
 
-template<vector_3_double P> requires(Traits<P>::dim==3)
+template<vector_3_double P>
 bool intersects(const Tetrahedron<P>& _tet, const P& _q)
 {
+    if (is_degenerate(_tet)) [[unlikely]] {
+        return intersects(_tet.triangle(0,1,2), _q)
+            || intersects(_tet.triangle(0,1,3), _q)
+            || intersects(_tet.triangle(0,2,3), _q)
+            || intersects(_tet.triangle(1,2,3), _q);
+    }
     const ORI o0 = sign_orient3d(_tet[0],_tet[1],_tet[2],_q);
     const ORI o1 = sign_orient3d(_tet[0],_tet[3],_tet[1],_q);
     const ORI o2 = sign_orient3d(_tet[0],_tet[2],_tet[3],_q);
@@ -72,20 +95,6 @@ template<vector_3_double P>
 bool intersects(const P& _q, const Tetrahedron<P>& _tet)
 {
     return intersects(_tet, _q);
-}
-
-template<vector_2_double P>
-bool intersects(const Segment<P>& _seg, const P& _p)
-{
-    AABB<P> seg_aabb({_seg.start(), _seg.end()});
-    return sign_orient2d(_seg.start(), _seg.end(), _p) == ORI::ZERO
-           && intersects(seg_aabb, _p);
-}
-
-template<vector_2_double P>
-bool intersects(const P& _p, const Segment<P>& _seg)
-{
-    return intersects(_seg, _p);
 }
 
 template<vector_2_double P>
@@ -113,10 +122,53 @@ template<vector_2_double P>
 bool intersects(const Segment<P>& _seg, const Triangle<P>& _tri)
 {
     return intersects(_seg.start(), _tri)
-    || intersects(_seg.end(), _tri)
+        || intersects(_seg.end(), _tri)
         || intersects(_seg, _tri.segment(0))
         || intersects(_seg, _tri.segment(1))
         || intersects(_seg, _tri.segment(2));
+}
+
+template<vector_3_double P>
+bool intersects(const Segment<P>& _seg, const P& _p)
+{
+    return sign_orient2d_xy(_seg.start(), _seg.end(), _p) == ORI::ZERO
+        && sign_orient2d_xz(_seg.start(), _seg.end(), _p) == ORI::ZERO
+        && sign_orient2d_yz(_seg.start(), _seg.end(), _p) == ORI::ZERO
+        && intersects(AABB<P>({_seg.start(), _seg.end()}), _p);
+}
+
+template<vector_3_double P>
+bool intersects(const P& _p, const Segment<P>& _seg)
+{
+    return intersects(_seg, _p);
+}
+
+template<vector_3_double P>
+bool intersects(const Triangle<P>& _tri, const P& _p)
+{
+    if (is_degenerate(_tri)) [[unlikely]] {
+        return intersects(_tri.segment(0), _p) || intersects(_tri.segment(1), _p);
+    }
+    // point must lie in triangle plane
+    if (sign_orient3d(_tri[0], _tri[1], _tri[2], _p) != ORI::ZERO) {
+        return false;
+    }
+    // project to 2d
+    using FT = typename Traits<P>::value_type;
+    using P2 = Point<FT,2>;
+    auto proj2 = [&](const P& _p, int _a) -> P2 {
+        return P2(_p[(_a+1)%3], _p[(_a+2)%3]);
+    };
+    int a = argmax(abs(cross(_tri[1] - _tri[0], _tri[2] - _tri[0])));
+    P2 p2(proj2(_p, a));
+    Triangle<P2> tri2(proj2(_tri[0], a), proj2(_tri[1], a), proj2(_tri[2], a));
+    return intersects(p2, tri2);
+}
+
+template<vector_3_double P>
+bool intersects(const P& _p, const Triangle<P>& _tri)
+{
+    return intersects(_tri, _p);
 }
 
 template<vector_2_double P>
@@ -133,14 +185,17 @@ bool intersects(const Segment<P>& _seg, const Triangle<P>& _tri)
     o1 = sign_orient3d(_tri[0], _tri[1], _tri[2], _seg.end());
     if ((o0==ORI::CCW&&o1==ORI::CCW) || (o0==ORI::CW&&o1==ORI::CW)) {return false;}
     if (o0==ORI::ZERO&&o1==ORI::ZERO) [[unlikely]] {
-        // coplanar -> project to 2d
+        // coplanar
+        if (is_degenerate(_tri)) [[unlikely]] {
+            throw std::runtime_error("triangle segment 3d intersection not implemented for degenerate triangle");
+        }
+        // not degenerate -> project to 2d
         using FT = typename Traits<P>::value_type;
         using P2 = Point<FT,2>;
         auto proj2 = [&](const P& _p, int _a) -> P2 {
             return P2(_p[(_a+1)%3], _p[(_a+2)%3]);
         };
-        const AABB<P> tri_aabb({_tri[0], _tri[1], _tri[2]});
-        int a = argmax(static_cast<P>(tri_aabb.max()-tri_aabb.min()));
+        int a = argmax(abs(cross(_tri[1] - _tri[0], _tri[2] - _tri[0])));
         Segment<P2> seg2(proj2(_seg.start(), a), proj2(_seg.end(), a));
         Triangle<P2> tri2(proj2(_tri[0], a), proj2(_tri[1], a), proj2(_tri[2], a));
         return intersects(seg2, tri2);

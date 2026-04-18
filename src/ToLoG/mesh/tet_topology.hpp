@@ -107,7 +107,10 @@ public:
         return {V::A,V::B,V::C,V::D};
     }
     inline constexpr static std::array<HE,12> all_halfedges() {
-        return {HE::AB,HE::AC,HE::AB,HE::BA,HE::BC,HE::BD,HE::CA,HE::CB,HE::CD,HE::DA,HE::DB,HE::DC};
+        return {HE::AB,HE::AC,HE::AD,HE::BA,HE::BC,HE::BD,HE::CA,HE::CB,HE::CD,HE::DA,HE::DB,HE::DC};
+    }
+    inline constexpr static std::array<HE,6> all_edges() {
+        return {HE::AB,HE::AC,HE::AD,HE::BC,HE::BD,HE::CD};
     }
     inline constexpr static std::array<HF,4> all_halffaces() {
         return {HF::BDC,HF::CDA,HF::DBA,HF::ABC};
