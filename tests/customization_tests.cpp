@@ -75,7 +75,7 @@ struct Traits<CustomVec3d>
 #include <ToLoG/Core.hpp>
 #include <ToLoG/tree/AABBTree.hpp>
 
-TEST(GeometryCoreTest, CustomVec3dTest)
+TEST(CustomizationTest, CustomVec3dTest)
 {
     auto p = CustomVec3d(1, 2, 3);
     auto q = CustomVec3d(3, 2, 1);
@@ -118,3 +118,63 @@ TEST(GeometryCoreTest, CustomVec3dTest)
     auto tet = ToLoG::Tetrahedron<CustomVec3d>(p,q,r,s);
 
 }
+
+// Minimal Example for a custom shape. Depending on what you
+// need the shape for, different functions need to be defined.
+// For example, when using a AABB Tree with a shape the function
+// aabb(Shape) -> AABB must be defined.
+// Also, the shape must define Traits<Shape>::vector_type
+
+class MyCylinder
+{
+private:
+    using FT = double;
+    using P = ToLoG::Point<FT,3>;
+public:
+    MyCylinder(P _center, FT _half_height, FT _radius)
+        : center_(_center),
+        radius_(_radius),
+        half_height_(_half_height)
+    {}
+    const P& center() const {return center_;}
+    const FT& radius() const {return radius_;}
+    const FT& half_height() const {return half_height_;}
+private:
+    P center_;
+    FT half_height_;
+    FT radius_;
+};
+
+#include <ToLoG/geometry/AABB.hpp>
+
+namespace ToLoG
+{
+template<>
+struct Traits<MyCylinder>
+{
+    using vector_type = ToLoG::Point<double,3>;
+};
+
+auto aabb(const MyCylinder& _cylinder) {
+    using P = Traits<MyCylinder>::vector_type;
+    P min = _cylinder.center();
+    min[0] -= _cylinder.radius();
+    min[1] -= _cylinder.half_height();
+    min[2] -= _cylinder.radius();
+    P max = _cylinder.center();
+    max[0] += _cylinder.radius();
+    max[1] += _cylinder.half_height();
+    max[2] += _cylinder.radius();
+    return AABB<P>({min, max});
+}
+
+TEST(CustomizationTest, CustomCylinderTest)
+{
+    using P = Traits<MyCylinder>::vector_type;
+    MyCylinder cylinder(P(0,0,0), 2.5, 1);
+    EXPECT_EQ(aabb(cylinder), AABB<P>({P(-1,-2.5,-1),P(1,2.5,1)}));
+}
+
+}
+
+

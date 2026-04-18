@@ -1,10 +1,9 @@
+#include "ToLoG/math/epsilon.hpp"
 #include <gtest/gtest.h>
 #include <ToLoG/Core.hpp>
 
 namespace ToLoG
 {
-
-constexpr double eps = 1e-12;
 
 TEST(BarycentricTest, CornerBaryTest)
 {
@@ -38,14 +37,14 @@ TEST(BarycentricTest, PointInTriangleTest)
     P p = tri[0]*1.2 + tri[1]*0.3 + tri[2]*-0.5;
 
     auto bary = ToLoG::barycentric_coordinates(p, tri);
-    EXPECT_NEAR(bary[0], 1.2, eps);
-    EXPECT_NEAR(bary[1], 0.3, eps);
-    EXPECT_NEAR(bary[2], -0.5, eps);
+    EXPECT_NEAR(bary[0], 1.2, epsilon);
+    EXPECT_NEAR(bary[1], 0.3, epsilon);
+    EXPECT_NEAR(bary[2], -0.5, epsilon);
 
     P q = tri[0]*bary[0] + tri[1]*bary[1] + tri[2]*bary[2];
-    EXPECT_NEAR(p[0], q[0], eps);
-    EXPECT_NEAR(p[1], q[1], eps);
-    EXPECT_NEAR(p[2], q[2], eps);
+    EXPECT_NEAR(p[0], q[0], epsilon);
+    EXPECT_NEAR(p[1], q[1], epsilon);
+    EXPECT_NEAR(p[2], q[2], epsilon);
 }
 
 }

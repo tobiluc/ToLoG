@@ -8,35 +8,33 @@ namespace ToLoG
 {
 
 template<vector Point>
-std::vector<typename Traits<Point>::value_type> ray_intersection_times(const Ray<Point>& _ray, const Sphere<Point>& _sphere)
+std::vector<double> ray_intersection_times(const Ray<Point>& _ray, const Sphere<Point>& _sphere)
 {
-    using FT = typename Traits<Point>::value_type;
     Point oc = _ray.origin() - _sphere.center();
-    FT a = 1.0;
-    FT b = 2.0 * dot(_ray.dir(), oc);
-    FT c = dot(oc, oc) - _sphere.squared_radius();
+    double a = 1.0;
+    double b = 2.0 * dot(_ray.dir(), oc);
+    double c = dot(oc, oc) - _sphere.squared_radius();
     return solve_quadratic(a, b, c);
 }
 
 template<vector Point>
-std::vector<typename Traits<Point>::value_type> ray_intersection_times(const Ray<Point>& _ray, const AABB<Point>& _box)
+std::vector<double> ray_intersection_times(const Ray<Point>& _ray, const AABB<Point>& _box)
 {
-    using FT = typename Traits<Point>::value_type;
-    FT tmin = -std::numeric_limits<FT>::infinity();
-    FT tmax = std::numeric_limits<FT>::infinity();
+    double tmin = -std::numeric_limits<double>::infinity();
+    double tmax = std::numeric_limits<double>::infinity();
     for (int i = 0; i < Traits<Point>::dim; ++i) {
-        FT o = _ray.origin()[i];
-        FT d = _ray.dir()[i];
-        FT a = _box.min()[i];
-        FT b = _box.max()[i];
+        double o = _ray.origin()[i];
+        double d = _ray.dir()[i];
+        double a = _box.min()[i];
+        double b = _box.max()[i];
 
-        if (is_near_zero(d)) { // Ray parallel to slab
+        if (std::abs(d)<=1e-14) { // Ray parallel to slab
             if (o < a || o > b) {
                 return {}; // no intersection
             }
         } else {
-            FT t1 = (a - o) / d;
-            FT t2 = (b - o) / d;
+            double t1 = (a - o) / d;
+            double t2 = (b - o) / d;
             if (t1 > t2) {std::swap(t1, t2);}
             tmin = std::max(tmin, t1);
             tmax = std::min(tmax, t2);

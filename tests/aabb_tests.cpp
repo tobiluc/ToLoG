@@ -51,4 +51,13 @@ TEST(GeometryCoreTest, AABBPointsTest)
     EXPECT_EQ(corners[7], Point(4,-3,10));
 }
 
+TEST(AABBTest, AABBOfOne)
+{
+    using P = ToLoG::Point<float, 3>;
+    P p(-1,-3,2);
+    ToLoG::AABB<P> aabb({p});
+    EXPECT_EQ(aabb.min(), p);
+    EXPECT_EQ(aabb.max(), p);
+}
+
 }

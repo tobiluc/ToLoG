@@ -2,6 +2,10 @@
 #include <ToLoG/Core.hpp>
 #include <ToLoG/math/winding_number.hpp>
 #include <ToLoG/geometry/predicates/predicates_wrapper.hpp>
+#include <ToLoG/math/epsilon.hpp>
+
+namespace ToLoG
+{
 
 TEST(GeometryCoreTest, WindingNumber3dTest)
 {
@@ -34,12 +38,10 @@ TEST(GeometryCoreTest, WindingNumber3dTest)
         }
         return std::abs(wn); //bool inside = std::abs(wn) > 0.5;
     };
-    constexpr double eps = std::numeric_limits<double>::epsilon();
 
-
-    EXPECT_NEAR(wn(Point(0.1,0.1,0.1)), 1.0, eps); // Inside
-    EXPECT_NEAR(wn(Point(5,5,5)), 0.0, eps); // Outside
-    EXPECT_NEAR(wn(Point(-99,0,-99)), 0.0, eps); // Outside
+    EXPECT_NEAR(wn(Point(0.1,0.1,0.1)), 1.0, epsilon); // Inside
+    EXPECT_NEAR(wn(Point(5,5,5)), 0.0, epsilon); // Outside
+    EXPECT_NEAR(wn(Point(-99,0,-99)), 0.0, epsilon); // Outside
 
 }
 
@@ -69,11 +71,12 @@ TEST(GeometryCoreTest, WindingNumber2dTest)
         }
         return std::abs(wn); //bool inside = std::abs(wn) > 0.5;
     };
-    constexpr double eps = std::numeric_limits<double>::epsilon();
 
-    EXPECT_NEAR(wn(Point(0.5,0.5)), 1.0, eps); // Inside
-    EXPECT_NEAR(wn(Point(0.1,0.9)), 1.0, eps); // Inside
-    EXPECT_NEAR(wn(Point(5,5)), 0.0, eps); // Outside
-    EXPECT_NEAR(wn(Point(-1000,0.5)), 0.0, eps); // Outside
-    EXPECT_NEAR(wn(Point(0.5,1.01)), 0.0, eps); // Outside
+    EXPECT_NEAR(wn(Point(0.5,0.5)), 1.0, epsilon); // Inside
+    EXPECT_NEAR(wn(Point(0.1,0.9)), 1.0, epsilon); // Inside
+    EXPECT_NEAR(wn(Point(5,5)), 0.0, epsilon); // Outside
+    EXPECT_NEAR(wn(Point(-1000,0.5)), 0.0, epsilon); // Outside
+    EXPECT_NEAR(wn(Point(0.5,1.01)), 0.0, epsilon); // Outside
+}
+
 }

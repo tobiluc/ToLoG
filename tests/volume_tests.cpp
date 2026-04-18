@@ -1,10 +1,9 @@
+#include "ToLoG/math/epsilon.hpp"
 #include <gtest/gtest.h>
 #include <ToLoG/Core.hpp>
 
 namespace ToLoG
 {
-
-constexpr double eps = std::numeric_limits<double>::epsilon();
 
 TEST(VolumeTest, Triangle2dTest)
 {
@@ -38,8 +37,8 @@ TEST(VolumeTest, TriangleArea3dTest)
     P b(0,-14,31.123);
     P c(-9,0,-3);
 
-    EXPECT_NEAR(ToLoG::area(T(a,b,c)), area3d(a,b,c), eps);
-    EXPECT_NEAR(ToLoG::area(T(a,c,b)), area3d(a,c,b), eps);
+    EXPECT_NEAR(ToLoG::area(T(a,b,c)), area3d(a,b,c), epsilon);
+    EXPECT_NEAR(ToLoG::area(T(a,c,b)), area3d(a,c,b), epsilon);
 }
 
 }

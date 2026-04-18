@@ -20,6 +20,7 @@ if (GTEST_FOUND)
         OM_tests.cpp
         ovm_tests.cpp
         polygon_mesh_tests.cpp
+        polynomial_roots_tests.cpp
         predicates_tests.cpp
         ray_tests.cpp
         simplex_tests.cpp

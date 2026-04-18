@@ -1,6 +1,8 @@
 #pragma once
 
-#include <ToLoG/Core.hpp>
+#include <ToLoG/geometry/aabb_from_shape.hpp>
+#include <ToLoG/geometry/squared_distance.hpp>
+#include <ToLoG/geometry/predicates/intersects.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -18,14 +20,13 @@ namespace ToLoG
 template<typename T>
 class AABBTree
 {
-public:
+protected:
     using Primitive = T;
     using Point = Traits<T>::vector_type;
     using FT = Traits<Point>::value_type;
     constexpr static int DIM = Traits<Point>::dim;
     using AABB = AABB<Point>;
 
-protected:
     struct Node {
         uint32_t left = UINT32_MAX;
         uint32_t start = UINT32_MAX;
@@ -356,11 +357,11 @@ public:
         return std::nullopt;
     }
 
-    inline size_t n_nodes() const {
+    inline constexpr size_t n_nodes() const {
         return nodes_.size();
     }
 
-    inline size_t n_primitives() const {
+    inline constexpr size_t n_primitives() const {
         return primitives_.size();
     }
 
@@ -368,7 +369,7 @@ public:
         return nodes_[_node_i].aabb;
     }
 
-    inline bool is_leaf_node(uint32_t _node_idx) const {
+    inline constexpr bool is_leaf_node(uint32_t _node_idx) const {
         return nodes_[_node_idx].left == UINT32_MAX;
     }
 
@@ -376,7 +377,7 @@ public:
         return primitives_[_prim_idx];
     }
 
-    inline size_t leaf_size() const {
+    inline constexpr size_t leaf_size() const {
         return leaf_size_;
     }
 

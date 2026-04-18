@@ -101,6 +101,9 @@ public:
     inline bool operator==(const AABB<P>& _aabb) const {
         return min_ == _aabb.min_ && max_ == _aabb.max_;
     }
+    friend inline std::ostream& operator<<(std::ostream& _os, const AABB<P>& _aabb) {
+        return _os << _aabb.min_ << ", " << _aabb.max_;
+    }
 private:
     P min_, max_;
 };

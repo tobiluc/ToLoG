@@ -1,10 +1,9 @@
+#include "ToLoG/math/epsilon.hpp"
 #include <gtest/gtest.h>
 #include <ToLoG/Core.hpp>
 
 namespace ToLoG
 {
-
-constexpr double eps = std::numeric_limits<double>::epsilon();
 
 TEST(SquaredDistanceTest, PointPoint)
 {
@@ -48,10 +47,10 @@ TEST(SquaredDistanceTest, AABBAABB)
     AABB b2({Point(0.5,0.5), Point(2,1)});
     AABB b3({Point(-10,-10), Point(-8,10)});
 
-    EXPECT_NEAR(ToLoG::squared_distance(b0, b1), 0.25, eps);
+    EXPECT_NEAR(ToLoG::squared_distance(b0, b1), 0.25, epsilon);
     EXPECT_EQ(ToLoG::squared_distance(b0, b2), 0);
     EXPECT_EQ(ToLoG::squared_distance(b1, b2), 0);
-    EXPECT_NEAR(ToLoG::squared_distance(b0, b3), 64, eps);
+    EXPECT_NEAR(ToLoG::squared_distance(b0, b3), 64, epsilon);
 }
 
 TEST(SquaredDistanceTest, PointTriangle)
@@ -67,14 +66,14 @@ TEST(SquaredDistanceTest, PointTriangle)
     Point q(0.5,0,0.5);
     FT d2 = squared_distance(p, q);
 
-    EXPECT_NEAR(ToLoG::squared_distance(p, tri), d2, eps);
+    EXPECT_NEAR(ToLoG::squared_distance(p, tri), d2, epsilon);
 
     p = Point(0.2,0,0.3);
     auto bary = barycentric_coordinates(p, tri);
     EXPECT_GE(bary[0], 0);
     EXPECT_GE(bary[1], 0);
     EXPECT_GE(bary[2], 0);
-    EXPECT_NEAR(ToLoG::squared_distance(p, tri), 0, eps);
+    EXPECT_NEAR(ToLoG::squared_distance(p, tri), 0, epsilon);
 }
 
 }

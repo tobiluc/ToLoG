@@ -1,10 +1,9 @@
+#include "ToLoG/math/epsilon.hpp"
 #include <gtest/gtest.h>
 #include <ToLoG/Core.hpp>
 
 namespace ToLoG
 {
-
-constexpr double eps = std::numeric_limits<double>::epsilon();
 
 TEST(GeometryCoreTest, PointTest)
 {
@@ -45,11 +44,11 @@ TEST(GeometryCoreTest, TetrahedronTest)
 
     ToLoG::incenter(a, b, c, d);
 
-    EXPECT_NEAR(ToLoG::dihedral_angle(a, b, c, d), 0.5*M_PI, eps);
-    EXPECT_NEAR(ToLoG::dihedral_angle(c, a, b, d), 0.5*M_PI, eps);
-    EXPECT_NEAR(ToLoG::dihedral_angle(d, a, c, b), 0.5*M_PI, eps);
+    EXPECT_NEAR(ToLoG::dihedral_angle(a, b, c, d), 0.5*M_PI, epsilon);
+    EXPECT_NEAR(ToLoG::dihedral_angle(c, a, b, d), 0.5*M_PI, epsilon);
+    EXPECT_NEAR(ToLoG::dihedral_angle(d, a, c, b), 0.5*M_PI, epsilon);
 
-    EXPECT_NEAR(ToLoG::angle(b-a, c-a), 0.5*M_PI, eps);
+    EXPECT_NEAR(ToLoG::angle(b-a, c-a), 0.5*M_PI, epsilon);
 }
 
 }

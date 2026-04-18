@@ -6,6 +6,7 @@ add_library("${PROJECT_NAME}" STATIC
     ToLoG/geometry/predicates/predicates_wrapper.cpp
     ToLoG/tree/Octree.cpp
     ToLoG/unstable/marching_cubes.cpp
+    ToLoG/math/polynomial_roots.cpp
 )
 add_library ("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS ${PROJECT_NAME})
 
