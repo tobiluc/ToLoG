@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ToLoG/geometry/shapes.hpp>
+#include <ToLoG/geometry/Shapes.hpp>
 #include <ToLoG/geometry/vector_math.hpp>
 #include <ToLoG/geometry/aabb_from_shape.hpp>
 #include <ToLoG/geometry/volume.hpp>

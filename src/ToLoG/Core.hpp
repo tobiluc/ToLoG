@@ -2,4 +2,4 @@
 
 #include <MacTypes.h>
 #include <ToLoG/Traits_fwd.hpp>
-#include <ToLoG/geometry/core.hpp>
+#include <ToLoG/geometry/Core.hpp>

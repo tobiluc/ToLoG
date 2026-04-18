@@ -1,5 +1,5 @@
 #pragma once
-#include <ToLoG/geometry/shapes.hpp>
+#include <ToLoG/geometry/Shapes.hpp>
 
 namespace ToLoG
 {

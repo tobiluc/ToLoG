@@ -1,6 +1,6 @@
 #pragma once
-#include <ToLoG/geometry/ray.hpp>
-#include <ToLoG/geometry/shapes.hpp>
+#include <ToLoG/geometry/Ray.hpp>
+#include <ToLoG/geometry/Shapes.hpp>
 #include <ToLoG/math/polynomial_roots.hpp>
 #include <ToLoG/geometry/vector_math.hpp>
 

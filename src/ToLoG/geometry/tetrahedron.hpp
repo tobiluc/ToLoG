@@ -1,7 +1,7 @@
 #pragma once
 #include <ToLoG/Traits_fwd.hpp>
-#include <ToLoG/geometry/segment.hpp>
-#include <ToLoG/geometry/triangle.hpp>
+#include <ToLoG/geometry/Segment.hpp>
+#include <ToLoG/geometry/Triangle.hpp>
 #include <span>
 #include <ToLoG/mesh/tet_topology.hpp>
 

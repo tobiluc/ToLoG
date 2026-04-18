@@ -1,5 +1,5 @@
 #pragma once
-#include <ToLoG/geometry/segment.hpp>
+#include <ToLoG/geometry/Segment.hpp>
 
 namespace ToLoG
 {
