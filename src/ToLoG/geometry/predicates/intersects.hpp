@@ -159,7 +159,7 @@ bool intersects(const Triangle<P>& _tri, const P& _p)
     auto proj2 = [&](const P& _p, int _a) -> P2 {
         return P2(_p[(_a+1)%3], _p[(_a+2)%3]);
     };
-    int a = argmax(abs(cross(_tri[1] - _tri[0], _tri[2] - _tri[0])));
+    int a = argmax(abs(cross(static_cast<P>(_tri[1] - _tri[0]), static_cast<P>(_tri[2] - _tri[0]))));
     P2 p2(proj2(_p, a));
     Triangle<P2> tri2(proj2(_tri[0], a), proj2(_tri[1], a), proj2(_tri[2], a));
     return intersects(p2, tri2);
