@@ -23,9 +23,9 @@ public:
         }
 #ifndef NDEBUG
         for (int i = 0; i < DIM; ++i) {
-            assert(!is_near_zero(radii_[i]));
+            assert(std::abs(radii_[i])>1e-14);
             for (int j = i+1; j < DIM; ++j) {
-                assert(is_near_zero(dot(_axes[i], _axes[j])));
+                assert(std::abs(dot(_axes[i], _axes[j]))<=1e-14);
             }
         }
 #endif

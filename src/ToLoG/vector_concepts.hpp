@@ -34,9 +34,9 @@ template<typename P, typename FT, int DIM>
 concept vector_of_type_and_dim = vector_of_type<P,FT> && vector_of_dim<P,DIM>;
 
 template<typename P>
-concept vector_3d = vector_of_type_and_dim<P,double,3>;
+concept vector_3_double = vector_of_type_and_dim<P,double,3>;
 
 template<typename P>
-concept vector_2d = vector_of_type_and_dim<P,double,2>;
+concept vector_2_double = vector_of_type_and_dim<P,double,2>;
 
 }

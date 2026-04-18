@@ -8,19 +8,19 @@
 namespace ToLoG
 {
 
-template<vector_3d P>
+template<vector_3_double P>
 ORI sign_orient3d(const Tetrahedron<P>& _tet)
 {
     return sign_orient3d(_tet[0] ,_tet[1] ,_tet[2] ,_tet[3]);
 }
 
-template<vector_3d P>
+template<vector_3_double P>
 ORI sign_orient3d(const Triangle<P>& _tri, const P& _p)
 {
     return sign_orient3d(_tri[0], _tri[1], _tri[2], _p);
 }
 
-template<vector_3d P>
+template<vector_3_double P>
 TetTopology::VAR supporting_simplex_in_tet(
     const Tetrahedron<P>& _tet,
     const P& _p)
@@ -68,7 +68,7 @@ TetTopology::VAR supporting_simplex_in_tet(
  * Mathematically, returns the unique lowest dimensional simplex s s.t.
  * for all delta>0 there exists delta>eps>0 s.t. p + eps*(q-p) is contained in s.
  */
-template<vector_3d P>
+template<vector_3_double P>
 TetTopology::VAR supporting_simplex_in_tet(
     const Tetrahedron<P>& _tet,
     const Segment<P>& _s,
@@ -152,7 +152,7 @@ TetTopology::VAR supporting_simplex_in_tet(
     return TT::VAR::O;
 }
 
-template<vector_3d P>
+template<vector_3_double P>
 struct TetSegmentIntersection
 {
     TetTopology::VAR simplex; // vertex, edge or face
@@ -166,7 +166,7 @@ struct TetSegmentIntersection
  * Mathematically, returns the unique lowest dimensional simplex s s.t.
  * for all delta>0 there exists delta>eps>0 s.t. p + eps*(q-p) is contained in s.
  */
-template<vector_3d P>
+template<vector_3_double P>
 TetSegmentIntersection<P> exiting_simplex_in_tet(
     const Tetrahedron<P>& _tet,
     const Segment<P>& _s, std::optional<TetTopology::HF> _exclude_f = std::nullopt)
@@ -247,7 +247,7 @@ TetSegmentIntersection<P> exiting_simplex_in_tet(
     return {TT::VAR::O};
 }
 
-template<vector_3d P>
+template<vector_3_double P>
 TetSegmentIntersection<P> entering_simplex_in_tet(
     const Tetrahedron<P>& _tet,
     const Segment<P>& _s)

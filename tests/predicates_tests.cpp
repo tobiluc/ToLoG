@@ -49,9 +49,10 @@ TEST(PredicatesTest, InCircleTest)
     Point a(-1,-1);
     Point b(1,-1);
     Point c(0,1);
-    EXPECT_GT(ToLoG::point_incircle(a,b,c,Point(0,0)), 0.0); // in circle
-    EXPECT_GT(ToLoG::point_incircle(a,b,c,Point(0,-1.1)), 0.0); // in circle
-    EXPECT_LT(ToLoG::point_incircle(a,b,c,Point(0,1.1)), 0.0); // outside circle
+    const ToLoG::ORI o = ToLoG::sign_orient2d(a, b, c);
+    EXPECT_EQ(ToLoG::sign_incircle(a,b,c,Point(0,0)), o);
+    EXPECT_EQ(ToLoG::sign_incircle(a,b,c,Point(0,-1.1)), o);
+    EXPECT_NE(ToLoG::sign_incircle(a,b,c,Point(0,1.1)), o);
 }
 
 TEST(PredicatesTest, PointSupportingSimplexInTetTest)

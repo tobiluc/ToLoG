@@ -10,10 +10,18 @@ namespace ToLoG
 enum class ORI {
     CCW = -1,
     ZERO = 0,
-    CW = 1,
+    CW = 1
 };
 
-inline bool is_opposite_ori(const ORI& o1, const ORI& o2) {
+inline constexpr ORI sign_ori(const double d) {
+    return static_cast<ORI>((d > 0.0)-(d < 0.0));
+}
+
+inline constexpr ORI flip_ori(const ORI o) {
+    return (o==ORI::CCW)? ORI::CW : (o==ORI::CW)? ORI::CCW : ORI::ZERO;
+}
+
+inline constexpr bool is_opposite_ori(const ORI& o1, const ORI& o2) {
     return (o1==ORI::CCW && o2==ORI::CW) || (o1==ORI::CW && o2==ORI::CCW);
 }
 
@@ -61,6 +69,8 @@ double orient3d(const double* pa, const double* pb, const double* pc, const doub
 
 double incircle(const double* pa, const double* pb, const double* pc, const double*  pd);
 
+double insphere(const double* pa, const double* pb, const double* pc, const double*  pd, const double* pe);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif
@@ -68,45 +78,42 @@ double incircle(const double* pa, const double* pb, const double* pc, const doub
 namespace ToLoG
 {
 
-template<vector_2d P>
-static inline double point_incircle(const P& a, const P& b, const P& c, const P& d) {
-    return incircle(a.data(), b.data(), c.data(), d.data());
-}
-
 /// Wrapper around ::orient2d. Returns the result as an ::ORIENTATION.
 static inline ORI sign_orient2d(const double* pa, const double* pb, const double* pc) {
-    const double result = orient2d(pa, pb, pc);
-    return static_cast<ORI>((result > 0.0)-(result < 0.0));
+    return sign_ori(orient2d(pa, pb, pc));
 }
 
-template<vector_2d P>
+template<vector_2_double P>
 static inline ORI sign_orient2d(const P& a, const P& b, const P& c) {
-    const double result = orient2d(a.data(), b.data(), c.data());
-    return static_cast<ORI>((result > 0.0)-(result < 0.0));
+    return sign_ori(orient2d(a.data(), b.data(), c.data()));
 }
 
-template<vector_2d P>
-[[deprecated("use sign_orient2d")]]
-static inline double point_orient2d(const P& a, const P& b, const P& c) {
-    return orient2d(a.data(), b.data(), c.data());
+static inline ORI sign_incircle(const double* pa, const double* pb, const double* pc, const double* pd) {
+    return sign_ori(incircle(pa, pb, pc, pd));
+}
+
+template<vector_2_double P>
+static inline ORI sign_incircle(const P& a, const P& b, const P& c, const P& d) {
+    return sign_ori(incircle(a.data(), b.data(), c.data(), d.data()));
 }
 
 /// Wrapper around ::orient3d. Returns the result as an ::ORIENTATION.
 static inline ORI sign_orient3d(const double* pa, const double* pb, const double* pc, const double* pd) {
-    const double result = orient3d(pa, pb, pc, pd);
-    return static_cast<ORI>((result > 0.0)-(result < 0.0));
+    return sign_ori(orient3d(pa, pb, pc, pd));
 }
 
-template<vector_3d P>
+template<vector_3_double P>
 static inline ORI sign_orient3d(const P& a, const P& b, const P& c, const P& d) {
-    const double result = orient3d(a.data(), b.data(), c.data(), d.data());
-    return static_cast<ORI>((result > 0.0)-(result < 0.0));
+    return sign_ori(orient3d(a.data(), b.data(), c.data(), d.data()));
 }
 
-template<vector_3d P>
-[[deprecated("use sign_orient3d")]]
-static inline double point_orient3d(const P& a, const P& b, const P& c, const P& d) {
-    return orient3d(a.data(), b.data(), c.data(), d.data());
+static inline ORI sign_insphere(const double* pa, const double* pb, const double* pc, const double* pd, const double* pe) {
+    return sign_ori(insphere(pa, pb, pc, pd, pe));
+}
+
+template<vector_3_double P>
+static inline ORI sign_insphere(const P& a, const P& b, const P& c, const P& d, const P& e) {
+    return sign_ori(insphere(a.data(), b.data(), c.data(), d.data(), e.data()));
 }
 
 class PredicatesInitalizer

@@ -41,11 +41,11 @@ private:
         }
 
         inline key_type key() const {
-            return map_->keys_[index_];
+            return map_->buckets_[index_].key_;
         }
 
         inline value_type value() const {
-            return map_->values_[index_];
+            return map_->buckets_[index_].value_;
         }
 
         inline std::pair<key_type,value_type> operator*() const {
@@ -79,8 +79,7 @@ public:
     inline void reserve(size_t _capacity) {
         if (_capacity <= capacity_) {return;}
         capacity_ = next_pow2(_capacity);
-        keys_.resize(capacity_);
-        values_.resize(capacity_);
+        buckets_.resize(capacity_);
         occupied_.resize(capacity_, false);
     }
 
@@ -119,11 +118,10 @@ public:
         size_t idx = probe(key);
         if (!occupied_[idx]) {
             occupied_[idx] = true;
-            keys_[idx] = key;
-            values_[idx] = value;
+            buckets_[idx] = {.key_ = key, .value_ = value};
             ++size_;
         } else {
-            values_[idx] = value;  // overwrite
+            buckets_[idx].value_ = value;  // overwrite
         }
     }
 
@@ -137,7 +135,7 @@ public:
     inline size_t erase_if(std::function<bool(const K&,const V&)> _f) {
         size_t n(0);
         for (size_t idx = 0; idx < capacity_; ++idx) {
-            if (occupied_[idx] && _f(keys_[idx],values_[idx])) {
+            if (occupied_[idx] && _f(buckets_[idx].key_,buckets_[idx].value_)) {
                 erase_at(idx);
                 ++n;
             }
@@ -147,8 +145,7 @@ public:
 
     inline void clear() {
         capacity_ = next_pow2(16);
-        keys_.resize(capacity_);
-        values_.resize(capacity_);
+        buckets_.resize(capacity_);
         occupied_.resize(capacity_);
         size_ = 0;
         std::fill(occupied_.begin(), occupied_.end(), false);
@@ -160,17 +157,16 @@ public:
 
         if (!occupied_[idx]) {
             occupied_[idx] = true;
-            keys_[idx] = key;
-            values_[idx] = V();
+            buckets_[idx] = {.key_ = key, .value_ = V()};
             ++size_;
         }
-        return values_[idx];
+        return buckets_[idx].value_;
     }
 
     inline void apply(const std::function<void(const K& _k, V& _v)> _f) {
         for (size_t idx = 0; idx < capacity_; ++idx) {
             if (occupied_[idx]) {
-                _f(keys_[idx], values_[idx]);
+                _f(buckets_[idx].key_, buckets_[idx].value_);
             }
         }
     }
@@ -178,13 +174,13 @@ public:
     inline std::optional<std::reference_wrapper<const V>> get(const K& key) const {
         size_t idx = find(key);
         if (idx == nullidx) {return std::nullopt;}
-        return std::cref(values_[idx]);
+        return std::cref(buckets_[idx].value_);
     }
 
     inline std::optional<std::reference_wrapper<V>> get(const K& key) {
         size_t idx = find(key);
         if (idx == nullidx) {return std::nullopt;}
-        return std::ref(values_[idx]);
+        return std::ref(buckets_[idx].value_);
     }
 
     inline const V& get_or_set(const K& _key, const V& _val) {
@@ -197,13 +193,13 @@ public:
     inline const V& get_or_default(const K& key, const V& _default) const {
         size_t idx = find(key);
         if (idx == nullidx) {return _default;}
-        return values_[idx];
+        return buckets_[idx].value_;
     }
 
     inline V& get_or_default(const K& key, const V& _default) {
         size_t idx = find(key);
         if (idx == nullidx) {return _default;}
-        return values_[idx];
+        return buckets_[idx].value_;
     }
 
     inline bool contains(const K& key) const {
@@ -218,15 +214,22 @@ public:
     }
 
 private:
+    struct Bucket {
+        enum class State : uint8_t {EMPTY, OCCUPIED, DELETED};
+        K key_;
+        V value_;
+        //State state_;
+    };
+
     size_t size_;
     size_t capacity_;
-    std::vector<K> keys_;
-    std::vector<V> values_;
-    std::vector<bool> occupied_;
+
+    std::vector<Bucket> buckets_;
+    std::vector<uint8_t> occupied_;
 
     static constexpr size_t nullidx = static_cast<size_t>(-1);
 
-    inline size_t hash_key(const K& key) const {
+    constexpr inline size_t hash_key(const K& key) const {
         return hash{}(key) & (capacity_-1);
     }
 
@@ -234,7 +237,7 @@ private:
         size_t idx = hash_key(key);
         size_t start = idx;
         size_t i = 0;
-        while (occupied_[idx] && !(keys_[idx] == key)) {
+        while (occupied_[idx] && !(buckets_[idx].key_ == key)) {
             idx = next_index(idx, ++i);
         }
         return idx;
@@ -245,7 +248,7 @@ private:
         size_t start = idx;
         size_t i = 0;
         while (occupied_[idx]) {
-            if (keys_[idx] == key) {return idx;}
+            if (buckets_[idx].key_ == key) {return idx;}
             idx = next_index(idx, ++i);
             if (idx == start) {break;} // key not found
         }
@@ -261,12 +264,10 @@ private:
     {
         new_cap = next_pow2(new_cap);
 
-        std::vector<K> old_keys = std::move(keys_);
-        std::vector<V> old_vals = std::move(values_);
-        std::vector<bool> old_occ = std::move(occupied_);
+        std::vector<Bucket> old_buckets = std::move(buckets_);
+        std::vector<uint8_t> old_occ = std::move(occupied_);
 
-        keys_.resize(new_cap);
-        values_.resize(new_cap);
+        buckets_.resize(new_cap);
         occupied_.assign(new_cap, false);
 
         size_t old_cap = capacity_;
@@ -276,7 +277,7 @@ private:
         for (size_t i = 0; i < old_cap; ++i)
         {
             if (old_occ[i]) {
-                insert(old_keys[i], old_vals[i]);
+                insert(std::move(old_buckets[i].key_), std::move(old_buckets[i].value_));
             }
         }
     }
@@ -290,28 +291,30 @@ private:
         size_t next = next_index(idx, i);
 
         while (occupied_[next]) {
-            K k = std::move(keys_[next]);
-            V v = std::move(values_[next]);
+            Bucket b = std::move(buckets_[next]);
 
             occupied_[next] = false;
             --size_;
 
-            insert(k, v);
+            insert(std::move(b.key_), std::move(b.value_));
 
             next = next_index(next, ++i);
         }
     }
 
-    inline size_t next_index(size_t idx, size_t i) const {
+    constexpr inline size_t next_index(size_t idx, size_t i) const {
         return (idx + 1) & (capacity_ - 1);
         //return (idx + i + 1) & (capacity_ - 1);
     }
 
-    static inline size_t next_pow2(size_t x) {
-        size_t p = 1;
-        while (p < x) {p <<= 1;}
-        return p;
+    constexpr static inline size_t next_pow2(size_t x) {
+        return (x<=1ull)? 1ull : (1ull << (64 - std::countl_zero(x-1)));
     }
+    // constexpr static inline size_t next_pow2(size_t x) {
+    //     size_t p = 1;
+    //     while (p < x) {p <<= 1;}
+    //     return p;
+    // }
 };
 
 }
