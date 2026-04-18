@@ -21,7 +21,7 @@ inline typename Traits<P>::value_type area(const Triangle<P>& _tri) {
     return area(_tri[0], _tri[1], _tri[2]);
 }
 
-template<vector P> requires(Traits<P>::dim==3)
+template<vector_of_dim<3> P>
 inline P normal(const Triangle<P>& _tri) {
     return cross(static_cast<P>(_tri[1] - _tri[0]),static_cast<P>(_tri[2] - _tri[0]));
 }

@@ -40,7 +40,7 @@ inline typename Traits<P>::value_type norm(const P& _p) {
     return M * std::sqrt(dot(q, q));
 }
 
-template<vector P> requires(Traits<P>::dim==3)
+template<vector_of_dim<3> P>
 inline P normalized(const P& _v) {
     using FT = typename Traits<P>::value_type;
     FT n = norm(_v);
@@ -51,7 +51,7 @@ inline P normalized(const P& _v) {
     return _v / n;
 }
 
-template<vector P> requires(Traits<P>::dim==3)
+template<vector_of_dim<3> P>
 inline P cross(const P& _lhs, const P& _rhs) {
     return P(
         _lhs[1]*_rhs[2] - _lhs[2]*_rhs[1],
@@ -147,7 +147,7 @@ inline typename Traits<P>::value_type angle(const P& _a,
  * Dihedral Angle between two halfplanes in radians.
  * One halfplane is given by abp, the other by baq
  **/
-template<vector P> requires(Traits<P>::dim == 3)
+template<vector_of_dim<3> P>
 inline typename Traits<P>::value_type dihedral_angle(
     const P& _a,
     const P& _b,
