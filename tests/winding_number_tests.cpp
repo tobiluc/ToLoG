@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <ToLoG/Core.hpp>
 #include <ToLoG/math/winding_number.hpp>
-#include <ToLoG/geometry/predicates/predicates_wrapper.hpp>
+#include <ToLoG/geometry/predicates/predicates.hpp>
 #include <ToLoG/math/epsilon.hpp>
 
 namespace ToLoG

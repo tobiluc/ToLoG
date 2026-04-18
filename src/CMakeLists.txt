@@ -3,7 +3,7 @@
 #================================================
 add_library("${PROJECT_NAME}" STATIC
     ToLoG/geometry/predicates/predicates.c
-    ToLoG/geometry/predicates/predicates_wrapper.cpp
+    ToLoG/geometry/predicates/predicates.cpp
     ToLoG/tree/Octree.cpp
     ToLoG/unstable/marching_cubes.cpp
     ToLoG/math/polynomial_roots.cpp

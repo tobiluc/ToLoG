@@ -1,4 +1,4 @@
-#include <ToLoG/geometry/predicates/predicates_wrapper.hpp>
+#include <ToLoG/geometry/predicates/predicates.hpp>
 
 namespace ToLoG
 {

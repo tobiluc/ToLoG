@@ -1,5 +1,5 @@
 #pragma once
-#include <ToLoG/geometry/predicates/predicates_wrapper.hpp>
+#include <ToLoG/geometry/predicates/predicates.hpp>
 #include <ToLoG/Core.hpp>
 #include <ToLoG/utils/indices.hpp>
 #include <iostream>
