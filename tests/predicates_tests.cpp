@@ -4,7 +4,7 @@
 
 TEST(PredicatesTest, SignOri2dTest1)
 {
-    using P = ToLoG::Point<double,2>;
+    using P = ToLoG::Point<ToLoG::exact_real,2>;
     P p0(0,0);
     P p1(1,0);
     P p2(0,1);
@@ -16,7 +16,7 @@ TEST(PredicatesTest, SignOri2dTest1)
 
 TEST(PredicatesTest, SignOri3dTest1)
 {
-    using P = ToLoG::Point<double,3>;
+    using P = ToLoG::Point<ToLoG::exact_real,3>;
     P p0(0,0,0);
     P p1(0,0,1);
     P p2(1,0,0);
@@ -28,7 +28,7 @@ TEST(PredicatesTest, SignOri3dTest1)
 
 TEST(PredicatesTest, PointInTriangle2dTest)
 {
-    using Point = ToLoG::Point<double,2>;
+    using Point = ToLoG::Point<ToLoG::exact_real,2>;
     using Triangle = ToLoG::Triangle<Point>;
 
     Point t0(0,0);
@@ -45,7 +45,7 @@ TEST(PredicatesTest, PointInTriangle2dTest)
 
 TEST(PredicatesTest, InCircleTest)
 {
-    using Point = ToLoG::Point<double,2>;
+    using Point = ToLoG::Point<ToLoG::exact_real,2>;
     Point a(-1,-1);
     Point b(1,-1);
     Point c(0,1);
@@ -57,7 +57,7 @@ TEST(PredicatesTest, InCircleTest)
 
 TEST(PredicatesTest, PointSupportingSimplexInTetTest)
 {
-    using P = ToLoG::Point<double,3>;
+    using P = ToLoG::Point<ToLoG::exact_real,3>;
     using T = ToLoG::Tetrahedron<P>;
 
     T tet(P(0,0,0), P(0,0,1), P(1,0,0), P(0,1,0));
@@ -100,7 +100,7 @@ TEST(PredicatesTest, PointSupportingSimplexInTetTest)
 
 TEST(PredicatesTest, PointSupportingSimplexInInvertedTetTest)
 {
-    using P = ToLoG::Point<double,3>;
+    using P = ToLoG::Point<ToLoG::exact_real,3>;
     using T = ToLoG::Tetrahedron<P>;
     using TT = ToLoG::TetTopology;
 
@@ -142,7 +142,7 @@ TEST(PredicatesTest, PointSupportingSimplexInInvertedTetTest)
 
 TEST(PredicatesTest, ExactSimplexInTetRayTest)
 {
-    using P = ToLoG::Point<double,3>;
+    using P = ToLoG::Point<ToLoG::exact_real,3>;
     using T = ToLoG::Tetrahedron<P>;
     using S = ToLoG::Segment<P>;
     using TT = ToLoG::TetTopology;
@@ -163,11 +163,11 @@ TEST(PredicatesTest, ExactSimplexInTetRayTest)
 
 TEST(PredicatesTest, SegmentThroughTetTest)
 {
-    using P = ToLoG::Point<double,3>;
+    using P = ToLoG::Point<ToLoG::exact_real,3>;
     using T = ToLoG::Tetrahedron<P>;
     using TT = ToLoG::TetTopology;
     using S = ToLoG::Segment<P>;
-    const double eps = std::numeric_limits<double>::epsilon();
+    const ToLoG::exact_real eps = std::numeric_limits<ToLoG::exact_real>::epsilon();
 
     // Classic Tet
     T tet(P(0,0,0), P(0,0,1), P(1,0,0), P(0,1,0));
@@ -220,7 +220,7 @@ TEST(PredicatesTest, SegmentThroughTetTest)
 
 TEST(PredicatesTest, SegmentThroughInvertedTetTest)
 {
-    using P = ToLoG::Point<double,3>;
+    using P = ToLoG::Point<ToLoG::exact_real,3>;
     using T = ToLoG::Tetrahedron<P>;
     using S = ToLoG::Segment<P>;
     using TT = ToLoG::TetTopology;

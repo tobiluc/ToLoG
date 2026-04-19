@@ -134,11 +134,28 @@
 #define INEXACT                          /* Nothing */
 /* #define INEXACT volatile */
 
-#define REAL double                      /* float or double */
+#ifdef TOLOG_EXACT_SINGLE_PRECISION
+#define REAL float
+#define REALPRINT floatprint
+#define REALRAND floatrand
+#define NARROWRAND narrowfloatrand
+#define UNIFORMRAND uniformfloatrand
+#else
+#define REAL double
 #define REALPRINT doubleprint
 #define REALRAND doublerand
 #define NARROWRAND narrowdoublerand
 #define UNIFORMRAND uniformdoublerand
+#endif
+
+unsigned long sizeof_exact_real(void)
+{
+#ifdef TOLOG_EXACT_SINGLE_PRECISION
+    return sizeof(float);
+#else
+    return sizeof(double);
+#endif
+}
 
 /* Which of the following two methods of finding the absolute values is      */
 /*   fastest is compiler-dependent.  A few compilers can inline and optimize */

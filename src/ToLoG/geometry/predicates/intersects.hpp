@@ -42,20 +42,20 @@ bool intersects(const P& _q, const AABB<P>& _box)
     return intersects(_box, _q);
 }
 
-template<vector_2_double P>
+template<vector_2_exact_real P>
 bool intersects(const Segment<P>& _seg, const P& _p)
 {
     return sign_orient2d(_seg.start(), _seg.end(), _p) == ORI::ZERO
            && intersects(AABB<P>({_seg.start(), _seg.end()}), _p);
 }
 
-template<vector_2_double P>
+template<vector_2_exact_real P>
 bool intersects(const P& _p, const Segment<P>& _seg)
 {
     return intersects(_seg, _p);
 }
 
-template<vector_2_double P>
+template<vector_2_exact_real P>
 bool intersects(const Triangle<P>& _tri, const P& _q)
 {
     if (is_degenerate(_tri)) [[unlikely]] {
@@ -68,13 +68,13 @@ bool intersects(const Triangle<P>& _tri, const P& _q)
              && (o0==ORI::CW||o1==ORI::CW||o2==ORI::CW));
 }
 
-template<vector_2_double P>
+template<vector_2_exact_real P>
 bool intersects(const P& _q, const Triangle<P>& _tri)
 {
     return intersects(_tri, _q);
 }
 
-template<vector_3_double P>
+template<vector_3_exact_real P>
 bool intersects(const Tetrahedron<P>& _tet, const P& _q)
 {
     if (is_degenerate(_tet)) [[unlikely]] {
@@ -91,13 +91,13 @@ bool intersects(const Tetrahedron<P>& _tet, const P& _q)
              && (o0==ORI::CW||o1==ORI::CW||o2==ORI::CW||o3==ORI::CW));
 }
 
-template<vector_3_double P>
+template<vector_3_exact_real P>
 bool intersects(const P& _q, const Tetrahedron<P>& _tet)
 {
     return intersects(_tet, _q);
 }
 
-template<vector_2_double P>
+template<vector_2_exact_real P>
 bool intersects(const Segment<P>& _s0, const Segment<P>& _s1)
 {
     const P& a = _s0.start();
@@ -118,7 +118,7 @@ bool intersects(const Segment<P>& _s0, const Segment<P>& _s1)
            || (o4 == ORI::ZERO && intersects(_s1, b));
 }
 
-template<vector_2_double P>
+template<vector_2_exact_real P>
 bool intersects(const Segment<P>& _seg, const Triangle<P>& _tri)
 {
     return intersects(_seg.start(), _tri)
@@ -128,7 +128,7 @@ bool intersects(const Segment<P>& _seg, const Triangle<P>& _tri)
         || intersects(_seg, _tri.segment(2));
 }
 
-template<vector_3_double P>
+template<vector_3_exact_real P>
 bool intersects(const Segment<P>& _seg, const P& _p)
 {
     return sign_orient2d_xy(_seg.start(), _seg.end(), _p) == ORI::ZERO
@@ -137,13 +137,13 @@ bool intersects(const Segment<P>& _seg, const P& _p)
         && intersects(AABB<P>({_seg.start(), _seg.end()}), _p);
 }
 
-template<vector_3_double P>
+template<vector_3_exact_real P>
 bool intersects(const P& _p, const Segment<P>& _seg)
 {
     return intersects(_seg, _p);
 }
 
-template<vector_3_double P>
+template<vector_3_exact_real P>
 bool intersects(const Triangle<P>& _tri, const P& _p)
 {
     if (is_degenerate(_tri)) [[unlikely]] {
@@ -165,19 +165,19 @@ bool intersects(const Triangle<P>& _tri, const P& _p)
     return intersects(p2, tri2);
 }
 
-template<vector_3_double P>
+template<vector_3_exact_real P>
 bool intersects(const P& _p, const Triangle<P>& _tri)
 {
     return intersects(_tri, _p);
 }
 
-template<vector_2_double P>
+template<vector_2_exact_real P>
 bool intersects(const Triangle<P>& _tri, const Segment<P>& _seg)
 {
     return intersects(_seg, _tri);
 }
 
-template<vector_3_double P>
+template<vector_3_exact_real P>
 bool intersects(const Segment<P>& _seg, const Triangle<P>& _tri)
 {
     ORI o0, o1, o2;
@@ -207,7 +207,7 @@ bool intersects(const Segment<P>& _seg, const Triangle<P>& _tri)
              && (o0==ORI::CW||o1==ORI::CW||o2==ORI::CW));
 }
 
-template<vector_3_double P>
+template<vector_3_exact_real P>
 bool intersects(const Triangle<P>& _tri, const Segment<P>& _seg)
 {
     return intersects<P>(_seg, _tri);
@@ -220,7 +220,7 @@ bool intersects(const P& _p, const Sphere<P>& _sphere)
            && _p[0] <= (_sphere.center()[0]+_sphere.radius());
 }
 
-template<vector_2_double P>
+template<vector_2_exact_real P>
 bool intersects(const P& _p, const Sphere<P>& _sphere)
 {
     // We first get three point on the circle to use
@@ -235,7 +235,7 @@ bool intersects(const P& _p, const Sphere<P>& _sphere)
     return sign_incircle(a, b, c, _p) != ORI::CW;
 }
 
-template<vector_3_double P>
+template<vector_3_exact_real P>
 bool intersects(const P& _p, const Sphere<P>& _sphere)
 {
     // We first get four point on the sphere to use

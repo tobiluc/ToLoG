@@ -75,7 +75,7 @@ TEST(TetTopologyTest, Test2)
     using HE = TT::HE;
     using HF = TT::HF;
     using VAR = TT::VAR;
-    using P = ToLoG::Point<double,3>;
+    using P = ToLoG::Point<ToLoG::exact_real,3>;
     using Tet = ToLoG::Tetrahedron<P>;
     using Tri = ToLoG::Triangle<P>;
     using Seg = ToLoG::Segment<P>;

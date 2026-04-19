@@ -13,7 +13,7 @@ enum class ORI {
     CW = 1
 };
 
-inline constexpr ORI sign_ori(const double d) {
+inline constexpr ORI sign_ori(const exact_real d) {
     return static_cast<ORI>((d > 0.0)-(d < 0.0));
 }
 
@@ -41,6 +41,12 @@ extern "C" {
 #endif
 
 /**
+ * used to check exact real type consistency between
+ * Shechuck predicates and exact_real in ToLoG namespace
+ */
+unsigned long sizeof_exact_real();
+
+/**
  * @brief Initializes the exact predicates.
  *
  * This function has to be called before calling ::orient2d.
@@ -55,7 +61,7 @@ void exactinit();
  * @param pa, pb, pc Arrays containing the two coordinates of a point, each.
  * @return A value the sign of which reflects the orientation of the three points.
  */
-double orient2d(const double* pa, const double* pb, const double* pc);
+ToLoG::exact_real orient2d(const ToLoG::exact_real* pa, const ToLoG::exact_real* pb, const ToLoG::exact_real* pc);
 
 /**
  * @brief Computes the orientation of the supplied points.
@@ -65,11 +71,11 @@ double orient2d(const double* pa, const double* pb, const double* pc);
  * @param pa, pb, pc, pd Arrays containing the three coordinates of a point, each.
  * @return A value the sign of which reflects the orientation of the four points.
  */
-double orient3d(const double* pa, const double* pb, const double* pc, const double*  pd);
+ToLoG::exact_real orient3d(const ToLoG::exact_real* pa, const ToLoG::exact_real* pb, const ToLoG::exact_real* pc, const ToLoG::exact_real*  pd);
 
-double incircle(const double* pa, const double* pb, const double* pc, const double*  pd);
+ToLoG::exact_real incircle(const ToLoG::exact_real* pa, const ToLoG::exact_real* pb, const ToLoG::exact_real* pc, const ToLoG::exact_real*  pd);
 
-double insphere(const double* pa, const double* pb, const double* pc, const double*  pd, const double* pe);
+ToLoG::exact_real insphere(const ToLoG::exact_real* pa, const ToLoG::exact_real* pb, const ToLoG::exact_real* pc, const ToLoG::exact_real*  pd, const ToLoG::exact_real* pe);
 
 #ifdef __cplusplus
 } // extern "C"
@@ -79,16 +85,16 @@ namespace ToLoG
 {
 
 /// Wrapper around ::orient2d. Returns the result as an ::ORIENTATION.
-static inline ORI sign_orient2d(const double* pa, const double* pb, const double* pc) {
+static inline ORI sign_orient2d(const exact_real* pa, const exact_real* pb, const exact_real* pc) {
     return sign_ori(orient2d(pa, pb, pc));
 }
 
-template<vector_2_double P>
+template<vector_2_exact_real P>
 static inline ORI sign_orient2d(const P& a, const P& b, const P& c) {
     return sign_ori(orient2d(a.data(), b.data(), c.data()));
 }
 
-template<vector_3_double P>
+template<vector_3_exact_real P>
 static inline ORI sign_orient2d_xy(const P& a, const P& b, const P& c) {
     using FT = Traits<P>::value_type;
     FT pa[2] = {a[0],a[1]};
@@ -97,7 +103,7 @@ static inline ORI sign_orient2d_xy(const P& a, const P& b, const P& c) {
     return sign_ori(orient2d(pa, pb, pc));
 }
 
-template<vector_3_double P>
+template<vector_3_exact_real P>
 static inline ORI sign_orient2d_yz(const P& a, const P& b, const P& c) {
     using FT = Traits<P>::value_type;
     FT pa[2] = {a[1],a[2]};
@@ -106,7 +112,7 @@ static inline ORI sign_orient2d_yz(const P& a, const P& b, const P& c) {
     return sign_ori(orient2d(pa, pb, pc));
 }
 
-template<vector_3_double P>
+template<vector_3_exact_real P>
 static inline ORI sign_orient2d_xz(const P& a, const P& b, const P& c) {
     using FT = Traits<P>::value_type;
     FT pa[2] = {a[0],a[2]};
@@ -115,30 +121,30 @@ static inline ORI sign_orient2d_xz(const P& a, const P& b, const P& c) {
     return sign_ori(orient2d(pa, pb, pc));
 }
 
-static inline ORI sign_incircle(const double* pa, const double* pb, const double* pc, const double* pd) {
+static inline ORI sign_incircle(const exact_real* pa, const exact_real* pb, const exact_real* pc, const exact_real* pd) {
     return sign_ori(incircle(pa, pb, pc, pd));
 }
 
-template<vector_2_double P>
+template<vector_2_exact_real P>
 static inline ORI sign_incircle(const P& a, const P& b, const P& c, const P& d) {
     return sign_ori(incircle(a.data(), b.data(), c.data(), d.data()));
 }
 
 /// Wrapper around ::orient3d. Returns the result as an ::ORIENTATION.
-static inline ORI sign_orient3d(const double* pa, const double* pb, const double* pc, const double* pd) {
+static inline ORI sign_orient3d(const exact_real* pa, const exact_real* pb, const exact_real* pc, const exact_real* pd) {
     return sign_ori(orient3d(pa, pb, pc, pd));
 }
 
-template<vector_3_double P>
+template<vector_3_exact_real P>
 static inline ORI sign_orient3d(const P& a, const P& b, const P& c, const P& d) {
     return sign_ori(orient3d(a.data(), b.data(), c.data(), d.data()));
 }
 
-static inline ORI sign_insphere(const double* pa, const double* pb, const double* pc, const double* pd, const double* pe) {
+static inline ORI sign_insphere(const exact_real* pa, const exact_real* pb, const exact_real* pc, const exact_real* pd, const exact_real* pe) {
     return sign_ori(insphere(pa, pb, pc, pd, pe));
 }
 
-template<vector_3_double P>
+template<vector_3_exact_real P>
 static inline ORI sign_insphere(const P& a, const P& b, const P& c, const P& d, const P& e) {
     return sign_ori(insphere(a.data(), b.data(), c.data(), d.data(), e.data()));
 }

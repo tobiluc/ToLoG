@@ -9,7 +9,7 @@ namespace ToLoG
 
 TEST(GeometryCoreTest, WindingNumber3dTest)
 {
-    using Point = ToLoG::Point<double,3>;
+    using Point = ToLoG::Point<exact_real,3>;
     using Triangle = ToLoG::Triangle<Point>;
 
     // Tetrahedron vertices

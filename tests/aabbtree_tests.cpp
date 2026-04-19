@@ -130,7 +130,7 @@ TEST(TreeTest, PointBetweenTwoSpheresTest)
 
 TEST(TreeTest, TriangleTreeAndSegmentsTest)
 {
-    using Point = Point<double,3>;
+    using Point = Point<ToLoG::exact_real,3>;
     using Segment = Segment<Point>;
     using Triangle = Triangle<Point>;
     using Tree = AABBTree<Triangle>;

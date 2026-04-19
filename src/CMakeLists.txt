@@ -10,6 +10,17 @@ add_library("${PROJECT_NAME}" STATIC
 )
 add_library ("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS ${PROJECT_NAME})
 
+#================================================
+# Core Options
+#================================================
+option(TOLOG_EXACT_SINGLE_PRECISION "Use single instead of double precision for exact predicates" OFF)
+if (TOLOG_EXACT_SINGLE_PRECISION)
+    message(STATUS "using single precision (float) for exact predicates")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC TOLOG_EXACT_REAL_FLOAT32)
+else ()
+    message(STATUS "using double precision (double) for exact predicates")
+endif ()
+
 #=========================
 # Link Libraries
 #=========================

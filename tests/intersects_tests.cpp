@@ -31,7 +31,7 @@ TEST(IntersectsTest, EllipsoidTest)
 
 TEST(IntersectsTest, PointSegment3d)
 {
-    using P = ToLoG::Point<double,3>;
+    using P = ToLoG::Point<exact_real,3>;
     using S = ToLoG::Segment<P>;
 
     S seg(P(1,2,3), P(2,3,4));
