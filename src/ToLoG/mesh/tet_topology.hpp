@@ -241,11 +241,12 @@ public:
         assert(_v1!=_v2);
         const auto hfs1 = incident_halffaces(_v1);
         const auto hfs2 = incident_halffaces(_v2);
+
         std::array<HF,2> hfs;
         int idx(0);
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
-                if (hfs1[i] == hfs2[j]) {
+                if (is_same_halfface(hfs1[i], hfs2[j])) {
                     hfs[idx++] = hfs1[i];
                     if (idx==2) {return hfs;}
                     break;
