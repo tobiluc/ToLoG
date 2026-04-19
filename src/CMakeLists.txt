@@ -1,14 +1,15 @@
 #================================================
 # Add Library
 #================================================
-add_library("${PROJECT_NAME}" STATIC
+set(TOLOG_LIBRARY_NAME "${PROJECT_NAME}")
+add_library("${TOLOG_LIBRARY_NAME}" STATIC
     ToLoG/geometry/predicates/predicates.c
     ToLoG/geometry/predicates/predicates.cpp
     ToLoG/tree/Octree.cpp
     ToLoG/unstable/marching_cubes.cpp
     ToLoG/math/polynomial_roots.cpp
 )
-add_library ("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS ${PROJECT_NAME})
+add_library ("${TOLOG_LIBRARY_NAME}::${TOLOG_LIBRARY_NAME}" ALIAS ${TOLOG_LIBRARY_NAME})
 
 #================================================
 # Core Options
@@ -16,7 +17,7 @@ add_library ("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS ${PROJECT_NAME})
 option(TOLOG_EXACT_SINGLE_PRECISION "Use single instead of double precision for exact predicates" OFF)
 if (TOLOG_EXACT_SINGLE_PRECISION)
     message(STATUS "using single precision (float) for exact predicates")
-    target_compile_definitions(${PROJECT_NAME} PUBLIC TOLOG_EXACT_REAL_FLOAT32)
+    target_compile_definitions(${TOLOG_LIBRARY_NAME} PUBLIC TOLOG_EXACT_REAL_FLOAT32)
 else ()
     message(STATUS "using double precision (double) for exact predicates")
 endif ()
@@ -25,7 +26,7 @@ endif ()
 # Link Libraries
 #=========================
 include_directories (${INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} PUBLIC
+target_link_libraries(${TOLOG_LIBRARY_NAME} PUBLIC
 OpenMP::OpenMP_CXX
 rapidobj::rapidobj
 )
@@ -33,7 +34,7 @@ rapidobj::rapidobj
 #=========================
 # Define what to include
 #=========================
-target_include_directories(${PROJECT_NAME} PUBLIC
+target_include_directories(${TOLOG_LIBRARY_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
 )

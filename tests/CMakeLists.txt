@@ -53,7 +53,7 @@ if (GTEST_FOUND)
         FetchContent_Declare(ovm
             GIT_REPOSITORY https://www.graphics.rwth-aachen.de:9000/OpenVolumeMesh/OpenVolumeMesh
             GIT_TAG master
-            SOURCE_DIR "${EXTERNAL_DIR}/OpenVolumeMesh"
+            SOURCE_DIR "${TOLOG_EXTERNAL_DIR}/OpenVolumeMesh"
             )
         FetchContent_MakeAvailable(ovm)
     endif()
