@@ -17,7 +17,7 @@ add_library ("${TOLOG_LIBRARY_NAME}::${TOLOG_LIBRARY_NAME}" ALIAS ${TOLOG_LIBRAR
 option(TOLOG_EXACT_SINGLE_PRECISION "Use single instead of double precision for exact predicates" OFF)
 if (TOLOG_EXACT_SINGLE_PRECISION)
     message(STATUS "using single precision (float) for exact predicates")
-    target_compile_definitions(${TOLOG_LIBRARY_NAME} PUBLIC TOLOG_EXACT_REAL_FLOAT32)
+    target_compile_definitions(${TOLOG_LIBRARY_NAME} PUBLIC TOLOG_EXACT_SINGLE_PRECISION)
 else ()
     message(STATUS "using double precision (double) for exact predicates")
 endif ()
