@@ -138,7 +138,7 @@ TEST(TreeTest, TriangleTreeAndSegmentsTest)
     tris.emplace_back(Point(0,0,0),Point(0,0,1),Point(1,0,0));
     tris.emplace_back(Point(0,0,1),Point(1,0,0),Point(1,0,1));
     tris.emplace_back(Point(0,3,0),Point(0,3,1),Point(1,3,0));
-    tree.build_tree(tris);
+    tree.build(tris);
 
     Segment seg(Point(0.5,2,0.5), Point(0.5,-2,0.5));
 

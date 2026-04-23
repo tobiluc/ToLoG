@@ -40,10 +40,10 @@ public:
         primitives_(_primitives),
         leaf_size_(_leaf_size)
     {
-        build_tree(_primitives, _leaf_size);
+        build(_primitives, _leaf_size);
     }
 
-    void build_tree(std::span<const Primitive> _primitives, size_t _leaf_size = 32)
+    void build(std::span<const Primitive> _primitives, size_t _leaf_size = 32)
     {
         leaf_size_ = _leaf_size;
         primitives_ = _primitives;
@@ -206,10 +206,10 @@ public:
         return res;
     }
 
-    uint32_t nearest_neighbor(const Point& _q) const
-    {
-        return k_nearest_neighbors(_q, 1).at(0);
-    }
+    // uint32_t nearest_neighbor(const Point& _q) const
+    // {
+    //     return k_nearest_neighbors(_q, 1).at(0);
+    // }
 
     void radius_search(const Point& _q,
                     const FT _radius,
