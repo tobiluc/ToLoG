@@ -2,8 +2,6 @@
 #include <ToLoG/utils/OVM_Traits.hpp>
 #include <ToLoG/Core.hpp>
 
-#include <OpenVolumeMesh/Core/OpenVolumeMeshHandle.hh>
-
 TEST(OVMTest, OVMTest1)
 {
     OpenVolumeMesh::Vec3d p(1,2,3);
