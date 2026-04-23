@@ -20,6 +20,7 @@ public:
         for (int i = 0; i < DIM; ++i) {
             directions_[i] = normalized(_axes[i]);
             radii_[i] = norm(_axes[i]);
+            assert(radii_[i] > 0);
         }
 #ifndef NDEBUG
         for (int i = 0; i < DIM; ++i) {
