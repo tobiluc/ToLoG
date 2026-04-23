@@ -2,6 +2,7 @@
 #include <ToLoG/geometry/Shapes.hpp>
 #include <ToLoG/geometry/predicates/predicates.hpp>
 #include <ToLoG/geometry/predicates/is_degenerate.hpp>
+#include <ToLoG/geometry/closest_point.hpp>
 
 namespace ToLoG
 {
@@ -292,6 +293,48 @@ template<vector P>
 bool intersects(const P& _p, const Ellipsoid<P>& _e)
 {
     return intersects(_e, _p);
+}
+
+template<vector_of_dim<3> P>
+bool intersects(const Sphere<P>& _s, const Tetrahedron<P>& _tet)
+{
+    return intersects(closest_point(_tet, _s.center()), _s);
+}
+
+template<vector_of_dim<3> P>
+bool intersects(const Tetrahedron<P>& _tet, const Sphere<P>& _s)
+{
+    return intersects(_s, _tet);
+}
+
+template<vector_of_dim<3> P>
+bool intersects(const Ellipsoid<P>& _e, const Tetrahedron<P>& _tet)
+{
+    using FT = typename Traits<P>::value_type;
+    static constexpr int DIM = Traits<P>::dim;
+
+    // Transform the coordinate system so the ellipsoid
+    // becomes a unit sphere with the same centroid
+    // The transformation includes
+    // 1. Translation by -e_.center
+    // 2. Rotation by R^T
+    // 3. Scale by (1/r0, 1/r1, 1/r2)
+    // where R is the rotation matrix and r are the radii
+    Tetrahedron<P> transformed_tet;
+    for (int i = 0; i < 4; ++i) {
+        P rel_v = _tet[i] - _e.center();
+        for (int j = 0; j < 3; ++j) {
+            transformed_tet[i][j] = dot(rel_v, _e.direction(j)) / _e.radius(j);
+        }
+    }
+    return intersects(Sphere<P>(P(0,0,0), FT(1)), transformed_tet);
+}
+
+template<vector_of_dim<3> P>
+bool intersects(const Tetrahedron<P>& _tet, const Ellipsoid<P>& _e)
+{
+    return intersects(_e, _tet);
+
 }
 
 }
