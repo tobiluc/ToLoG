@@ -8,7 +8,7 @@
 namespace ToLoG
 {
 
-template<vector P>
+template<vector_of_dim<3> P>
 class Tetrahedron
 {
 public:
@@ -32,7 +32,13 @@ public:
     inline const P& operator[](const int& _i) const {
         return t_[_i];
     }
+    inline P& operator[](const int& _i) {
+        return t_[_i];
+    }
     inline const P& operator[](const TetTopology::V& _v) const {
+        return t_[TetTopology::i(_v)];
+    }
+    inline P& operator[](const TetTopology::V& _v) {
         return t_[TetTopology::i(_v)];
     }
     inline Segment<P> segment(int _i, int _j) const {
