@@ -1,5 +1,7 @@
 #pragma once
 #include <ToLoG/geometry/Shapes.hpp>
+#include <ToLoG/geometry/barycentric.hpp>
+#include <ToLoG/geometry/squared_distance.hpp>
 
 namespace ToLoG
 {

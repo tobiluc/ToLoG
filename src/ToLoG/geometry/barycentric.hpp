@@ -8,6 +8,7 @@ namespace ToLoG
 // w.r.t. the triangle _tri, i.e. alpha, beta, gamma such that
 // _p = _tri[0] * alpha + _tri[1] * beta + _tri[2] * gamma
 // and alpha + beta + gamma = 1
+// _tri must not be degenerate!
 // _p must lie within the triangle's plane!
 template<vector PointT>
 inline std::array<typename Traits<PointT>::value_type,3> barycentric_coordinates(const PointT& _p, const Triangle<PointT>& _tri)
@@ -35,6 +36,11 @@ inline std::array<typename Traits<PointT>::value_type,3> barycentric_coordinates
     return {FT(1)-u-v, u, v};
 }
 
+// Computes the barycentric coordinates of the point _p
+// w.r.t. the tetrahedron _tet, i.e. alpha, beta, gamma, delta such that
+// _p = _tet[0] * alpha + _tet[1] * beta + _tet[2] * gamma + _tet[3] * delta
+// and alpha + beta + gamma + delta = 1
+// _tet must not be degenerate!
 template<typename PointT>
 inline std::array<typename Traits<PointT>::value_type,4> barycentric_coordinates(const PointT& _p, const Tetrahedron<PointT>& _tet)
 {
