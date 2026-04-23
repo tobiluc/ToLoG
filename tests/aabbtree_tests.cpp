@@ -1,8 +1,6 @@
 #include <gtest/gtest.h>
 #include <ToLoG/tree/AABBTree.hpp>
 #include <random>
-#include "ToLoG/HashMap.hpp"
-#include "ToLoG/io/ply_writer.hpp"
 #include "naive_knn.hpp"
 #include <ToLoG/io/obj_writer.hpp>
 
