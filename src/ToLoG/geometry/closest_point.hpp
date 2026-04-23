@@ -50,7 +50,7 @@ P closest_point(const Triangle<P>& _tri, const P& _p)
     return q2;
 }
 
-template<vector P>
+template<vector_of_dim<3> P>
 P closest_point(const Tetrahedron<P>& _tet, const P& _p)
 {
     using FT = Traits<P>::value_type;
