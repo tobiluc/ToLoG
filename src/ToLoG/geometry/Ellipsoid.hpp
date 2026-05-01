@@ -1,5 +1,6 @@
 #pragma once
 #include <ToLoG/vector_concepts.hpp>
+#include <ToLoG/geometry/vector_math.hpp>
 #include <array>
 
 namespace ToLoG
