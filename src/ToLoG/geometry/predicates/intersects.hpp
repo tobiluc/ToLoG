@@ -307,6 +307,18 @@ bool intersects(const Tetrahedron<P>& _tet, const Sphere<P>& _s)
     return intersects(_s, _tet);
 }
 
+template<vector P>
+bool intersects(const Sphere<P>& _s, const Triangle<P>& _tri)
+{
+    return intersects(closest_point(_tri, _s.center()), _s);
+}
+
+template<vector P>
+bool intersects(const Triangle<P>& _tri, const Sphere<P>& _s)
+{
+    return intersects(_tri, _s);
+}
+
 template<vector_of_dim<3> P>
 bool intersects(const Ellipsoid<P>& _e, const Tetrahedron<P>& _tet)
 {
@@ -334,7 +346,28 @@ template<vector_of_dim<3> P>
 bool intersects(const Tetrahedron<P>& _tet, const Ellipsoid<P>& _e)
 {
     return intersects(_e, _tet);
+}
 
+template<vector P>
+bool intersects(const Ellipsoid<P>& _e, const Triangle<P>& _tri)
+{
+    using FT = typename Traits<P>::value_type;
+    static constexpr int DIM = Traits<P>::dim;
+
+    Triangle<P> transformed_tri;
+    for (int i = 0; i < 3; ++i) {
+        P rel_v = transformed_tri[i] - _e.center();
+        for (int j = 0; j < 3; ++j) {
+            transformed_tri[i][j] = dot(rel_v, _e.direction(j)) / _e.radius(j);
+        }
+    }
+    return intersects(Sphere<P>(ToLoG::filled<P>(0), FT(1)), transformed_tri);
+}
+
+template<vector P>
+bool intersects(const Triangle<P>& _tri, const Ellipsoid<P>& _e)
+{
+    return intersects(_e, _tri);
 }
 
 }

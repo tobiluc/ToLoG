@@ -20,6 +20,9 @@ public:
     inline const P& operator[](int _i) const {
         return t_[_i];
     }
+    inline P& operator[](int _i) {
+        return t_[_i];
+    }
     inline Segment<P> segment(int _i) const {
         return Segment<P>(t_[_i], t_[(_i+1)%3]);
     }
