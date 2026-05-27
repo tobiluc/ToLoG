@@ -171,37 +171,45 @@ struct TetSegmentIntersection
 template<vector_3_exact_real P>
 TetSegmentIntersection<P> exiting_simplex_in_tet(
     const Tetrahedron<P>& _tet,
-    const Segment<P>& _s, std::optional<TetTopology::HF> _exclude_f = std::nullopt)
+    const Segment<P>& _s,
+    std::optional<TetTopology::HF> _entering_f = std::nullopt)
 {
     using TT = TetTopology;
     using HF = TT::HF;
     using FT = typename Traits<P>::value_type;
 
-    const ORI tet_ori = sign_orient3d(_tet);
-    if (tet_ori == ORI::ZERO) {
+    if (_entering_f.has_value() && _entering_f.value() == TT::HF::O) {
+        _entering_f = std::nullopt;
+    }
+
+    auto compute_intersection = [&](TT::HF _hf) -> P {
+        const P d1 = _s.end() - _s.start();
+        const P v1 = _tet[TT::v1(_hf)] - _tet[TT::v0(_hf)];
+        const P v2 = _tet[TT::v2(_hf)] - _tet[TT::v0(_hf)];
+
+        const P h = cross(d1, v2);
+        const FT a = FT(1.0) / dot(v1, h);
+
+        const P s = _s.start() - _tet[TT::v0(_hf)];
+        const P q = cross(s, v1);
+
+        const FT t = a * dot(v2, q);
+        return _s.start() + d1 * t;
+    };
+
+    ORI tet_ori = sign_orient3d(_tet);
+    if (_entering_f.has_value() && tet_ori == ORI::ZERO) {
+        tet_ori = sign_orient3d(_tet.triangle(_entering_f.value()), _s.end());
+    }
+    if (tet_ori == ORI::ZERO)
+    {
         //std::cerr << "Warning: Cannot evaluate intersection_simplex_from_within_tet in tet with volume zero" << std::endl;
         return {TT::VAR::O};
     }
     const ORI opp_ori = (tet_ori==ORI::CCW)? ORI::CW : ORI::CCW;
 
     for (const auto hf : {HF::BDC,HF::CDA,HF::DBA,HF::ABC}) {
-        if (_exclude_f.has_value() && hf == _exclude_f.value()) {continue;}
-
-        auto is_pt = [&]() -> P
-        {
-            const P d1 = _s.end() - _s.start();
-            const P v1 = _tet[TT::v1(hf)] - _tet[TT::v0(hf)];
-            const P v2 = _tet[TT::v2(hf)] - _tet[TT::v0(hf)];
-
-            const P h = cross(d1, v2);
-            const FT a = FT(1.0) / dot(v1, h);
-
-            const P s = _s.start() - _tet[TT::v0(hf)];
-            const P q = cross(s, v1);
-
-            const FT t = a * dot(v2, q);
-            return _s.start() + d1 * t;
-        };
+        if (_entering_f.has_value() && hf == _entering_f.value()) {continue;}
 
         // Primary direction must cut through the plane given by the face
         if (sign_orient3d(_tet.triangle(hf), _s.start()) != tet_ori ||
@@ -223,7 +231,7 @@ TetSegmentIntersection<P> exiting_simplex_in_tet(
 
         // Check if primary direction cuts through interior/center of triangle
         if (oris[0] == oris[1] && oris[0] == oris[2]) {
-            return {TT::var(hf), is_pt(), hf};
+            return {TT::var(hf), compute_intersection(hf), hf};
         }
 
         // Check if primary direction does not cut through triangle at all
@@ -238,7 +246,7 @@ TetSegmentIntersection<P> exiting_simplex_in_tet(
         assert(zeros.size() == 1 || zeros.size() ==2);
         if (zeros.size() == 1) {
             // Edge
-            return {TT::var(zeros[0]), is_pt(), hf};
+            return {TT::var(zeros[0]), compute_intersection(hf), hf};
         } else if (zeros.size() == 2) {
             // Vertex
             const TT::V v = TT::v1(zeros[0]);
