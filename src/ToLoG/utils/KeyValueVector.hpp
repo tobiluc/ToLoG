@@ -49,6 +49,10 @@ public:
         return keyvalues_[_i];
     }
 
+    inline std::pair<K,V>& at_index(const int& _i) {
+        return keyvalues_[_i];
+    }
+
     inline const K& key_at_index(const int& _i) const {
         return keyvalues_[_i].first;
     }
