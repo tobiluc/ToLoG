@@ -5,7 +5,6 @@ set(TOLOG_LIBRARY_NAME "${PROJECT_NAME}")
 add_library("${TOLOG_LIBRARY_NAME}" STATIC
     ToLoG/geometry/predicates/predicates.c
     ToLoG/geometry/predicates/predicates.cpp
-    ToLoG/tree/Octree.cpp
     ToLoG/unstable/marching_cubes.cpp
     ToLoG/math/polynomial_roots.cpp
 )

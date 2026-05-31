@@ -270,6 +270,16 @@ public:
         return decode(codes_[_idx]);
     }
 
+    uint32_t node_depth(NodeIndex _idx) const
+    {
+        return node_coords(_idx).depth;
+    }
+
+    std::optional<NodeIndex> node_index(const NodeCoords& _coords) const
+    {
+        return code_index_map_.get(_coords);
+    }
+
     // Integer Coordinates of a nodes' child
     static NodeCoords node_child_coords(
         const NodeCoords& _node_coords,
