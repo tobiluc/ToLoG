@@ -23,16 +23,22 @@ TEST(OctreeTest, BitShiftTest)
 
 TEST(OctreeTest, InitialTreeTest)
 {
-    AABB<Point<float,3>> aabb({{0,0,0}, {1,1,1}});
+    using Point = Point<float,3>;
+    using Octree = Octree<Point>;
+
+    AABB<Point> aabb({{0,0,0}, {1,1,1}});
     Octree tree(aabb, 2, 5);
     EXPECT_EQ(2*2*2, tree.n_nodes());
-    EXPECT_FALSE(tree.locate(Octree::Point(-1,0,0)).has_value());
-    EXPECT_EQ(tree.locate(Octree::Point(0.1,0.1,0.1)).value(), 0);
+    EXPECT_FALSE(tree.locate(Point(-1,0,0)).has_value());
+    EXPECT_EQ(tree.locate(Point(0.1,0.1,0.1)).value(), 0);
 }
 
 TEST(OctreeTest, ChildOrderTest)
 {
-    using AABB = AABB<Point<float,3>>;
+    using Point = Point<float,3>;
+    using Octree = Octree<Point>;
+    using AABB = AABB<Point>;
+
     AABB aabb({{0,0,0}, {2,2,2}});
     Octree tree(aabb, 1, 5);
     std::vector<Octree::NodeSplit> splits;
@@ -47,16 +53,18 @@ TEST(OctreeTest, ChildOrderTest)
 
 TEST(OctreeTest, SimpleRefinementTest)
 {
-    using P = Point<float,3>;
-    using AABB = AABB<P>;
+    using Point = Point<float,3>;
+    using Octree = Octree<Point>;
+    using AABB = AABB<Point>;
+
     AABB aabb({{0,0,0}, {1,1,1}});
     Octree tree(aabb, 2, 5);
 
     // Before the Refinement
     EXPECT_EQ(tree.node_coords(0).depth, 0);
-    EXPECT_EQ(tree.node_aabb(tree.node_coords(0)), AABB({P(0,0,0),P(.5,.5,.5)}));
-    EXPECT_TRUE(tree.locate(Octree::Point(0.3,0.3,0.3)).has_value());
-    EXPECT_TRUE(tree.locate(Octree::Point(0.9,0.9,0.9)).has_value());
+    EXPECT_EQ(tree.node_aabb(tree.node_coords(0)), AABB({Point(0,0,0),Point(.5,.5,.5)}));
+    EXPECT_TRUE(tree.locate(Point(0.3,0.3,0.3)).has_value());
+    EXPECT_TRUE(tree.locate(Point(0.9,0.9,0.9)).has_value());
 
     // Split only the first node into 4 children.
     // Keep the next 6 nodes, but delete completeley the last node
@@ -78,13 +86,14 @@ TEST(OctreeTest, SimpleRefinementTest)
     EXPECT_EQ(tree.node_coords(0).depth, 1);
     EXPECT_EQ(tree.node_aabb(tree.node_coords(0)), AABB({{0,0,0},{.25,.25,.25}}));
 
-    EXPECT_FALSE(tree.locate(Octree::Point(0.3,0.3,0.3)).has_value());
-    EXPECT_FALSE(tree.locate(Octree::Point(0.9,0.9,0.9)).has_value());
+    EXPECT_FALSE(tree.locate(Point(0.3,0.3,0.3)).has_value());
+    EXPECT_FALSE(tree.locate(Point(0.9,0.9,0.9)).has_value());
 }
 
 TEST(OctreeTest, SphereRefinementTest)
 {
     using Point = ToLoG::Point<float,3>;
+    using Octree = Octree<Point>;
     using AABB = ToLoG::AABB<Point>;
 
     ToLoG::Sphere<Point> sphere({0,0,0}, 1);
@@ -126,9 +135,13 @@ TEST(OctreeTest, SphereRefinementTest)
 
 TEST(OctreeTest, AdaptiveTest)
 {
+    using Point = ToLoG::Point<float,3>;
+    using Octree = Octree<Point>;
+    using AABB = ToLoG::AABB<Point>;
+
     uint32_t max_depth = 6;
-    ToLoG::AABB<Point<float,3>> aabb({{0,0,0},{1,2,1}});
-    ToLoG::Octree tree(aabb, 1, max_depth);
+    AABB aabb({{0,0,0},{1,2,1}});
+    Octree tree(aabb, 1, max_depth);
     uint32_t depth = 0;
     while (depth < max_depth)
     {
@@ -145,7 +158,7 @@ TEST(OctreeTest, AdaptiveTest)
         tree.refine_tree(splits);
         depth += 1;
     }
-    using Mesh = ToLoG::QuadMesh<Octree::Point>;
+    using Mesh = ToLoG::QuadMesh<Point>;
     // Mesh mesh = ToLoG::octree_to_polygon_mesh<Point>(tree);
     // ToLoG::IO::write_polygon_mesh_obj(
     //     std::filesystem::path(TESTS_OUTPUT_DIR)/"octree_adaptive.obj", mesh);
