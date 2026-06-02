@@ -59,9 +59,9 @@ private:
         return v;
     }
 
-    static constexpr Octree::NodeCode encode(const NodeCoords& _coords)
+    static constexpr NodeCode encode(const NodeCoords& _coords)
     {
-        assert(_coords.depth < (1u << NUM_DEPTH_BITS));
+        assert(_coords.depth < (1u << num_depth_bits));
         uint64_t morton = (expand_bits(_coords.x) << morton_shifts[0])
                           | (expand_bits(_coords.y) << morton_shifts[1])
                           | (expand_bits(_coords.z) << morton_shifts[2]);
@@ -104,10 +104,8 @@ public:
         max_depth_(_max_depth),
         initial_resolution_(_initial_resolution)
     {
-        assert((_initial_resolution << _max_depth) <= 1024);
-
         // Initialize root nodes
-        uint32_t capacity = pow(_initial_resolution,3);
+        uint32_t capacity = _initial_resolution*_initial_resolution*_initial_resolution;
         codes_.reserve(capacity);
         code_index_map_.reserve(capacity);
         for (uint32_t z = 0; z < _initial_resolution; ++z) {
@@ -248,21 +246,21 @@ public:
     {
         Point size = node_size_at_depth(_coords.depth);
         return Point{
-            tree_bounds_.min()[0] + _coords.x * size[0],
-            tree_bounds_.min()[1] + _coords.y * size[1],
-            tree_bounds_.min()[2] + _coords.z * size[2]
+            tree_bounds_.min()[0] + (_coords.x + FT(0.5)) * size[0],
+            tree_bounds_.min()[1] + (_coords.y + FT(0.5)) * size[1],
+            tree_bounds_.min()[2] + (_coords.z + FT(0.5)) * size[2]
         };
     }
 
     AABB node_aabb(const NodeCoords& _coords) const
     {
         Point size = node_size_at_depth(_coords.depth);
-        Point center = {
+        Point origin = {
             tree_bounds_.min()[0] + _coords.x * size[0],
             tree_bounds_.min()[1] + _coords.y * size[1],
             tree_bounds_.min()[2] + _coords.z * size[2]
         };
-        return AABB({center,center+size});
+        return AABB({origin,origin+size});
     }
 
     NodeCoords node_coords(NodeIndex _idx) const
@@ -277,7 +275,7 @@ public:
 
     std::optional<NodeIndex> node_index(const NodeCoords& _coords) const
     {
-        return code_index_map_.get(_coords);
+        return code_index_map_.get(encode(_coords));
     }
 
     // Integer Coordinates of a nodes' child
