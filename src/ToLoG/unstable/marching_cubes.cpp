@@ -304,6 +304,7 @@ const int mc3_cube_vertices[8][3] = {
     {0, 0, 1}, {1, 0, 1}, {1, 1, 1}, {0, 1, 1}
 };
 
+// x,y,z, axis
 const int mc3_cube_edges[12][4] = {
     {0,0,0, 0}, // Vertex (0,0,0) along X-axis
     {1,0,0, 1}, // Vertex (1,0,0) along Y-axis

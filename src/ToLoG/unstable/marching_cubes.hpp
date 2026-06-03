@@ -35,13 +35,13 @@ private:
 public:
     static TriangleMesh generate(const SDF& _sdf,
                         const AABB& _bounds,
-                        const uint32_t _depth)
+                        const uint32_t _resolution)
     {
         TriangleMesh mesh;
 
         // num voxels along single dimension
         // meaning n+1 vertices along dimension
-        const uint32_t n = 1u << _depth;
+        const uint32_t n = _resolution;
 
         // size of a single voxel
         const Point s = (_bounds.max()-_bounds.min()) / n;

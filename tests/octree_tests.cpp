@@ -1,5 +1,4 @@
 #include "ToLoG/tree/AABBTree.hpp"
-#include "ToLoG/mesh/polygon_mesh.hpp"
 #include "ToLoG/tree/octree_to_polygon_mesh.hpp"
 #include <filesystem>
 #include <gtest/gtest.h>
@@ -127,8 +126,8 @@ TEST(OctreeTest, SphereRefinementTest)
         ++depth;
     }
 
-    using Mesh = ToLoG::QuadMesh<Point>;
-    Mesh mesh = ToLoG::octree_to_polygon_mesh<Point>(tree);
+    // using Mesh = ToLoG::QuadMesh<Point>;
+    // Mesh mesh = ToLoG::octree_to_polygon_mesh<Point>(tree);
     // ToLoG::IO::write_polygon_mesh_obj(
     //     std::filesystem::path(TESTS_OUTPUT_DIR)/"octree_sphere.obj", mesh);
 }
@@ -158,7 +157,7 @@ TEST(OctreeTest, AdaptiveTest)
         tree.refine_tree(splits);
         depth += 1;
     }
-    using Mesh = ToLoG::QuadMesh<Point>;
+    // using Mesh = ToLoG::QuadMesh<Point>;
     // Mesh mesh = ToLoG::octree_to_polygon_mesh<Point>(tree);
     // ToLoG::IO::write_polygon_mesh_obj(
     //     std::filesystem::path(TESTS_OUTPUT_DIR)/"octree_adaptive.obj", mesh);
