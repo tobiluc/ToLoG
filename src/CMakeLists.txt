@@ -28,7 +28,7 @@ endif ()
 include_directories (${INCLUDE_DIRS})
 target_link_libraries(${TOLOG_LIBRARY_NAME} PUBLIC
 OpenMP::OpenMP_CXX
-rapidobj::rapidobj
+# rapidobj::rapidobj
 )
 
 #=========================
