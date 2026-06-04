@@ -12,7 +12,7 @@ endif()
 
 project(ToLoG VERSION 0.1.0 LANGUAGES CXX C)
 
-include("${PROJECT_SOURCE_DIR}/cmake/dependencies.cmake")
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies.cmake")
 
 add_subdirectory(src)
 
