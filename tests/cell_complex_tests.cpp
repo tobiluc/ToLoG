@@ -1,3 +1,4 @@
+#include "ToLoG/mesh/cell_complex_examples.hpp"
 #include <gtest/gtest.h>
 #include <ToLoG/mesh/CellComplex.hpp>
 #include <ToLoG/Core.hpp>
@@ -45,6 +46,19 @@ TEST(MeshTest, TriangleFaceTest)
     EXPECT_EQ(1, m.num_deleted_faces());
     EXPECT_EQ(0, m.num_active_faces());
     EXPECT_EQ(0, m.num_allocated_cells());
+}
+
+TEST(MeshTest, CubeMeshTest)
+{
+    Mesh m = create_cube<P>();
+
+    std::vector<Mesh::VH> vhs;
+    for (Mesh::VH vh : m.cell_vertices(Mesh::CH(0))) {
+        vhs.push_back(vh);
+    }
+    EXPECT_EQ(8, vhs.size());
+
+    m.save_obj(std::filesystem::path(TESTS_OUTPUT_DIR)/"cube.obj");
 }
 
 }

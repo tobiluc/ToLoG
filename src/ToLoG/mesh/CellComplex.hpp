@@ -4,6 +4,7 @@
 #include <ToLoG/vector_concepts.hpp>
 #include <cassert>
 #include <filesystem>
+#include <iostream>
 #include <ranges>
 #include <vector>
 #include <fstream>
@@ -92,6 +93,12 @@ public:
     {
         using BaseHandle::BaseHandle;
     };
+    // class BaseProp
+    // {
+    // public:
+    //     void reserve(uint32_t _size);
+    // };
+
     template<typename H, typename T>
     class PropT
     {
@@ -150,10 +157,9 @@ public:
         }
         operator bool() const {return curr_.is_valid();}
         IterT& operator++() {
-            if (curr_idx_ < derived().end_idx()) {
-                ++curr_idx_;
+            if ((++curr_idx_) < derived().end_idx()) {
+                derived().on_index_update();
             }
-            derived().skip_deleted();
             return *this;
         }
         IterT operator++(int) {
@@ -164,8 +170,9 @@ public:
         const TopologicalCellComplex* mesh() const {return mesh_;}
         constexpr const H0& ref() const {return ref_;}
         void set_begin() {
-            curr_idx_ = 0;
-            derived().skip_deleted();
+            if ((curr_idx_=0) < derived().end_idx()) {
+                derived().on_index_update();
+            }
         }
         void set_end() {
             curr_idx_ = derived().end_idx();
@@ -186,23 +193,16 @@ public:
         friend class IterT<VEIter, VH, EH>;
     public:
         VEIter(const TopologicalCellComplex* _mesh, VH _vh) : IterT(_mesh, _vh) {
-            skip_deleted();
+            if (end_idx() > 0) {
+                on_index_update();
+            }
         }
         int end_idx() const {
             return mesh()->vertices_[ref()].out_hehs_.size();
         }
     protected:
-        void skip_deleted() {
-            const size_t n = end_idx();
-            if (this->mesh_->is_deleted(this->ref_)) {this->curr_idx_ = n;}
-            while (this->curr_idx_ < n) {
-                this->curr_ = mesh()->vertices_[ref()].out_hehs_[curr_idx_].eh();
-                if (!this->mesh_->is_deleted(this->curr_)) {
-                    return;
-                }
-                ++this->curr_idx_;
-            }
-            this->curr_.invalidate();
+        void on_index_update() {
+            curr_ = mesh()->vertices_[ref()].out_hehs_[idx()].eh();
         }
     };
 
@@ -211,24 +211,16 @@ public:
         friend class IterT<VOHEIter, VH, HEH>;
     public:
         VOHEIter(const TopologicalCellComplex* _mesh, VH _vh) : IterT(_mesh, _vh) {
-            skip_deleted();
+            if (end_idx() > 0) {
+                on_index_update();
+            }
         }
         int end_idx() const {
             return mesh()->vertices_[ref()].out_hehs_.size();
         }
     protected:
-        void skip_deleted() {
-            const size_t n = end_idx();
-            if (this->mesh_->is_deleted(this->ref_)) {this->curr_idx_ = n;}
-            while (this->curr_idx_ < n) {
-                HEH heh = mesh()->vertices_[ref()].out_hehs_[this->curr_idx_];
-                if (!this->mesh_->is_deleted(heh.eh())) {
-                    this->curr_ = heh;
-                    return;
-                }
-                ++this->curr_idx_;
-            }
-            this->curr_.invalidate();
+        void on_index_update() {
+            curr_ = mesh()->vertices_[ref()].out_hehs_[idx()];
         }
     };
 
@@ -237,25 +229,16 @@ public:
         friend class IterT<VVIter, VH, VH>;
     public:
         VVIter(const TopologicalCellComplex* _mesh, VH _vh) : IterT(_mesh, _vh) {
-            skip_deleted();
+            if (end_idx() > 0) {
+                on_index_update();
+            }
         }
         int end_idx() const {
             return mesh()->vertices_[ref()].out_hehs_.size();
         }
     protected:
-        void skip_deleted() {
-            const size_t n = end_idx();
-            if (this->mesh_->is_deleted(this->ref_)) {this->curr_idx_ = n;}
-            while (this->curr_idx_ < n) {
-                HEH heh = mesh()->vertices_[ref()].out_hehs_[this->curr_idx_];
-                if (!this->mesh_->is_deleted(heh.eh())) {
-                    curr_ = ref()==mesh()->vh0(heh)?
-                        mesh()->vh1(heh) : mesh()->vh0(heh);
-                    return;
-                }
-                ++this->curr_idx_;
-            }
-            this->curr_.invalidate();
+        void on_index_update() {
+            curr_ = mesh()->vh1(mesh()->vertices_[ref()].out_hehs_[idx()]);
         }
     };
 
@@ -272,18 +255,17 @@ public:
                     }
                 }
             }
-            skip_deleted();
+            if (!fhs_.empty()) {
+                on_index_update();
+            }
         }
         int end_idx() const {
             return fhs_.size();
         }
     protected:
-        void skip_deleted() {
-            if (idx() < end_idx()) {
-                curr_ = fhs_[idx()];
-                return;
-            }
-            curr_.invalidate();
+        void on_index_update() {
+            std::cerr << idx() << "/" << end_idx() << std::endl;
+            curr_ = fhs_[idx()];
         }
         std::vector<FH> fhs_;
     };
@@ -293,21 +275,14 @@ public:
         friend class IterT<EVIter, EH, VH>;
     public:
         EVIter(const TopologicalCellComplex* _mesh, EH _eh) : IterT(_mesh, _eh) {
-            skip_deleted();
+            on_index_update();
         }
         int end_idx() const {
             return 2;
         }
     protected:
-        void skip_deleted() {
-            // Note that if the edge is not deleted,
-            // vertices can't possibly be deleted!
-            if (!mesh()->is_deleted(ref()) && idx() < end_idx()) {
-                this->curr_ = mesh()->edges_[ref()].vhs_[this->curr_idx_];
-            } else {
-                idx() = end_idx();
-                curr_.invalidate();
-            }
+        void on_index_update() {
+            curr_ = mesh()->edges_[ref()].vhs_[idx()];
         }
     };
 
@@ -316,23 +291,16 @@ public:
         friend class IterT<EFIter, EH, FH>;
     public:
         EFIter(const TopologicalCellComplex* _mesh, EH _eh) : IterT(_mesh, _eh) {
-            skip_deleted();
+            if (end_idx() > 0) {
+                on_index_update();
+            }
         }
         int end_idx() const {
             return mesh()->edges_[ref()].incident_hfhs_.size();
         }
     protected:
-        void skip_deleted() {
-            const size_t n = end_idx();
-            if (mesh_->is_deleted(this->ref_)) {this->curr_idx_ = n;}
-            while (this->curr_idx_ < n) {
-                this->curr_ = mesh()->edges_[ref()].incident_hfhs_[this->curr_idx_].fh();
-                if (!this->mesh_->is_deleted(this->curr_)) {
-                    return;
-                }
-                ++this->curr_idx_;
-            }
-            this->curr_.invalidate();
+        void on_index_update() {
+            curr_ = mesh()->edges_[ref()].incident_hfhs_[idx()].fh();
         }
     };
 
@@ -341,21 +309,30 @@ public:
         friend class IterT<FVIter, FH, VH>;
     public:
         FVIter(const TopologicalCellComplex* _mesh, FH _fh) : IterT(_mesh, _fh) {
-            skip_deleted();
+            on_index_update();
         }
         int end_idx() const {
-            return this->mesh_->face_valence(this->ref_);
+            return mesh()->face_valence(ref());
         }
     protected:
-        void skip_deleted() {
-            // Note that if the face is not deleted,
-            // vertices can't possibly be deleted!
-            if (!mesh()->is_deleted(ref()) && idx() < end_idx()) {
-                curr_ = mesh()->vh0(mesh()->faces_[ref()].hehs_[idx()]);
-            } else {
-                idx() = end_idx();
-                curr_.invalidate();
-            }
+        void on_index_update() {
+            curr_ = mesh()->vh(ref().hfh(0), idx());
+        }
+    };
+
+    class HFVIter : public IterT<HFVIter, HFH, VH>
+    {
+        friend class IterT<HFVIter, HFH, VH>;
+    public:
+        HFVIter(const TopologicalCellComplex* _mesh, HFH _hfh) : IterT(_mesh, _hfh) {
+            on_index_update();
+        }
+        int end_idx() const {
+            return mesh()->face_valence(ref());
+        }
+    protected:
+        void on_index_update() {
+            curr_ = mesh()->vh(ref(), idx());
         }
     };
 
@@ -364,21 +341,14 @@ public:
         friend class IterT<FHEIter, FH, HEH>;
     public:
         FHEIter(const TopologicalCellComplex* _mesh, FH _fh) : IterT(_mesh, _fh) {
-            skip_deleted();
+            on_index_update();
         }
         int end_idx() const {
             return mesh()->face_valence(ref());
         }
     protected:
-        void skip_deleted() {
-            // Note that if the face is not deleted,
-            // edges can't possibly be deleted!
-            if (!mesh()->is_deleted(ref()) && idx() < end_idx()) {
-                curr_ = mesh()->faces_[ref()].hehs_[idx()];
-            } else {
-                idx() = end_idx();
-                curr_.invalidate();
-            }
+        void on_index_update() {
+            curr_ = mesh()->faces_[ref()].hehs_[idx()];
         }
     };
 
@@ -387,21 +357,14 @@ public:
         friend class IterT<FEIter, FH, EH>;
     public:
         FEIter(const TopologicalCellComplex* _mesh, FH _fh) : IterT(_mesh, _fh) {
-            skip_deleted();
+            on_index_update();
         }
         int end_idx() const {
             return mesh()->face_valence(ref());
         }
     protected:
-        void skip_deleted() {
-            // Note that if the face is not deleted,
-            // edges can't possibly be deleted!
-            if (!mesh()->is_deleted(ref()) && idx() < end_idx()) {
-                curr_ = mesh()->faces_[ref()].hehs_[idx()].eh();
-            } else {
-                idx() = end_idx();
-                curr_.invalidate();
-            }
+        void on_index_update() {
+            curr_ = mesh()->faces_[ref()].hehs_[idx()].eh();
         }
     };
 
@@ -410,20 +373,40 @@ public:
         friend class IterT<CHFIter, CH, HFH>;
     public:
         CHFIter(const TopologicalCellComplex* _mesh, CH _ch) : IterT(_mesh, _ch) {
-            skip_deleted();
+            on_index_update();
         }
         int end_idx() const {
             return mesh()->cells_[ref()].hfhs_.size();
         }
     protected:
-        void skip_deleted() {
-            if (!mesh()->is_deleted(ref()) && idx() < end_idx()) {
-                curr_ = mesh()->cells_[ref()].hfhs_[idx()];
-            } else {
-                idx() = end_idx();
-                curr_.invalidate();
-            }
+        void on_index_update() {
+            curr_ = mesh()->cells_[ref()].hfhs_[idx()];
         }
+    };
+
+    class CVIter : public IterT<CVIter, CH, VH>
+    {
+        friend class IterT<CVIter, CH, VH>;
+    public:
+        CVIter(const TopologicalCellComplex* _mesh, CH _ch) : IterT(_mesh, _ch)
+        {
+            for (HFH hfh : _mesh->cell_halffaces(_ch)) {
+                for (VH vh : _mesh->halfface_vertices(hfh)) {
+                    if (std::find(vhs_.begin(), vhs_.end(), vh) == vhs_.end()) {
+                        vhs_.push_back(vh);
+                    }
+                }
+            }
+            on_index_update();
+        }
+        int end_idx() const {
+            return vhs_.size();
+        }
+    protected:
+        void on_index_update() {
+            curr_ = vhs_[idx()];
+        }
+        std::vector<VH> vhs_;
     };
 
     template <typename Iter>
@@ -490,6 +473,13 @@ public:
         return {begin, end};
     }
 
+    IterRange<HFVIter> halfface_vertices(HFH _hfh) const {
+        HFVIter begin(this, _hfh);
+        HFVIter end(this, _hfh);
+        end.set_end();
+        return {begin, end};
+    }
+
     IterRange<FEIter> face_edges(FH _fh) const {
         FEIter begin(this, _fh);
         FEIter end(this, _fh);
@@ -507,6 +497,13 @@ public:
     IterRange<CHFIter> cell_halffaces(CH _ch) const {
         CHFIter begin(this, _ch);
         CHFIter end(this, _ch);
+        end.set_end();
+        return {begin, end};
+    }
+
+    IterRange<CVIter> cell_vertices(CH _ch) const {
+        CVIter begin(this, _ch);
+        CVIter end(this, _ch);
         end.set_end();
         return {begin, end};
     }
