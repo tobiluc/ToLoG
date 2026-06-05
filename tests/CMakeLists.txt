@@ -5,6 +5,7 @@ if (GTEST_FOUND)
         aabb_tests.cpp
         aabbtree_tests.cpp
         barycentric_tests.cpp
+        cell_complex_tests.cpp
         centroid_tests.cpp
         core_tests.cpp
         customization_tests.cpp
@@ -19,7 +20,6 @@ if (GTEST_FOUND)
         octree_tests.cpp
         OM_tests.cpp
         ovm_tests.cpp
-        polygon_mesh_tests.cpp
         polynomial_roots_tests.cpp
         predicates_tests.cpp
         ray_tests.cpp

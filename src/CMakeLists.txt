@@ -7,7 +7,7 @@ add_library("${TOLOG_LIBRARY_NAME}" STATIC
     ToLoG/geometry/predicates/predicates.cpp
     ToLoG/unstable/marching_cubes.cpp
     ToLoG/math/polynomial_roots.cpp
-    ToLoG/mesh/PolygonMesh.cpp
+    ToLoG/mesh/CellComplex.cpp
 )
 add_library ("${TOLOG_LIBRARY_NAME}::${TOLOG_LIBRARY_NAME}" ALIAS ${TOLOG_LIBRARY_NAME})
 

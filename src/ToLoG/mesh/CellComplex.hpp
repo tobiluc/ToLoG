@@ -2,6 +2,7 @@
 
 #include <ToLoG/Traits_fwd.hpp>
 #include <ToLoG/vector_concepts.hpp>
+#include <cassert>
 #include <filesystem>
 #include <ranges>
 #include <vector>
@@ -14,7 +15,7 @@ namespace ToLoG
 /*
  * This is very much based on OpenMesh and OpenVolumeMesh
  */
-class PolygonMeshTopologyKernel
+class TopologicalCellComplex
 {
 public:
     class BaseHandle
@@ -64,11 +65,33 @@ public:
             return HEH(this->idx()^1);
         }
     };
+    class HFH;
     class FH : public BaseHandle
     {
         using BaseHandle::BaseHandle;
+    public:
+        constexpr HFH hfh(uint8_t _subidx) const {
+            return HFH((this->idx()<<1)+_subidx);
+        }
     };
-
+    class HFH : public BaseHandle
+    {
+        using BaseHandle::BaseHandle;
+    public:
+        constexpr int subidx() const {
+            return this->idx() & 1;
+        }
+        constexpr FH fh() const {
+            return FH(this->idx()>>1);
+        }
+        constexpr HFH opp() const {
+            return HFH(this->idx()^1);
+        }
+    };
+    class CH : public BaseHandle
+    {
+        using BaseHandle::BaseHandle;
+    };
     template<typename H, typename T>
     class PropT
     {
@@ -76,6 +99,7 @@ public:
         PropT() {}
         PropT(uint32_t _size, const T& _def = T()) : data_(_size, _def) {}
         void push_back(const T& _val) {data_.push_back(_val);}
+        void push_back(T&& _val) {data_.push_back(_val);}
         void reserve(uint32_t _size) {data_.reserve(_size);}
         T& operator[](H _h) {return data_[_h.idx()];}
         const T& operator[](H _h) const {return data_.at(_h.idx());}
@@ -96,6 +120,10 @@ public:
     using HalfEdgePropT = PropT<HEH, T>;
     template<typename T>
     using FacePropT = PropT<FH, T>;
+    template<typename T>
+    using HalfFacePropT = PropT<HFH, T>;
+    template<typename T>
+    using CellPropT = PropT<CH, T>;
 
     template<typename Derived, typename H0, typename H1>
     class IterT
@@ -108,7 +136,7 @@ public:
         using pointer           = const H1*;
         using reference         = const H1&;
 
-        IterT(const PolygonMeshTopologyKernel* _mesh, H0 _ref) : mesh_(_mesh), ref_(_ref), curr_idx_() {}
+        IterT(const TopologicalCellComplex* _mesh, H0 _ref) : mesh_(_mesh), ref_(_ref), curr_idx_() {}
         virtual ~IterT() = default;
         reference operator*() const {return curr_;}
         pointer operator->() const {return &curr_;}
@@ -133,8 +161,8 @@ public:
             ++(*this);
             return copy;
         }
-        const PolygonMeshTopologyKernel* mesh() const {return mesh_;}
-        constexpr H0 ref() const {return ref_;}
+        const TopologicalCellComplex* mesh() const {return mesh_;}
+        constexpr const H0& ref() const {return ref_;}
         void set_begin() {
             curr_idx_ = 0;
             derived().skip_deleted();
@@ -144,7 +172,7 @@ public:
             curr_.invalidate();
         }
     protected:
-        const PolygonMeshTopologyKernel* mesh_;
+        const TopologicalCellComplex* mesh_;
         const H0 ref_;
         H1 curr_;
         int curr_idx_ = 0;
@@ -157,19 +185,19 @@ public:
     {
         friend class IterT<VEIter, VH, EH>;
     public:
-        VEIter(const PolygonMeshTopologyKernel* _mesh, VH _vh) : IterT(_mesh, _vh) {
+        VEIter(const TopologicalCellComplex* _mesh, VH _vh) : IterT(_mesh, _vh) {
             skip_deleted();
         }
         int end_idx() const {
-            return this->mesh_->vertex_out_halfedges_[this->ref_].size();
+            return mesh()->vertices_[ref()].out_hehs_.size();
         }
     protected:
         void skip_deleted() {
             const size_t n = end_idx();
-            if (this->mesh_->vertex_is_deleted(this->ref_)) {this->curr_idx_ = n;}
+            if (this->mesh_->is_deleted(this->ref_)) {this->curr_idx_ = n;}
             while (this->curr_idx_ < n) {
-                this->curr_ = this->mesh_->vertex_out_halfedges_[this->ref_][this->curr_idx_].eh();
-                if (!this->mesh_->edge_is_deleted(this->curr_)) {
+                this->curr_ = mesh()->vertices_[ref()].out_hehs_[curr_idx_].eh();
+                if (!this->mesh_->is_deleted(this->curr_)) {
                     return;
                 }
                 ++this->curr_idx_;
@@ -182,19 +210,19 @@ public:
     {
         friend class IterT<VOHEIter, VH, HEH>;
     public:
-        VOHEIter(const PolygonMeshTopologyKernel* _mesh, VH _vh) : IterT(_mesh, _vh) {
+        VOHEIter(const TopologicalCellComplex* _mesh, VH _vh) : IterT(_mesh, _vh) {
             skip_deleted();
         }
         int end_idx() const {
-            return this->mesh_->vertex_out_halfedges_[this->ref_].size();
+            return mesh()->vertices_[ref()].out_hehs_.size();
         }
     protected:
         void skip_deleted() {
             const size_t n = end_idx();
-            if (this->mesh_->vertex_is_deleted(this->ref_)) {this->curr_idx_ = n;}
+            if (this->mesh_->is_deleted(this->ref_)) {this->curr_idx_ = n;}
             while (this->curr_idx_ < n) {
-                HEH heh = this->mesh_->vertex_out_halfedges_[this->ref_][this->curr_idx_];
-                if (!this->mesh_->halfedge_is_deleted(heh)) {
+                HEH heh = mesh()->vertices_[ref()].out_hehs_[this->curr_idx_];
+                if (!this->mesh_->is_deleted(heh.eh())) {
                     this->curr_ = heh;
                     return;
                 }
@@ -208,19 +236,19 @@ public:
     {
         friend class IterT<VVIter, VH, VH>;
     public:
-        VVIter(const PolygonMeshTopologyKernel* _mesh, VH _vh) : IterT(_mesh, _vh) {
+        VVIter(const TopologicalCellComplex* _mesh, VH _vh) : IterT(_mesh, _vh) {
             skip_deleted();
         }
         int end_idx() const {
-            return this->mesh_->vertex_out_halfedges_[this->ref_].size();
+            return mesh()->vertices_[ref()].out_hehs_.size();
         }
     protected:
         void skip_deleted() {
             const size_t n = end_idx();
-            if (this->mesh_->vertex_is_deleted(this->ref_)) {this->curr_idx_ = n;}
+            if (this->mesh_->is_deleted(this->ref_)) {this->curr_idx_ = n;}
             while (this->curr_idx_ < n) {
-                HEH heh = this->mesh_->vertex_out_halfedges_[this->ref_][this->curr_idx_];
-                if (!this->mesh_->halfedge_is_deleted(heh)) {
+                HEH heh = mesh()->vertices_[ref()].out_hehs_[this->curr_idx_];
+                if (!this->mesh_->is_deleted(heh.eh())) {
                     curr_ = ref()==mesh()->vh0(heh)?
                         mesh()->vh1(heh) : mesh()->vh0(heh);
                     return;
@@ -235,7 +263,7 @@ public:
     {
         friend class IterT<VFIter, VH, FH>;
     public:
-        VFIter(const PolygonMeshTopologyKernel* _mesh, VH _vh) : IterT(_mesh, _vh) {
+        VFIter(const TopologicalCellComplex* _mesh, VH _vh) : IterT(_mesh, _vh) {
             fhs_.clear();
             for (EH eh : mesh()->vertex_edges(_vh)) {
                 for (FH fh : mesh()->edge_faces(eh)) {
@@ -264,7 +292,7 @@ public:
     {
         friend class IterT<EVIter, EH, VH>;
     public:
-        EVIter(const PolygonMeshTopologyKernel* _mesh, EH _eh) : IterT(_mesh, _eh) {
+        EVIter(const TopologicalCellComplex* _mesh, EH _eh) : IterT(_mesh, _eh) {
             skip_deleted();
         }
         int end_idx() const {
@@ -274,8 +302,8 @@ public:
         void skip_deleted() {
             // Note that if the edge is not deleted,
             // vertices can't possibly be deleted!
-            if (!mesh()->edge_is_deleted(ref()) && idx() < end_idx()) {
-                this->curr_ = this->mesh_->edges_[this->ref_][this->curr_idx_];
+            if (!mesh()->is_deleted(ref()) && idx() < end_idx()) {
+                this->curr_ = mesh()->edges_[ref()].vhs_[this->curr_idx_];
             } else {
                 idx() = end_idx();
                 curr_.invalidate();
@@ -287,19 +315,19 @@ public:
     {
         friend class IterT<EFIter, EH, FH>;
     public:
-        EFIter(const PolygonMeshTopologyKernel* _mesh, EH _eh) : IterT(_mesh, _eh) {
+        EFIter(const TopologicalCellComplex* _mesh, EH _eh) : IterT(_mesh, _eh) {
             skip_deleted();
         }
         int end_idx() const {
-            return this->mesh_->edge_faces_[this->ref_].size();
+            return mesh()->edges_[ref()].incident_hfhs_.size();
         }
     protected:
         void skip_deleted() {
             const size_t n = end_idx();
-            if (mesh_->edge_is_deleted(this->ref_)) {this->curr_idx_ = n;}
+            if (mesh_->is_deleted(this->ref_)) {this->curr_idx_ = n;}
             while (this->curr_idx_ < n) {
-                this->curr_ = this->mesh_->edge_faces_[this->ref_][this->curr_idx_];
-                if (!this->mesh_->face_is_deleted(this->curr_)) {
+                this->curr_ = mesh()->edges_[ref()].incident_hfhs_[this->curr_idx_].fh();
+                if (!this->mesh_->is_deleted(this->curr_)) {
                     return;
                 }
                 ++this->curr_idx_;
@@ -312,7 +340,7 @@ public:
     {
         friend class IterT<FVIter, FH, VH>;
     public:
-        FVIter(const PolygonMeshTopologyKernel* _mesh, FH _fh) : IterT(_mesh, _fh) {
+        FVIter(const TopologicalCellComplex* _mesh, FH _fh) : IterT(_mesh, _fh) {
             skip_deleted();
         }
         int end_idx() const {
@@ -322,8 +350,8 @@ public:
         void skip_deleted() {
             // Note that if the face is not deleted,
             // vertices can't possibly be deleted!
-            if (!mesh()->face_is_deleted(ref()) && idx() < end_idx()) {
-                curr_ = mesh()->vh0(mesh()->faces_[ref()][idx()]);
+            if (!mesh()->is_deleted(ref()) && idx() < end_idx()) {
+                curr_ = mesh()->vh0(mesh()->faces_[ref()].hehs_[idx()]);
             } else {
                 idx() = end_idx();
                 curr_.invalidate();
@@ -335,7 +363,7 @@ public:
     {
         friend class IterT<FHEIter, FH, HEH>;
     public:
-        FHEIter(const PolygonMeshTopologyKernel* _mesh, FH _fh) : IterT(_mesh, _fh) {
+        FHEIter(const TopologicalCellComplex* _mesh, FH _fh) : IterT(_mesh, _fh) {
             skip_deleted();
         }
         int end_idx() const {
@@ -345,8 +373,8 @@ public:
         void skip_deleted() {
             // Note that if the face is not deleted,
             // edges can't possibly be deleted!
-            if (!mesh()->face_is_deleted(ref()) && idx() < end_idx()) {
-                curr_ = mesh()->faces_[ref()][idx()];
+            if (!mesh()->is_deleted(ref()) && idx() < end_idx()) {
+                curr_ = mesh()->faces_[ref()].hehs_[idx()];
             } else {
                 idx() = end_idx();
                 curr_.invalidate();
@@ -358,7 +386,7 @@ public:
     {
         friend class IterT<FEIter, FH, EH>;
     public:
-        FEIter(const PolygonMeshTopologyKernel* _mesh, FH _fh) : IterT(_mesh, _fh) {
+        FEIter(const TopologicalCellComplex* _mesh, FH _fh) : IterT(_mesh, _fh) {
             skip_deleted();
         }
         int end_idx() const {
@@ -368,8 +396,29 @@ public:
         void skip_deleted() {
             // Note that if the face is not deleted,
             // edges can't possibly be deleted!
-            if (!mesh()->face_is_deleted(ref()) && idx() < end_idx()) {
-                curr_ = mesh()->faces_[ref()][idx()].eh();
+            if (!mesh()->is_deleted(ref()) && idx() < end_idx()) {
+                curr_ = mesh()->faces_[ref()].hehs_[idx()].eh();
+            } else {
+                idx() = end_idx();
+                curr_.invalidate();
+            }
+        }
+    };
+
+    class CHFIter : public IterT<CHFIter, CH, HFH>
+    {
+        friend class IterT<CHFIter, CH, HFH>;
+    public:
+        CHFIter(const TopologicalCellComplex* _mesh, CH _ch) : IterT(_mesh, _ch) {
+            skip_deleted();
+        }
+        int end_idx() const {
+            return mesh()->cells_[ref()].hfhs_.size();
+        }
+    protected:
+        void skip_deleted() {
+            if (!mesh()->is_deleted(ref()) && idx() < end_idx()) {
+                curr_ = mesh()->cells_[ref()].hfhs_[idx()];
             } else {
                 idx() = end_idx();
                 curr_.invalidate();
@@ -389,7 +438,7 @@ public:
     };
 
 public:
-    PolygonMeshTopologyKernel() {
+    TopologicalCellComplex() {
     };
 
     IterRange<VVIter> vertex_vertices(VH _vh) const {
@@ -455,57 +504,82 @@ public:
         return {begin, end};
     }
 
+    IterRange<CHFIter> cell_halffaces(CH _ch) const {
+        CHFIter begin(this, _ch);
+        CHFIter end(this, _ch);
+        end.set_end();
+        return {begin, end};
+    }
+
     void reserve_vertices(uint32_t _size);
 
     void reserve_edges(uint32_t _size);
 
     void reserve_faces(uint32_t _size);
 
-    constexpr bool vertex_is_deleted(VH _vh) const {
-        return vertex_deleted_[_vh];
+    void reserve_cells(uint32_t _size);
+
+    constexpr bool is_deleted(VH _vh) const {
+        return vertices_[_vh].deleted_;
     }
 
-    constexpr bool edge_is_deleted(EH _eh) const {
-        return edge_deleted_[_eh];
+    constexpr bool is_deleted(EH _eh) const {
+        return edges_[_eh].deleted_;
     }
 
-    constexpr bool halfedge_is_deleted(HEH _heh) const {
-        return edge_is_deleted(_heh.eh());
+    constexpr bool is_deleted(FH _fh) const {
+        return faces_[_fh].deleted_;
     }
 
-    constexpr bool face_is_deleted(FH _fh) const {
-        return face_deleted_[_fh];
+    constexpr bool is_deleted(CH _ch) const {
+        return cells_[_ch].deleted_;
     }
 
     auto vertices() const
     {
-        auto indices = std::views::iota(uint32_t{0}, num_vertices());
+        auto indices = std::views::iota(uint32_t{0}, num_allocated_vertices());
         auto to_handle = std::views::transform([](uint32_t i) {return VH(i);});
-        auto alive = std::views::filter([this](VH vh) {return !vertex_is_deleted(vh);});
+        auto alive = std::views::filter([this](VH vh) {return !is_deleted(vh);});
         return indices | to_handle | alive;
     }
 
     auto edges() const
     {
-        auto indices = std::views::iota(uint32_t{0}, num_edges());
+        auto indices = std::views::iota(uint32_t{0}, num_allocated_edges());
         auto to_handle = std::views::transform([](uint32_t i) {return EH(i);});
-        auto alive = std::views::filter([this](EH eh) {return !edge_is_deleted(eh);});
+        auto alive = std::views::filter([this](EH eh) {return !is_deleted(eh);});
         return indices | to_handle | alive;
     }
 
     auto halfedges() const
     {
-        auto indices = std::views::iota(uint32_t{0}, num_halfedges());
+        auto indices = std::views::iota(uint32_t{0}, num_allocated_halfedges());
         auto to_handle = std::views::transform([](uint32_t i) {return HEH(i);});
-        auto alive = std::views::filter([this](HEH heh) {return !halfedge_is_deleted(heh);});
+        auto alive = std::views::filter([this](HEH heh) {return !is_deleted(heh.eh());});
         return indices | to_handle | alive;
     }
 
     auto faces() const
     {
-        auto indices = std::views::iota(uint32_t{0}, num_faces());
+        auto indices = std::views::iota(uint32_t{0}, num_allocated_faces());
         auto to_handle = std::views::transform([](uint32_t i) {return FH(i);});
-        auto alive = std::views::filter([this](FH fh) {return !face_is_deleted(fh);});
+        auto alive = std::views::filter([this](FH fh) {return !is_deleted(fh);});
+        return indices | to_handle | alive;
+    }
+
+    auto halffaces() const
+    {
+        auto indices = std::views::iota(uint32_t{0}, num_allocated_halffaces());
+        auto to_handle = std::views::transform([](uint32_t i) {return HFH(i);});
+        auto alive = std::views::filter([this](HFH hfh) {return !is_deleted(hfh.fh());});
+        return indices | to_handle | alive;
+    }
+
+    auto cells() const
+    {
+        auto indices = std::views::iota(uint32_t{0}, num_allocated_cells());
+        auto to_handle = std::views::transform([](uint32_t i) {return CH(i);});
+        auto alive = std::views::filter([this](CH ch) {return !is_deleted(ch);});
         return indices | to_handle | alive;
     }
 
@@ -515,9 +589,15 @@ public:
 
     EH add_edge(VH _vh0, VH _vh1);
 
+    HFH add_halfface(const std::vector<HEH>& _hehs);
+
+    HFH add_halfface(const std::vector<VH>& _vhs);
+
     FH add_face(const std::vector<HEH>& _hehs);
 
     FH add_face(const std::vector<VH>& _vhs);
+
+    CH add_cell(const std::vector<HFH>& _hfhs);
 
     void delete_vertex(VH _vh);
 
@@ -525,9 +605,13 @@ public:
 
     void delete_face(FH _fh);
 
+    void delete_cell(CH _ch);
+
     HEH find_halfedge(VH _v0, VH _v1) const;
 
     EH find_edge(VH _v0, VH _v1) const;
+
+    HFH find_halfface(const std::vector<VH>& _vhs) const;
 
     FH find_face(const std::vector<VH>& _vhs) const;
 
@@ -545,20 +629,78 @@ public:
 
     bool face_contains_edge(FH _fh, EH _eh) const;
 
-    constexpr size_t num_vertices() const {
-        return n_vertices_;
+    CH halfface_incident_cell(HFH _hfh) const;
+
+    constexpr size_t num_allocated_vertices() const {
+        return vertices_.size();
     }
 
-    constexpr size_t num_edges() const {
+    constexpr size_t num_allocated_edges() const {
         return edges_.size();
     }
 
-    constexpr size_t num_halfedges() const {
+    constexpr size_t num_allocated_halfedges() const {
         return edges_.size()*2;
     }
 
-    constexpr size_t num_faces() const {
+    constexpr size_t num_allocated_faces() const {
         return faces_.size();
+    }
+
+    constexpr size_t num_allocated_halffaces() const {
+        return faces_.size()*2;
+    }
+
+    constexpr size_t num_allocated_cells() const {
+        return cells_.size();
+    }
+
+    constexpr size_t num_deleted_vertices() const {
+        return n_deleted_vertices_;
+    }
+
+    constexpr size_t num_deleted_edges() const {
+        return n_deleted_edges_;
+    }
+
+    constexpr size_t num_deleted_halfedges() const {
+        return n_deleted_edges_*2;
+    }
+
+    constexpr size_t num_deleted_faces() const {
+        return n_deleted_faces_;
+    }
+
+    constexpr size_t num_deleted_halffaces() const {
+        return n_deleted_faces_*2;
+    }
+
+    constexpr size_t num_deleted_cells() const {
+        return n_deleted_cells_;
+    }
+
+    constexpr size_t num_active_vertices() const {
+        return num_allocated_vertices() - num_deleted_vertices();
+    }
+
+    constexpr size_t num_active_edges() const {
+        return num_allocated_edges() - num_deleted_edges();
+    }
+
+    constexpr size_t num_active_halfedges() const {
+        return num_active_edges()*2;
+    }
+
+    constexpr size_t num_active_faces() const {
+        return num_allocated_faces() - num_deleted_faces();
+    }
+
+    constexpr size_t num_active_halffaces() const {
+        return num_active_faces()*2;
+    }
+
+    constexpr size_t num_active_cells() const {
+        return num_allocated_cells() - num_deleted_cells();
     }
 
     size_t vertex_valence(VH _vh) const {
@@ -573,11 +715,19 @@ public:
         return valence;
     }
 
-    size_t face_valence(FH _fh) const {
-        return faces_[_fh].size();
+    size_t edge_valence(HEH _heh) const {
+        return edge_valence(_heh.eh());
     }
 
-    constexpr bool vertex_is_manifold(VH _vh) const {
+    size_t face_valence(FH _fh) const {
+        return faces_[_fh].hehs_.size();
+    }
+
+    size_t face_valence(HFH _hfh) const {
+        return face_valence(_hfh.fh());
+    }
+
+    constexpr bool surface_vertex_is_manifold(VH _vh) const {
         return vertex_num_face_components(_vh) == 1u;
     }
 
@@ -585,7 +735,7 @@ public:
         return vertex_valence(_vh) == 0u;
     }
 
-    constexpr bool edge_is_manifold(EH _eh) const {
+    constexpr bool surface_edge_is_manifold(EH _eh) const {
         uint32_t n = edge_valence(_eh);
         return n == 2u || n == 1u;
     }
@@ -594,29 +744,93 @@ public:
         return edge_valence(_eh) == 0u;
     }
 
-    bool mesh_is_manifold() const;
+    bool surface_mesh_is_manifold() const;
+
+    constexpr VH vh(HEH _heh, uint32_t _subidx) const {
+        assert(_subidx < 2);
+        return _heh.subidx()==_subidx? edges_[_heh.eh()].vhs_[0] : edges_[_heh.eh()].vhs_[1];
+    }
 
     constexpr VH vh0(HEH _heh) const {
-        return _heh.subidx()? edges_[_heh.eh()][1] : edges_[_heh.eh()][0];
+        return vh(_heh, 0);
     }
 
     constexpr VH vh1(HEH _heh) const {
-        return _heh.subidx()? edges_[_heh.eh()][0] : edges_[_heh.eh()][1];
+        return vh(_heh, 1);
+    }
+
+    constexpr HEH heh(HFH _hfh, uint32_t _subidx) const {
+        FH fh = _hfh.fh();
+        uint32_t n = faces_[fh].hehs_.size();
+        assert(_idx < n);
+        if (is_deleted(fh)) {return HEH();}
+        if (_hfh.subidx() == 0) {
+            return faces_[fh].hehs_[_subidx];
+        } else {
+            return faces_[fh].hehs_[n-1-_subidx].opp();
+        }
+    }
+
+    constexpr VH vh(HFH _hfh, uint32_t _subidx) const {
+        return vh0(heh(_hfh, _subidx));
+    }
+
+    constexpr bool is_active(VH _vh) const {
+        return _vh.is_valid() && _vh < vertices_.size()
+               && !is_deleted(_vh);
+    }
+
+    constexpr bool is_active(EH _eh) const {
+        return _eh.is_valid() && _eh < edges_.size()
+        && !is_deleted(_eh);
+    }
+
+    constexpr bool is_active(FH _fh) const {
+        return _fh.is_valid() && _fh < faces_.size()
+        && !is_deleted(_fh);
+    }
+
+    constexpr bool is_active(CH _ch) const {
+        return _ch.is_valid() && _ch < cells_.size()
+        && !is_deleted(_ch);
     }
 
 protected:
-    size_t n_vertices_ = 0;
-    EdgePropT<std::array<VH,2>> edges_;
-    FacePropT<std::vector<HEH>> faces_;
-    VertexPropT<std::vector<HEH>> vertex_out_halfedges_;
-    EdgePropT<std::vector<FH>> edge_faces_;
-    VertexPropT<uint8_t> vertex_deleted_;
-    EdgePropT<uint8_t> edge_deleted_;
-    FacePropT<uint8_t> face_deleted_;
+    struct Vertex
+    {
+        std::vector<HEH> out_hehs_ = {};
+        bool deleted_ = false;
+    };
+    struct Edge
+    {
+        std::array<VH,2> vhs_ = {VH(), VH()};
+        std::vector<HFH> incident_hfhs_ = {};
+        bool deleted_ = false;
+    };
+    struct Face
+    {
+        std::vector<HEH> hehs_ = {};
+        std::array<CH,2> chs_ = {CH(), CH()};
+        bool deleted_ = false;
+    };
+    struct Cell
+    {
+        std::vector<HFH> hfhs_ = {};
+        bool deleted_ = false;
+    };
+
+    VertexPropT<Vertex> vertices_;
+    EdgePropT<Edge> edges_;
+    FacePropT<Face> faces_;
+    CellPropT<Cell> cells_;
+    size_t n_deleted_vertices_ = 0;
+    size_t n_deleted_edges_ = 0;
+    size_t n_deleted_faces_ = 0;
+    size_t n_deleted_cells_ = 0;
 };
 
 template<vector Point>
-class PolygonMeshGeometryKernel : public PolygonMeshTopologyKernel
+class GeometricCellComplex : public TopologicalCellComplex
 {
 private:
     using PositionProp = VertexPropT<Point>;
@@ -626,13 +840,13 @@ private:
 public:
 
     VH add_vertex(const Point& _pos) {
-        VH vh = PolygonMeshTopologyKernel::add_vertex();
+        VH vh = TopologicalCellComplex::add_vertex();
         positions_.push_back(_pos);
         return vh;
     }
 
     void reserve_vertices(size_t _size) {
-        PolygonMeshTopologyKernel::reserve_vertices(_size);
+        TopologicalCellComplex::reserve_vertices(_size);
         positions_.reserve(_size);
     }
 
@@ -663,19 +877,19 @@ public:
     void laplacian_smoothing(int _smoothing_iters = 1, bool _skip_nonmanifold = true)
     {
         // Cache Vertex Manifoldness
-        VertexPropT<uint8_t> v_manifold(num_vertices(), false);
+        VertexPropT<uint8_t> v_manifold(num_allocated_vertices(), false);
         for (VH vh : vertices()) {
-            v_manifold[vh] = vertex_is_manifold(vh);
+            v_manifold[vh] = surface_vertex_is_manifold(vh);
         }
 
         for (int iter = 0; iter < _smoothing_iters; ++iter) {
-            PositionProp next_points(num_vertices());
+            PositionProp next_points(num_allocated_vertices());
             for (VH vh0 : vertices()) {
                 FT n(1);
                 next_points[vh0] = point(vh0);
                 if (_skip_nonmanifold && !v_manifold[vh0]) {continue;}
                 for (EH eh : vertex_edges(vh0)) {
-                    if (_skip_nonmanifold && !edge_is_manifold(eh)) {continue;}
+                    if (_skip_nonmanifold && !surface_edge_is_manifold(eh)) {continue;}
                     VH vh1 = (edges_[eh][0]==vh0)? edges_[eh][1] : edges_[eh][0];
                     if (_skip_nonmanifold && !v_manifold[vh1]) {continue;}
                     next_points[vh0] += point(vh1);
@@ -694,11 +908,11 @@ public:
 
     void triangulate_faces(const TriangulationStrategy _strat = TriangulationStrategy::BARY)
     {
-        PolygonMeshGeometryKernel tri_mesh;
-        tri_mesh.reserve_vertices(num_vertices());
-        tri_mesh.reserve_edges(num_edges());
-        tri_mesh.reserve_faces(num_faces());
-        for (const auto& p : points()) {
+        GeometricCellComplex tri_mesh;
+        tri_mesh.reserve_vertices(num_allocated_vertices());
+        tri_mesh.reserve_edges(num_allocated_edges());
+        tri_mesh.reserve_faces(num_allocated_faces());
+        for (const auto& p : positions_) {
             tri_mesh.add_vertex(p);
         }
         if (_strat == TriangulationStrategy::BARY)
@@ -761,10 +975,10 @@ protected:
 };
 
 template<typename Point>
-using PolygonMesh = PolygonMeshGeometryKernel<Point>;
+using PolyhedralMesh = GeometricCellComplex<Point>;
 
 template<vector Point>
-AABB<Point> aabb(const PolygonMesh<Point>& _mesh)
+AABB<Point> aabb(const PolyhedralMesh<Point>& _mesh)
 {
     AABB<Point> bbox;
     for (const auto& p : _mesh.points()) {
@@ -773,11 +987,11 @@ AABB<Point> aabb(const PolygonMesh<Point>& _mesh)
     return bbox;
 }
 
-struct PolygonMeshTags
-{
-    PolygonMeshTopologyKernel::VertexPropT<int> v_tags;
-    PolygonMeshTopologyKernel::EdgePropT<int> e_tags;
-    PolygonMeshTopologyKernel::FacePropT<int> f_tags;
-};
+// struct PolygonMeshTags
+// {
+//     TopologicalCellComplex::VertexPropT<int> v_tags;
+//     TopologicalCellComplex::EdgePropT<int> e_tags;
+//     TopologicalCellComplex::FacePropT<int> f_tags;
+// };
 
 }
