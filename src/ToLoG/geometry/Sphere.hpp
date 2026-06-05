@@ -16,16 +16,16 @@ public:
     Sphere(const P& _center, const FT& _radius) :
         center_(_center), radius_(_radius)
     {}
-    inline const P& center() const {
+    const P& center() const {
         return center_;
     }
-    inline const FT& radius() const {
+    const FT& radius() const {
         return radius_;
     }
-    inline FT squared_radius() const {
+    FT squared_radius() const {
         return radius_*radius_;
     }
-    inline bool operator==(const Sphere<P>& _s) const {
+    bool operator==(const Sphere<P>& _s) const {
         return center_ == _s.center_ && radius_ == _s.radius_;
     }
 private:

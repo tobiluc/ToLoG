@@ -1,6 +1,6 @@
 #pragma once
 #include <ToLoG/vector_concepts.hpp>
-#include <algorithm>
+#include <ostream>
 
 namespace ToLoG
 {
@@ -40,17 +40,17 @@ public:
             data_[i] = static_cast<FT>(_p[i]);
         }
     }
-    inline constexpr size_t size() const noexcept {
+    constexpr size_t size() const noexcept {
         return static_cast<size_t>(DIM);
     }
-    inline FT& operator[](const int& _i) {
+    FT& operator[](const int& _i) {
         return data_[_i];
     }
-    inline const FT& operator[](const int& _i) const {
+    const FT& operator[](const int& _i) const {
         return data_[_i];
     }
     template<typename P> requires(assignable<P>)
-    inline Point<FT,DIM> operator-(const P& _rhs) const {
+    Point<FT,DIM> operator-(const P& _rhs) const {
         Point<FT,DIM> res = *this;
         for (int i = 0; i < DIM; ++i) {
             res.data_[i] -= _rhs[i];
@@ -58,39 +58,39 @@ public:
         return res;
     }
     template<typename P> requires(assignable<P>)
-    inline Point<FT,DIM> operator+(const P& _rhs) const {
+    Point<FT,DIM> operator+(const P& _rhs) const {
         Point<FT,DIM> res = *this;
         for (int i = 0; i < DIM; ++i) {
             res.data_[i] += _rhs[i];
         }
         return res;
     }
-    inline Point<FT,DIM> operator*(const FT& _rhs) const {
+    Point<FT,DIM> operator*(const FT& _rhs) const {
         Point<FT,DIM> res = *this;
         for (int i = 0; i < DIM; ++i) {
             res.data_[i] *= _rhs;
         }
         return res;
     }
-    inline Point<FT,DIM> operator/(const FT& _rhs) const {
+    Point<FT,DIM> operator/(const FT& _rhs) const {
         Point<FT,DIM> res = *this;
         for (int i = 0; i < DIM; ++i) {
             res.data_[i] /= _rhs;
         }
         return res;
     }
-    inline const FT* data() const {
+    const FT* data() const {
         return data_;
     }
     template<typename P> requires(assignable<P>)
-    inline Point<FT,DIM>& operator=(const P& _rhs) {
+    Point<FT,DIM>& operator=(const P& _rhs) {
         for (int i = 0; i < DIM; ++i) {
             data_[i] = static_cast<FT>(_rhs[i]);
         }
         return *this;
     }
     template<typename P> requires(assignable<P>)
-    inline bool operator==(const P& _p) const {
+    bool operator==(const P& _p) const {
         for (int i = 0; i < DIM; ++i) {
             if (data_[i] != _p[i]) {
                 return false;
@@ -99,14 +99,14 @@ public:
         return true;
     }
     template<typename P> requires(assignable<P>)
-    inline bool operator<(const P& _rhs) const {
+    bool operator<(const P& _rhs) const {
         for (int i = 0; i < DIM; ++i) {
             if (data_[i] < _rhs[i]) {return true;}
             if (_rhs[i] < data_[i]) {return false;}
         }
         return false;
     }
-    friend inline std::ostream& operator<<(std::ostream& _os, const Point& _p) {
+    friend std::ostream& operator<<(std::ostream& _os, const Point& _p) {
         if constexpr(DIM == 0) {return _os;}
         for (int i = 0; i < DIM-1; ++i) {_os << _p[i] << " ";}
         return _os << _p[DIM-1];

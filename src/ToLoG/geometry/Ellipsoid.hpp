@@ -32,16 +32,16 @@ public:
         }
 #endif
     }
-    inline const P& center() const {
+    const P& center() const {
         return center_;
     }
-    inline const P& direction(int i) const {
+    const P& direction(int i) const {
         return directions_[i];
     }
-    inline FT radius(int i) const {
+    FT radius(int i) const {
         return radii_[i];
     }
-    inline bool operator==(const Ellipsoid<P>& _e) const {
+    bool operator==(const Ellipsoid<P>& _e) const {
         return center_ == _e.center_ && directions_ == _e.directions_
                && radii_ == _e.radii_;
     }

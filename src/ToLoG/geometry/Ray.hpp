@@ -9,9 +9,9 @@ class Ray
 {
 public:
     Ray(P _o, P _d) : o_(_o), d_(normalized(_d)) {}
-    inline const P& origin() const {return o_;}
-    inline const P& dir() const {return d_;}
-    inline P point(Traits<P>::value_type _t) const {return o_ + d_*_t;}
+    const P& origin() const {return o_;}
+    const P& dir() const {return d_;}
+    P point(Traits<P>::value_type _t) const {return o_ + d_*_t;}
 private:
     P o_;
     P d_;
