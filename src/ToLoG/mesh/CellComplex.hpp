@@ -386,6 +386,22 @@ public:
         }
     };
 
+    class CFIter : public IterT<CFIter, CH, FH>
+    {
+        friend class IterT<CFIter, CH, FH>;
+    public:
+        CFIter(const TopologicalCellComplex* _mesh, CH _ch) : IterT(_mesh, _ch) {
+            on_index_update();
+        }
+        int end_idx() const {
+            return mesh()->cells_[ref()].hfhs_.size();
+        }
+    protected:
+        void on_index_update() {
+            curr_ = mesh()->cells_[ref()].hfhs_[idx()].fh();
+        }
+    };
+
     class CVIter : public IterT<CVIter, CH, VH>
     {
         friend class IterT<CVIter, CH, VH>;
@@ -503,6 +519,13 @@ public:
         return {begin, end};
     }
 
+    IterRange<CFIter> cell_faces(CH _ch) const {
+        CFIter begin(this, _ch);
+        CFIter end(this, _ch);
+        end.set_end();
+        return {begin, end};
+    }
+
     IterRange<CVIter> cell_vertices(CH _ch) const {
         CVIter begin(this, _ch);
         CVIter end(this, _ch);
@@ -510,13 +533,21 @@ public:
         return {begin, end};
     }
 
-    void reserve_vertices(uint32_t _size);
+    void reserve_vertices(uint32_t _size) {
+        vertices_.reserve(_size);
+    }
 
-    void reserve_edges(uint32_t _size);
+    void reserve_edges(uint32_t _size) {
+        edges_.reserve(_size);
+    }
 
-    void reserve_faces(uint32_t _size);
+    void reserve_faces(uint32_t _size) {
+        faces_.reserve(_size);
+    }
 
-    void reserve_cells(uint32_t _size);
+    void reserve_cells(uint32_t _size) {
+        cells_.reserve(_size);
+    }
 
     constexpr bool is_deleted(VH _vh) const {
         return vertex_deleted_[_vh];
@@ -616,19 +647,35 @@ public:
 
     uint32_t vertex_num_face_components(VH _v0) const;
 
-    EH faces_shared_edge(FH _fi, FH _fj) const;
+    VH shared_vertex(EH _eh1, EH _eh2) const;
 
-    bool vertices_are_adjacent(VH _vh0, VH _vh1) const;
+    EH shared_edge(FH _fh1, FH _fh2) const;
 
-    bool faces_are_adjacent(FH _fi, FH _fj) const;
+    FH shared_face(CH _ch1, CH _ch2) const;
 
-    bool edge_contains_vertex(EH _eh, VH _vh) const;
+    bool are_adjacent(VH _vh1, VH _vh2) const;
 
-    bool face_contains_vertex(FH _fh, VH _vh) const;
+    bool are_adjacent(EH _eh1, EH _eh2) const;
 
-    bool face_contains_edge(FH _fh, EH _eh) const;
+    bool are_adjacent(FH _fh1, FH _fh2) const;
 
-    CH halfface_incident_cell(HFH _hfh) const;
+    bool are_adjacent(CH _ch1, CH _ch2) const;
+
+    bool are_incident(VH _vh, EH _eh) const;
+
+    bool are_incident(VH _vh, FH _fh) const;
+
+    bool are_incident(VH _vh, CH _ch) const;
+
+    bool are_incident(EH _eh, FH _fh) const;
+
+    bool are_incident(EH _eh, CH _ch) const;
+
+    bool are_incident(FH _fh, CH _ch) const;
+
+    constexpr CH incident_cell(HFH _hfh) const {
+        return faces_[_hfh.fh()].chs_[_hfh.subidx()];
+    }
 
     constexpr size_t num_allocated_vertices() const {
         return vertices_.size();
@@ -702,27 +749,23 @@ public:
         return num_allocated_cells() - num_deleted_cells();
     }
 
-    size_t vertex_valence(VH _vh) const {
-        size_t valence(0);
-        for (HEH heh : vertex_out_halfedges(_vh)) {++valence;}
-        return valence;
+    constexpr size_t vertex_valence(VH _vh) const {
+        return vertices_[_vh].out_hehs_.size();
     }
 
-    size_t edge_valence(EH _eh) const {
-        size_t valence(0);
-        for (FH fh : edge_faces(_eh)) {++valence;}
-        return valence;
+    constexpr size_t edge_valence(EH _eh) const {
+        return edges_[_eh].incident_hfhs_.size();
     }
 
-    size_t edge_valence(HEH _heh) const {
+    constexpr size_t edge_valence(HEH _heh) const {
         return edge_valence(_heh.eh());
     }
 
-    size_t face_valence(FH _fh) const {
+    constexpr size_t face_valence(FH _fh) const {
         return faces_[_fh].hehs_.size();
     }
 
-    size_t face_valence(HFH _hfh) const {
+    constexpr size_t face_valence(HFH _hfh) const {
         return face_valence(_hfh.fh());
     }
 

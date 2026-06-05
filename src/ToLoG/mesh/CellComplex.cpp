@@ -11,26 +11,6 @@ using FH = TopologicalCellComplex::FH;
 using HFH = TopologicalCellComplex::HFH;
 using CH = TopologicalCellComplex::CH;
 
-void TopologicalCellComplex::reserve_vertices(uint32_t _size)
-{
-    vertices_.reserve(_size);
-}
-
-void TopologicalCellComplex::reserve_edges(uint32_t _size)
-{
-    edges_.reserve(_size);
-}
-
-void TopologicalCellComplex::reserve_faces(uint32_t _size)
-{
-    faces_.reserve(_size);
-}
-
-void TopologicalCellComplex::reserve_cells(uint32_t _size)
-{
-    cells_.reserve(_size);
-}
-
 VH TopologicalCellComplex::add_vertex()
 {
     VH vh;
@@ -149,7 +129,7 @@ CH TopologicalCellComplex::add_cell(const std::vector<HFH>& _hfhs)
         assert(is_deleted(ch));
     }
     for (HFH hfh : _hfhs) {
-        if (halfface_incident_cell(hfh).is_valid()) {
+        if (incident_cell(hfh).is_valid()) {
             throw std::runtime_error("halfface already has an incident cell");
         }
         faces_[hfh.fh()].chs_[hfh.subidx()] = ch;
@@ -283,41 +263,91 @@ FH TopologicalCellComplex::find_face(const std::vector<VH>& _vhs) const
     return hfh.is_valid()? hfh.fh() : FH();
 }
 
-EH TopologicalCellComplex::faces_shared_edge(FH fi, FH fj) const
+VH TopologicalCellComplex::shared_vertex(EH _eh1, EH _eh2) const
 {
-    for (EH eh1 : face_edges(fi)) {
-        for (EH eh2 : face_edges(fj)) {
-            if (eh1 == eh2) {return eh1;}
+    for (VH vh1 : edges_[_eh1].vhs_) {
+        for (VH vh2 : edges_[_eh2].vhs_) {
+            if (vh1 == vh2) {
+                return vh1;
+            }
+        }
+    }
+    return VH();
+}
+
+EH TopologicalCellComplex::shared_edge(FH _fh1, FH _fh2) const
+{
+    for (EH eh1 : face_edges(_fh1)) {
+        for (EH eh2 : face_edges(_fh2)) {
+            if (eh1 == eh2) {
+                return eh1;
+            }
         }
     }
     return EH();
 };
 
-bool TopologicalCellComplex::vertices_are_adjacent(VH _vh0, VH _vh1) const
+FH TopologicalCellComplex::shared_face(CH _ch1, CH _ch2) const
+{
+    for (FH fh1 : cell_faces(_ch1)) {
+        for (FH fh2 : cell_faces(_ch2)) {
+            if (fh1 == fh2) {
+                return fh1;
+            }
+        }
+    }
+    return FH();
+}
+
+bool TopologicalCellComplex::are_adjacent(VH _vh0, VH _vh1) const
 {
     return find_edge(_vh0, _vh1).is_valid();
 }
 
-bool TopologicalCellComplex::faces_are_adjacent(FH _fi, FH _fj) const
+bool TopologicalCellComplex::are_adjacent(EH _eh1, EH _eh2) const
 {
-    return faces_shared_edge(_fi, _fj).is_valid();
+    return shared_vertex(_eh1, _eh2).is_valid();
 }
 
-bool TopologicalCellComplex::edge_contains_vertex(EH _eh, VH _vh) const
+bool TopologicalCellComplex::are_adjacent(FH _fh1, FH _fh2) const
+{
+    return shared_edge(_fh1, _fh2).is_valid();
+}
+
+bool TopologicalCellComplex::are_adjacent(CH _ch1, CH _ch2) const
+{
+    return shared_face(_ch1, _ch2).is_valid();
+}
+
+bool TopologicalCellComplex::are_incident(VH _vh, EH _eh) const
 {
     HEH heh = _eh.heh(0);
     return vh0(heh) == _vh || vh1(heh) == _vh;
 }
 
-bool TopologicalCellComplex::face_contains_vertex(FH _fh, VH _vh) const
+bool TopologicalCellComplex::are_incident(VH _vh, FH _fh) const
 {
     for (VH vj : face_vertices(_fh)) {
-        if (vj == _vh) {return true;}
+        if (vj == _vh) {
+            return true;
+        }
     }
     return false;
 }
 
-bool TopologicalCellComplex::face_contains_edge(FH _fh, EH _eh) const
+bool TopologicalCellComplex::are_incident(VH _vh, CH _ch) const
+{
+    for (HFH hfh : cell_halffaces(_ch)) {
+        for (VH vh : halfface_vertices(hfh)) {
+            if (vh == _vh) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool TopologicalCellComplex::are_incident(EH _eh, FH _fh) const
 {
     for (EH eh : face_edges(_fh)) {
         if (eh == _eh) {return true;}
@@ -325,9 +355,21 @@ bool TopologicalCellComplex::face_contains_edge(FH _fh, EH _eh) const
     return false;
 }
 
-CH TopologicalCellComplex::halfface_incident_cell(HFH _hfh) const
+bool TopologicalCellComplex::are_incident(EH _eh, CH _ch) const
 {
-    return faces_[_hfh.fh()].chs_[_hfh.subidx()];
+    for (FH fh : edge_faces(_eh)) {
+        if (incident_cell(fh.hfh(0)) == _ch
+            || incident_cell(fh.hfh(1)) == _ch) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool TopologicalCellComplex::are_incident(FH _fh, CH _ch) const
+{
+    return (incident_cell(_fh.hfh(0)) == _ch
+            || incident_cell(_fh.hfh(1)) == _ch);
 }
 
 uint32_t TopologicalCellComplex::vertex_num_face_components(VH _vi) const
@@ -351,7 +393,7 @@ uint32_t TopologicalCellComplex::vertex_num_face_components(VH _vi) const
             for (uint32_t j = 0; j < v_faces.size(); ++j) {
                 if (j != i &&
                     !visited[j] &&
-                    faces_are_adjacent(v_faces[i], v_faces[j]))
+                    are_adjacent(v_faces[i], v_faces[j]))
                 {
                     q.push(j);
                 }
