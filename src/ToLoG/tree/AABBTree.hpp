@@ -206,11 +206,6 @@ public:
         return res;
     }
 
-    // uint32_t nearest_neighbor(const Point& _q) const
-    // {
-    //     return k_nearest_neighbors(_q, 1).at(0);
-    // }
-
     void radius_search(const Point& _q,
                     const FT _radius,
                 std::vector<uint32_t>& _res) const

@@ -17,24 +17,6 @@ struct Traits<OpenVolumeMesh::VectorT<FT,DIM>>
     constexpr static int dim = DIM;
 };
 
-template<typename P>
-struct Traits<OpenVolumeMesh::GeometryKernel<P, OpenVolumeMesh::TopologyKernel>>
-{
-    using vector_type = P;
-    using vertex_index = OpenVolumeMesh::VH;
-    using face_index = OpenVolumeMesh::FH;
-    using cell_index = OpenVolumeMesh::CH;
-};
-
-template<typename P>
-struct Traits<OpenVolumeMesh::TetrahedralGeometryKernel<P, OpenVolumeMesh::TetrahedralMeshTopologyKernel>>
-{
-    using vector_type = P;
-    using vertex_index = OpenVolumeMesh::VH;
-    using face_index = OpenVolumeMesh::FH;
-    using cell_index = OpenVolumeMesh::CH;
-};
-
 class OVMTetTopology : public TetTopologyT<
     OpenVolumeMesh::VertexHandle,
     OpenVolumeMesh::HalfEdgeHandle,
@@ -76,15 +58,6 @@ public:
         }
         c_ = _ch;
     }
-
-    // template<typename P>
-    // static OpenVolumeMesh::CellPropertyT<OVMTetTopology> create_property(const TetMesh<P>& _mesh) {
-    //     auto prop = _mesh.template create_private_cell_property<OVMTetTopology>("", OVMTetTopology());
-    //     for (auto c_it = _mesh.c_iter(); c_it.is_valid(); ++c_it) {
-    //         prop[*c_it] = OVMTetTopology(_mesh, *c_it);
-    //     }
-    //     return prop;
-    // }
 };
 
 }
