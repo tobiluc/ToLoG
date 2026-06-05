@@ -9,6 +9,7 @@
 #include <vector>
 #include <fstream>
 #include <ToLoG/geometry/AABB.hpp>
+#include <queue>
 
 namespace ToLoG
 {
@@ -29,10 +30,10 @@ public:
         [[nodiscard]] constexpr uint32_t idx() const {return idx_;}
         void invalidate() {idx_ = invalid;}
         [[nodiscard]] constexpr bool operator==(const BaseHandle& _h) const {return idx_ == _h.idx_;}
-        [[nodiscard]] constexpr bool operator<(int _i) const {return idx_ < _i;}
-        [[nodiscard]] constexpr bool operator>(int _i) const {return idx_ > _i;}
-        [[nodiscard]] constexpr bool operator<=(int _i) const {return idx_ <= _i;}
-        [[nodiscard]] constexpr bool operator>=(int _i) const {return idx_ >= _i;}
+        [[nodiscard]] constexpr bool operator<(const BaseHandle& _h) const {return idx_ < _h.idx_;}
+        [[nodiscard]] constexpr bool operator>(const BaseHandle& _h) const {return idx_ > _h.idx_;}
+        [[nodiscard]] constexpr bool operator<=(const BaseHandle& _h) const {return idx_ <= _h.idx_;}
+        [[nodiscard]] constexpr bool operator>=(const BaseHandle& _h) const {return idx_ >= _h.idx_;}
         friend std::ostream& operator<<(std::ostream& _os, const BaseHandle& _h) {
             return _os << _h.idx();
         }
@@ -105,9 +106,10 @@ public:
     public:
         PropT() {}
         PropT(uint32_t _size, const T& _def = T()) : data_(_size, _def) {}
-        void push_back(const T& _val) {data_.push_back(_val);}
+        void push_back(const T& _val = T()) {data_.push_back(_val);}
         void push_back(T&& _val) {data_.push_back(_val);}
         void reserve(uint32_t _size) {data_.reserve(_size);}
+        void resize(uint32_t _size) {data_.resize(_size);}
         T& operator[](H _h) {return data_[_h.idx()];}
         const T& operator[](H _h) const {return data_.at(_h.idx());}
         constexpr size_t size() const {return data_.size();}
@@ -517,19 +519,19 @@ public:
     void reserve_cells(uint32_t _size);
 
     constexpr bool is_deleted(VH _vh) const {
-        return vertices_[_vh].deleted_;
+        return vertex_deleted_[_vh];
     }
 
     constexpr bool is_deleted(EH _eh) const {
-        return edges_[_eh].deleted_;
+        return edge_deleted_[_eh];
     }
 
     constexpr bool is_deleted(FH _fh) const {
-        return faces_[_fh].deleted_;
+        return face_deleted_[_fh];
     }
 
     constexpr bool is_deleted(CH _ch) const {
-        return cells_[_ch].deleted_;
+        return cell_deleted_[_ch];
     }
 
     auto vertices() const
@@ -653,27 +655,27 @@ public:
     }
 
     constexpr size_t num_deleted_vertices() const {
-        return n_deleted_vertices_;
+        return deleted_vertices_.size();
     }
 
     constexpr size_t num_deleted_edges() const {
-        return n_deleted_edges_;
+        return deleted_edges_.size();
     }
 
     constexpr size_t num_deleted_halfedges() const {
-        return n_deleted_edges_*2;
+        return num_deleted_edges()*2;
     }
 
     constexpr size_t num_deleted_faces() const {
-        return n_deleted_faces_;
+        return deleted_faces_.size();
     }
 
     constexpr size_t num_deleted_halffaces() const {
-        return n_deleted_faces_*2;
+        return num_deleted_faces()*2;
     }
 
     constexpr size_t num_deleted_cells() const {
-        return n_deleted_cells_;
+        return deleted_cells_.size();
     }
 
     constexpr size_t num_active_vertices() const {
@@ -773,22 +775,22 @@ public:
     }
 
     constexpr bool is_active(VH _vh) const {
-        return _vh.is_valid() && _vh < vertices_.size()
+        return _vh.is_valid() && _vh.idx() < vertices_.size()
                && !is_deleted(_vh);
     }
 
     constexpr bool is_active(EH _eh) const {
-        return _eh.is_valid() && _eh < edges_.size()
+        return _eh.is_valid() && _eh.idx() < edges_.size()
         && !is_deleted(_eh);
     }
 
     constexpr bool is_active(FH _fh) const {
-        return _fh.is_valid() && _fh < faces_.size()
+        return _fh.is_valid() && _fh.idx() < faces_.size()
         && !is_deleted(_fh);
     }
 
     constexpr bool is_active(CH _ch) const {
-        return _ch.is_valid() && _ch < cells_.size()
+        return _ch.is_valid() && _ch.idx() < cells_.size()
         && !is_deleted(_ch);
     }
 
@@ -796,34 +798,36 @@ protected:
     struct Vertex
     {
         std::vector<HEH> out_hehs_ = {};
-        bool deleted_ = false;
     };
     struct Edge
     {
         std::array<VH,2> vhs_ = {VH(), VH()};
         std::vector<HFH> incident_hfhs_ = {};
-        bool deleted_ = false;
     };
     struct Face
     {
         std::vector<HEH> hehs_ = {};
         std::array<CH,2> chs_ = {CH(), CH()};
-        bool deleted_ = false;
     };
     struct Cell
     {
         std::vector<HFH> hfhs_ = {};
-        bool deleted_ = false;
     };
 
     VertexPropT<Vertex> vertices_;
     EdgePropT<Edge> edges_;
     FacePropT<Face> faces_;
     CellPropT<Cell> cells_;
-    size_t n_deleted_vertices_ = 0;
-    size_t n_deleted_edges_ = 0;
-    size_t n_deleted_faces_ = 0;
-    size_t n_deleted_cells_ = 0;
+    VertexPropT<uint8_t> vertex_deleted_;
+    EdgePropT<uint8_t> edge_deleted_;
+    FacePropT<uint8_t> face_deleted_;
+    CellPropT<uint8_t> cell_deleted_;
+    std::queue<VH> deleted_vertices_;
+    std::queue<EH> deleted_edges_;
+    std::queue<FH> deleted_faces_;
+    std::queue<CH> deleted_cells_;
+
+    void collect_garbage();
 };
 
 template<vector Point>
@@ -838,7 +842,8 @@ public:
 
     VH add_vertex(const Point& _pos) {
         VH vh = TopologicalCellComplex::add_vertex();
-        positions_.push_back(_pos);
+        positions_.resize(num_allocated_vertices());
+        positions_[vh] = _pos;
         return vh;
     }
 

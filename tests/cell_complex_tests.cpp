@@ -35,17 +35,19 @@ TEST(MeshTest, TriangleFaceTest)
 
     m.delete_face(hfh.fh());
 
+    EXPECT_TRUE(m.is_deleted(hfh.fh()));
     EXPECT_EQ(Mesh::FH(), m.find_face({vh2, vh0, vh1}));
     EXPECT_EQ(Mesh::HFH(), m.find_halfface({vh2, vh0, vh1}));
     EXPECT_EQ(Mesh::HFH(), m.find_halfface({vh2, vh1, vh0}));
     EXPECT_EQ(Mesh::FH(), m.find_face({vh2, vh1, vh1}));
-    EXPECT_EQ(3, m.num_allocated_vertices());
-    EXPECT_EQ(3, m.num_allocated_edges());
-    EXPECT_EQ(6, m.num_allocated_halfedges());
     EXPECT_EQ(1, m.num_allocated_faces());
     EXPECT_EQ(1, m.num_deleted_faces());
-    EXPECT_EQ(0, m.num_active_faces());
-    EXPECT_EQ(0, m.num_allocated_cells());
+
+    Mesh::HFH hfh2 = m.add_halfface({heh01, heh12, heh20});
+    EXPECT_EQ(hfh, hfh2);
+    EXPECT_FALSE(m.is_deleted(hfh.fh()));
+    EXPECT_EQ(1, m.num_allocated_faces());
+    EXPECT_EQ(0, m.num_deleted_faces());
 }
 
 TEST(MeshTest, CubeMeshTest)

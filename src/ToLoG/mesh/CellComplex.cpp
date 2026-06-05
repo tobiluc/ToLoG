@@ -33,9 +33,18 @@ void TopologicalCellComplex::reserve_cells(uint32_t _size)
 
 VH TopologicalCellComplex::add_vertex()
 {
-    VH vh(num_allocated_vertices());
-    Vertex v;
-    vertices_.push_back(std::move(v));
+    VH vh;
+    if (deleted_vertices_.empty()) {
+        vh = VH(num_allocated_vertices());
+        vertices_.push_back();
+        vertex_deleted_.push_back();
+    } else {
+        vh = deleted_vertices_.front();
+        deleted_vertices_.pop();
+        assert(is_deleted(vh));
+    }
+    vertices_[vh].out_hehs_.clear();
+    vertex_deleted_[vh] = false;
     return vh;
 }
 
@@ -46,10 +55,19 @@ HEH TopologicalCellComplex::add_halfedge(VH _vh0, VH _vh1)
     if (!is_active(_vh0) || !is_active(_vh1)) {
         throw std::runtime_error("vertex for edge does not exist!");
     }
-    heh = HEH(num_allocated_halfedges());
-    Edge e;
-    e.vhs_ = {_vh0, _vh1};
-    edges_.push_back(std::move(e));
+    if (deleted_edges_.empty()) {
+        heh = HEH(num_allocated_halfedges());
+        edges_.push_back();
+        edge_deleted_.push_back();
+    } else {
+        heh = deleted_edges_.front().heh(0);
+        deleted_edges_.pop();
+        assert(is_deleted(heh.eh()));
+    }
+    EH eh = heh.eh();
+    edges_[eh].incident_hfhs_.clear();
+    edge_deleted_[eh] = false;
+    edges_[eh].vhs_ = {_vh0, _vh1};
     vertices_[_vh0].out_hehs_.push_back(heh);
     vertices_[_vh1].out_hehs_.push_back(heh.opp());
     return heh;
@@ -74,8 +92,18 @@ HFH TopologicalCellComplex::add_halfface(const std::vector<HEH>& _hehs)
         }
     }
 
-    FH fh(num_allocated_faces());
-    HFH hfh = fh.hfh(0);
+    HFH hfh;
+    if (deleted_faces_.empty()) {
+        hfh = HFH(num_allocated_halffaces());
+        faces_.push_back();
+        face_deleted_.push_back();
+    } else {
+        hfh = deleted_faces_.front().hfh(0);
+        deleted_faces_.pop();
+        assert(is_deleted(hfh.fh()));
+    }
+
+    FH fh = hfh.fh();
     for (HEH heh : _hehs) {
         if (heh.subidx() == 0) {
             edges_[heh.eh()].incident_hfhs_.push_back(hfh);
@@ -83,9 +111,9 @@ HFH TopologicalCellComplex::add_halfface(const std::vector<HEH>& _hehs)
             edges_[heh.eh()].incident_hfhs_.push_back(hfh.opp());
         }
     }
-    Face f;
-    f.hehs_ = _hehs;
-    faces_.push_back(std::move(f));
+    faces_[fh].chs_ = {CH(), CH()};
+    face_deleted_[fh] = false;
+    faces_[fh].hehs_ = _hehs;
     return hfh;
 }
 
@@ -110,16 +138,24 @@ FH TopologicalCellComplex::add_face(const std::vector<VH>& _vhs)
 
 CH TopologicalCellComplex::add_cell(const std::vector<HFH>& _hfhs)
 {
-    CH ch(num_allocated_cells());
+    CH ch;
+    if (deleted_cells_.empty()) {
+        ch = CH(num_allocated_cells());
+        cells_.push_back();
+        cell_deleted_.push_back();
+    } else {
+        ch = deleted_cells_.front();
+        deleted_cells_.pop();
+        assert(is_deleted(ch));
+    }
     for (HFH hfh : _hfhs) {
         if (halfface_incident_cell(hfh).is_valid()) {
             throw std::runtime_error("halfface already has an incident cell");
         }
         faces_[hfh.fh()].chs_[hfh.subidx()] = ch;
     }
-    Cell c;
-    c.hfhs_ = _hfhs;
-    cells_.push_back(std::move(c));
+    cell_deleted_[ch] = false;
+    cells_[ch].hfhs_ = _hfhs;
     return ch;
 }
 
@@ -131,9 +167,9 @@ void TopologicalCellComplex::delete_vertex(VH _vh)
     for (EH eh : vertex_edges(_vh)) {
         delete_edge(eh);
     }
-    vertices_[_vh].deleted_ = true;
+    vertex_deleted_[_vh] = true;
     vertices_[_vh].out_hehs_.clear();
-    ++n_deleted_vertices_;
+    deleted_vertices_.push(_vh);
 }
 
 void TopologicalCellComplex::delete_edge(EH _eh)
@@ -154,9 +190,9 @@ void TopologicalCellComplex::delete_edge(EH _eh)
                         heh), vertices_[vh0(heh)].out_hehs_.end());
     }
 
-    edges_[_eh].deleted_ = true;
+    edge_deleted_[_eh] = true;
     edges_[_eh].incident_hfhs_.clear();
-    ++n_deleted_edges_;
+    deleted_edges_.push(_eh);
 }
 
 void TopologicalCellComplex::delete_face(FH _fh)
@@ -180,9 +216,9 @@ void TopologicalCellComplex::delete_face(FH _fh)
         }
     }
 
-    faces_[_fh].deleted_ = true;
+    face_deleted_[_fh] = true;
     faces_[_fh].hehs_.clear();
-    ++n_deleted_faces_;
+    deleted_faces_.push(_fh);
 }
 
 void TopologicalCellComplex::delete_cell(CH _ch)
@@ -198,9 +234,9 @@ void TopologicalCellComplex::delete_cell(CH _ch)
         }
     }
 
-    cells_[_ch].deleted_ = true;
+    cell_deleted_[_ch] = true;
     cells_[_ch].hfhs_.clear();
-    ++n_deleted_cells_;
+    deleted_cells_.push(_ch);
 }
 
 HEH TopologicalCellComplex::find_halfedge(VH _vh0, VH _vh1) const
@@ -339,6 +375,15 @@ bool TopologicalCellComplex::surface_mesh_is_manifold() const
         }
     }
     return true;
+}
+
+void TopologicalCellComplex::collect_garbage()
+{
+    //TODO
+    // VertexPropT<uint32_t> vh_idx(num_allocated_vertices());
+    // EdgePropT<uint32_t> eh_idx(num_allocated_edges());
+    // FacePropT<uint32_t> fh_idx(num_allocated_faces());
+    // CellPropT<uint32_t> ch_idx(num_allocated_cells());
 }
 
 }
