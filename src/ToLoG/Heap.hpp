@@ -14,20 +14,20 @@ private:
     size_t size_ = 0;
     Cmp cmp;
 
-    static inline constexpr size_t parent(size_t idx) {
+    static constexpr size_t parent(size_t idx) {
         return (idx-1) / 2;
     }
 
-    static inline constexpr size_t left_child(size_t idx) {
+    static constexpr size_t left_child(size_t idx) {
         return (idx<<1) + 1;
     }
 
-    static inline constexpr size_t right_child(size_t idx) {
+    static constexpr size_t right_child(size_t idx) {
         return (idx<<1) + 2;
     }
 
     // TODO: This is way too slow!!!
-    inline void heapify(size_t idx)
+    void heapify(size_t idx)
     {
         T tmp = std::move(elements_[idx]);
         size_t n = size();
@@ -56,11 +56,11 @@ public:
         elements_.reserve(_capacity);
     }
 
-    inline size_t size() const {
+    size_t size() const {
         return size_;
     }
 
-    inline bool empty() const {
+    bool empty() const {
         return size_ == 0;
     }
 
@@ -76,7 +76,7 @@ public:
         heapify(0);
     }
 
-    inline void insert(const T& _key)
+    void insert(const T& _key)
     {
         size_t idx = size();
         if (idx < elements_.size()) {elements_[idx] = _key;}

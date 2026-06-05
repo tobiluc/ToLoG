@@ -15,19 +15,19 @@ public:
 
     KeyValueVector() {}
 
-    inline void reserve(size_t _size) {
+    void reserve(size_t _size) {
         keyvalues_.reserve(_size);
     }
 
-    inline size_t size() const {
+    size_t size() const {
         return keyvalues_.size();
     }
 
-    inline bool empty() const {
+    bool empty() const {
         return keyvalues_.empty();
     }
 
-    inline void clear() {
+    void clear() {
         keyvalues_.clear();
     }
 
@@ -36,7 +36,7 @@ public:
     auto begin() const {return keyvalues_.begin();}
     auto end() const {return keyvalues_.end();}
 
-    inline const V& at(const K& _key) const {
+    const V& at(const K& _key) const {
         for (const auto& kv : keyvalues_) {
             if (kv.first == _key) {
                 return kv.second;
@@ -45,27 +45,27 @@ public:
         throw std::runtime_error("Key not found");
     }
 
-    inline const std::pair<K,V>& at_index(const int& _i) const {
+    const std::pair<K,V>& at_index(const int& _i) const {
         return keyvalues_[_i];
     }
 
-    inline std::pair<K,V>& at_index(const int& _i) {
+    std::pair<K,V>& at_index(const int& _i) {
         return keyvalues_[_i];
     }
 
-    inline const K& key_at_index(const int& _i) const {
+    const K& key_at_index(const int& _i) const {
         return keyvalues_[_i].first;
     }
 
-    inline const V& value_at_index(const int& _i) const {
+    const V& value_at_index(const int& _i) const {
         return keyvalues_[_i].second;
     }
 
-    inline const V& operator[](const K& _key) const {
+    const V& operator[](const K& _key) const {
         return at(_key);
     }
 
-    inline V& operator[](const K& _key) {
+    V& operator[](const K& _key) {
         for (auto& kv : keyvalues_) {
             if (kv.first == _key) {
                 return kv.second;
@@ -75,7 +75,7 @@ public:
         return keyvalues_.back().second;
     }
 
-    inline void set(const K& _key, const V& _value) {
+    void set(const K& _key, const V& _value) {
         this->operator[](_key) = _value;
     }
 

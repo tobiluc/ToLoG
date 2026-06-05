@@ -14,7 +14,7 @@ public:
     }
 
     /// Returns the node representing the connected component in which x lies
-    inline uint32_t root(uint32_t x) {
+    uint32_t root(uint32_t x) {
         uint32_t r = x;
         while (r != parent_[r]) {r = parent_[r];} // Wander to root
         while (x != r) { // Compress paths
@@ -26,7 +26,7 @@ public:
     }
 
     /// Merge two Sets
-    inline void unite(uint32_t a, uint32_t b) {
+    void unite(uint32_t a, uint32_t b) {
         a = root(a);
         b = root(b);
         if (a == b) {return;}
@@ -37,17 +37,17 @@ public:
     }
 
     /// Returns the immediate parent of a node
-    inline uint32_t parent(uint32_t v) const {
+    uint32_t parent(uint32_t v) const {
         return parent_[v];
     }
 
     /// Returns the size of the connected component of a node
-    inline uint32_t size(uint32_t v) {
+    uint32_t size(uint32_t v) {
         return size_[root(v)];
     }
 
     /// Fills a list with all connected components
-    inline void connected_components(
+    void connected_components(
         std::vector<std::vector<uint32_t>>& _p
         ) {
         _p.clear();
@@ -63,7 +63,7 @@ public:
         }
     }
 
-    inline size_t n_connected_components() {
+    size_t n_connected_components() {
         std::vector<std::vector<uint32_t>> dummy;
         connected_components(dummy);
         return dummy.size();

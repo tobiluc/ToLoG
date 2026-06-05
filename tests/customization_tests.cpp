@@ -10,7 +10,6 @@
  * == operator
  * +, -, *, /
  * Traits
- * is_vector_type
  */
 
 struct CustomVec3d

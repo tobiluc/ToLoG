@@ -1,5 +1,4 @@
 #include "ToLoG/tree/AABBTree.hpp"
-#include "ToLoG/tree/octree_to_polygon_mesh.hpp"
 #include <filesystem>
 #include <gtest/gtest.h>
 #include <ToLoG/tree/Octree.hpp>

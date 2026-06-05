@@ -20,9 +20,7 @@ private:
 template<typename Point>
 struct Traits<Ray<Point>>
 {
-    using value_type = Traits<Point>::value_type;
     using vector_type = Point;
-    constexpr static int dim = Traits<Point>::dim;
 };
 
 }
