@@ -859,11 +859,11 @@ public:
         return vertices() | to_point;
     }
 
-    Point edge_barycenter(EH _eh) const {
+    Point barycenter(EH _eh) const {
         return (point(vh0(_eh)) + point(vh1(_eh)))*FT(0.5);
     }
 
-    Point face_barycenter(FH _fh) const
+    Point barycenter(FH _fh) const
     {
         Point bary = filled<Point>(0);
         FT valence(0);
@@ -918,7 +918,7 @@ public:
         if (_strat == TriangulationStrategy::BARY)
         {
             for (FH fh : faces()) {
-                VH v0 = tri_mesh.add_vertex(face_barycenter(fh));
+                VH v0 = tri_mesh.add_vertex(barycenter(fh));
                 const auto& f = face_vertices(fh);
                 for (int i = 0; i < f.size(); ++i) {
                     tri_mesh.add_face({

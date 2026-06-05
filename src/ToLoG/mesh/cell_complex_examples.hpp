@@ -1,5 +1,6 @@
 #pragma once
-#include <ToLoG/mesh/PolygonMesh.hpp>
+#include <ToLoG/utils/indices.hpp>
+#include <ToLoG/mesh/CellComplex.hpp>
 
 namespace ToLoG
 {
@@ -63,31 +64,29 @@ namespace ToLoG
 //     return m;
 // }
 
-// template<polygon_mesh_3 M,
-//     typename FT = typename Traits<typename Traits<M>::vector_type>::value_type>
-// M cube(FT _size=1)
-// {
-//     using P = typename Traits<M>::vector_type;
-//     using vertex_index = typename Traits<M>::vertex_index;
-//     using Face = std::vector<vertex_index>;
-
-//     M m;
-
-//     FT V = _size/static_cast<FT>(2);
-//     std::array<vertex_index,8> vs = {
-//         m.add_vertex(P(-V,-V,-V)),
-//         m.add_vertex(P(-V,-V,+V)),
-//         m.add_vertex(P(-V,+V,-V)),
-//         m.add_vertex(P(-V,+V,+V)),
-//         m.add_vertex(P(+V,-V,-V)),
-//         m.add_vertex(P(+V,-V,+V)),
-//         m.add_vertex(P(+V,+V,-V)),
-//         m.add_vertex(P(+V,+V,+V))
-//     };
-//     for (const auto& f : cube_vertex_indices) {
-//         m.add_face(Face{vs[f[0]],vs[f[1]],vs[f[2]],vs[f[3]]});
-//     }
-//     return m;
-// }
+template<vector P,
+    typename FT = typename Traits<P>::value_type>
+PolyhedralMesh<P> create_cube(FT _size=1)
+{
+    PolyhedralMesh<P> cube;
+    FT V = _size/static_cast<FT>(2);
+    std::array<typename PolyhedralMesh<P>::VH,8> vhs = {
+        cube.add_vertex(P(-V,-V,-V)),
+        cube.add_vertex(P(-V,-V,+V)),
+        cube.add_vertex(P(-V,+V,-V)),
+        cube.add_vertex(P(-V,+V,+V)),
+        cube.add_vertex(P(+V,-V,-V)),
+        cube.add_vertex(P(+V,-V,+V)),
+        cube.add_vertex(P(+V,+V,-V)),
+        cube.add_vertex(P(+V,+V,+V))
+    };
+    std::vector<typename PolyhedralMesh<P>::HFH> hfhs;
+    for (int i = 0; i < 6; ++i) {
+        const auto& f = cube_vertex_indices[i];
+        hfhs.push_back(cube.add_halfface({vhs[f[0]],vhs[f[1]],vhs[f[2]],vhs[f[3]]}));
+    }
+    cube.add_cell(hfhs);
+    return cube;
+}
 
 }

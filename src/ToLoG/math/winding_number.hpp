@@ -5,7 +5,7 @@
 namespace ToLoG
 {
 
-template<typename P> requires(Traits<P>::dim == 2)
+template<vector_of_dim<2> P>
 inline typename Traits<P>::value_type
 winding_number(const P& _p, const Segment<P>& _seg)
 {
@@ -23,7 +23,7 @@ winding_number(const P& _p, const Segment<P>& _seg)
     return angle / (FT(2)*pi);
 }
 
-template<typename P> requires(Traits<P>::dim==3)
+template<vector_of_dim<3> P>
 inline typename Traits<P>::value_type winding_number(const P& _p, const Triangle<P>& _tri)
 {
     using FT = typename Traits<P>::value_type;
