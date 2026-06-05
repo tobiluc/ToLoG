@@ -357,19 +357,29 @@ public:
         return std::nullopt;
     }
 
-    inline constexpr size_t n_nodes() const {
+    constexpr size_t n_nodes() const {
         return nodes_.size();
     }
 
-    inline constexpr size_t n_primitives() const {
+    constexpr size_t n_leaf_nodes() const {
+        size_t count(0);
+        for (uint32_t node_i = 0; node_i < n_nodes(); ++node_i) {
+            if (is_leaf_node(node_i)) {
+                ++count;
+            }
+        }
+        return count;
+    }
+
+    constexpr size_t n_primitives() const {
         return primitives_.size();
     }
 
-    inline const AABB& node_aabb(uint32_t _node_i) const {
+    const AABB& node_aabb(uint32_t _node_i) const {
         return nodes_[_node_i].aabb;
     }
 
-    inline constexpr bool is_leaf_node(uint32_t _node_idx) const {
+    constexpr bool is_leaf_node(uint32_t _node_idx) const {
         return nodes_[_node_idx].left == UINT32_MAX;
     }
 
@@ -377,7 +387,7 @@ public:
         return primitives_[_prim_idx];
     }
 
-    inline constexpr size_t leaf_size() const {
+    constexpr size_t leaf_size() const {
         return leaf_size_;
     }
 
