@@ -118,6 +118,9 @@ FH TopologicalCellComplex::add_face(const std::vector<VH>& _vhs)
 
 CH TopologicalCellComplex::add_cell(const std::vector<HFH>& _hfhs)
 {
+    if (_hfhs.size() < 2) {
+        throw std::runtime_error("cell needs to have at least two halffaces");
+    }
     CH ch;
     if (deleted_cells_.empty()) {
         ch = CH(num_allocated_cells());

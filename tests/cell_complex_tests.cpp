@@ -60,6 +60,12 @@ TEST(MeshTest, CubeMeshTest)
     }
     EXPECT_EQ(8, vhs.size());
 
+    std::vector<Mesh::CH> chs2;
+    for (Mesh::CH ch2 : m.cell_cells(Mesh::CH(0))) {
+        chs2.push_back(ch2);
+    }
+    EXPECT_EQ(0, chs2.size());
+
     m.save_obj(std::filesystem::path(TESTS_OUTPUT_DIR)/"cube.obj");
 }
 

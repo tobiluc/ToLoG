@@ -10,6 +10,7 @@
 #include <fstream>
 #include <ToLoG/geometry/AABB.hpp>
 #include <queue>
+#include <ToLoG/HashMap.hpp>
 
 namespace ToLoG
 {
@@ -94,29 +95,70 @@ public:
     {
         using BaseHandle::BaseHandle;
     };
-    // class BaseProp
-    // {
-    // public:
-    //     void reserve(uint32_t _size);
-    // };
 
     template<typename H, typename T>
     class PropT
     {
     public:
-        PropT() {}
-        PropT(uint32_t _size, const T& _def = T()) : data_(_size, _def) {}
-        void push_back(const T& _val = T()) {data_.push_back(_val);}
-        void push_back(T&& _val) {data_.push_back(_val);}
-        void reserve(uint32_t _size) {data_.reserve(_size);}
-        void resize(uint32_t _size) {data_.resize(_size);}
-        T& operator[](H _h) {return data_[_h.idx()];}
-        const T& operator[](H _h) const {return data_.at(_h.idx());}
-        constexpr size_t size() const {return data_.size();}
-        T* data() {return data_.data();}
-        const T* data() const {return data_.data();}
-        auto begin() const {return data_.begin();}
-        auto end() const {return data_.end();}
+        PropT()
+        {}
+
+        PropT(uint32_t _size, const T& _def = T()) :
+            data_(_size, _def)
+        {}
+
+        constexpr size_t size() {
+            return data_.size();
+        }
+
+        T& operator[](H _h) {
+            return data_[_h.idx()];
+        }
+
+        const T& operator[](H _h) const {
+            return data_.at(_h.idx());
+        }
+
+        constexpr size_t size() const {
+            return data_.size();
+        }
+
+        T* data() {
+            return data_.data();
+        }
+
+        const T* data() const {
+            return data_.data();
+        }
+
+        auto begin() const {
+            return data_.begin();
+        }
+
+        auto end() const {
+            return data_.end();
+        }
+
+        void push_back(const T& _val = T()) {
+            data_.push_back(_val);
+        }
+
+        void push_back(T&& _val) {
+            data_.push_back(_val);
+        }
+
+        void clear() {
+            data_.clear();
+        }
+
+        void reserve(size_t _size) {
+            data_.reserve(_size);
+        }
+
+        void resize(const TopologicalCellComplex* _mesh) {
+            data_.resize(_mesh->num_allocated<H>());
+        }
+
     protected:
         std::vector<T> data_;
     };
@@ -160,7 +202,7 @@ public:
         operator bool() const {return curr_.is_valid();}
         IterT& operator++() {
             if ((++curr_idx_) < derived().end_idx()) {
-                derived().on_index_update();
+                derived().update();
             }
             return *this;
         }
@@ -173,7 +215,7 @@ public:
         constexpr const H0& ref() const {return ref_;}
         void set_begin() {
             if ((curr_idx_=0) < derived().end_idx()) {
-                derived().on_index_update();
+                derived().update();
             }
         }
         void set_end() {
@@ -195,15 +237,13 @@ public:
         friend class IterT<VEIter, VH, EH>;
     public:
         VEIter(const TopologicalCellComplex* _mesh, VH _vh) : IterT(_mesh, _vh) {
-            if (end_idx() > 0) {
-                on_index_update();
-            }
+            (end_idx() > 0)? update() : set_end();
         }
         int end_idx() const {
             return mesh()->vertices_[ref()].out_hehs_.size();
         }
     protected:
-        void on_index_update() {
+        void update() {
             curr_ = mesh()->vertices_[ref()].out_hehs_[idx()].eh();
         }
     };
@@ -213,16 +253,30 @@ public:
         friend class IterT<VOHEIter, VH, HEH>;
     public:
         VOHEIter(const TopologicalCellComplex* _mesh, VH _vh) : IterT(_mesh, _vh) {
-            if (end_idx() > 0) {
-                on_index_update();
-            }
+            (end_idx() > 0)? update() : set_end();
         }
         int end_idx() const {
             return mesh()->vertices_[ref()].out_hehs_.size();
         }
     protected:
-        void on_index_update() {
+        void update() {
             curr_ = mesh()->vertices_[ref()].out_hehs_[idx()];
+        }
+    };
+
+    class VIHEIter : public IterT<VIHEIter, VH, HEH>
+    {
+        friend class IterT<VIHEIter, VH, HEH>;
+    public:
+        VIHEIter(const TopologicalCellComplex* _mesh, VH _vh) : IterT(_mesh, _vh) {
+            (end_idx() > 0)? update() : set_end();
+        }
+        int end_idx() const {
+            return mesh()->vertices_[ref()].out_hehs_.size();
+        }
+    protected:
+        void update() {
+            curr_ = mesh()->vertices_[ref()].out_hehs_[idx()].opp();
         }
     };
 
@@ -231,15 +285,13 @@ public:
         friend class IterT<VVIter, VH, VH>;
     public:
         VVIter(const TopologicalCellComplex* _mesh, VH _vh) : IterT(_mesh, _vh) {
-            if (end_idx() > 0) {
-                on_index_update();
-            }
+            (end_idx() > 0)? update() : set_end();
         }
         int end_idx() const {
             return mesh()->vertices_[ref()].out_hehs_.size();
         }
     protected:
-        void on_index_update() {
+        void update() {
             curr_ = mesh()->vh1(mesh()->vertices_[ref()].out_hehs_[idx()]);
         }
     };
@@ -258,15 +310,14 @@ public:
                 }
             }
             if (!fhs_.empty()) {
-                on_index_update();
+                update();
             }
         }
         int end_idx() const {
             return fhs_.size();
         }
     protected:
-        void on_index_update() {
-            std::cerr << idx() << "/" << end_idx() << std::endl;
+        void update() {
             curr_ = fhs_[idx()];
         }
         std::vector<FH> fhs_;
@@ -277,13 +328,13 @@ public:
         friend class IterT<EVIter, EH, VH>;
     public:
         EVIter(const TopologicalCellComplex* _mesh, EH _eh) : IterT(_mesh, _eh) {
-            on_index_update();
+            update();
         }
         int end_idx() const {
             return 2;
         }
     protected:
-        void on_index_update() {
+        void update() {
             curr_ = mesh()->edges_[ref()].vhs_[idx()];
         }
     };
@@ -293,15 +344,13 @@ public:
         friend class IterT<EFIter, EH, FH>;
     public:
         EFIter(const TopologicalCellComplex* _mesh, EH _eh) : IterT(_mesh, _eh) {
-            if (end_idx() > 0) {
-                on_index_update();
-            }
+            (end_idx() > 0)? update() : set_end();
         }
         int end_idx() const {
             return mesh()->edges_[ref()].incident_hfhs_.size();
         }
     protected:
-        void on_index_update() {
+        void update() {
             curr_ = mesh()->edges_[ref()].incident_hfhs_[idx()].fh();
         }
     };
@@ -311,13 +360,13 @@ public:
         friend class IterT<FVIter, FH, VH>;
     public:
         FVIter(const TopologicalCellComplex* _mesh, FH _fh) : IterT(_mesh, _fh) {
-            on_index_update();
+            update();
         }
         int end_idx() const {
             return mesh()->face_valence(ref());
         }
     protected:
-        void on_index_update() {
+        void update() {
             curr_ = mesh()->vh(ref().hfh(0), idx());
         }
     };
@@ -327,14 +376,30 @@ public:
         friend class IterT<HFVIter, HFH, VH>;
     public:
         HFVIter(const TopologicalCellComplex* _mesh, HFH _hfh) : IterT(_mesh, _hfh) {
-            on_index_update();
+            update();
         }
         int end_idx() const {
             return mesh()->face_valence(ref());
         }
     protected:
-        void on_index_update() {
+        void update() {
             curr_ = mesh()->vh(ref(), idx());
+        }
+    };
+
+    class HFHEIter : public IterT<HFHEIter, HFH, HEH>
+    {
+        friend class IterT<HFHEIter, HFH, HEH>;
+    public:
+        HFHEIter(const TopologicalCellComplex* _mesh, HFH _hfh) : IterT(_mesh, _hfh) {
+            update();
+        }
+        int end_idx() const {
+            return mesh()->face_valence(ref());
+        }
+    protected:
+        void update() {
+            curr_ = mesh()->heh(ref(), idx());
         }
     };
 
@@ -343,13 +408,13 @@ public:
         friend class IterT<FHEIter, FH, HEH>;
     public:
         FHEIter(const TopologicalCellComplex* _mesh, FH _fh) : IterT(_mesh, _fh) {
-            on_index_update();
+            update();
         }
         int end_idx() const {
             return mesh()->face_valence(ref());
         }
     protected:
-        void on_index_update() {
+        void update() {
             curr_ = mesh()->faces_[ref()].hehs_[idx()];
         }
     };
@@ -359,13 +424,13 @@ public:
         friend class IterT<FEIter, FH, EH>;
     public:
         FEIter(const TopologicalCellComplex* _mesh, FH _fh) : IterT(_mesh, _fh) {
-            on_index_update();
+            update();
         }
         int end_idx() const {
             return mesh()->face_valence(ref());
         }
     protected:
-        void on_index_update() {
+        void update() {
             curr_ = mesh()->faces_[ref()].hehs_[idx()].eh();
         }
     };
@@ -375,13 +440,13 @@ public:
         friend class IterT<CHFIter, CH, HFH>;
     public:
         CHFIter(const TopologicalCellComplex* _mesh, CH _ch) : IterT(_mesh, _ch) {
-            on_index_update();
+            update();
         }
         int end_idx() const {
             return mesh()->cells_[ref()].hfhs_.size();
         }
     protected:
-        void on_index_update() {
+        void update() {
             curr_ = mesh()->cells_[ref()].hfhs_[idx()];
         }
     };
@@ -391,14 +456,35 @@ public:
         friend class IterT<CFIter, CH, FH>;
     public:
         CFIter(const TopologicalCellComplex* _mesh, CH _ch) : IterT(_mesh, _ch) {
-            on_index_update();
+            update();
         }
         int end_idx() const {
             return mesh()->cells_[ref()].hfhs_.size();
         }
     protected:
-        void on_index_update() {
+        void update() {
             curr_ = mesh()->cells_[ref()].hfhs_[idx()].fh();
+        }
+    };
+
+    class CCIter : public IterT<CCIter, CH, CH>
+    {
+        friend class IterT<CCIter, CH, CH>;
+    public:
+        CCIter(const TopologicalCellComplex* _mesh, CH _ch) : IterT(_mesh, _ch) {
+            update();
+        }
+        int end_idx() const {
+            return mesh()->cells_[ref()].hfhs_.size();
+        }
+    protected:
+        void update() {
+            while (!((curr_ = mesh()->incident_cell(mesh()->cells_[ref()].hfhs_[idx()].opp())).is_valid())) {
+                if (++curr_idx_ >= end_idx()) {
+                    break;
+                }
+            }
+            if (!curr_.is_valid()) {set_end();}
         }
     };
 
@@ -415,13 +501,13 @@ public:
                     }
                 }
             }
-            on_index_update();
+            update();
         }
         int end_idx() const {
             return vhs_.size();
         }
     protected:
-        void on_index_update() {
+        void update() {
             curr_ = vhs_[idx()];
         }
         std::vector<VH> vhs_;
@@ -439,8 +525,8 @@ public:
     };
 
 public:
-    TopologicalCellComplex() {
-    };
+    TopologicalCellComplex()
+    {};
 
     IterRange<VVIter> vertex_vertices(VH _vh) const {
         VVIter begin(this, _vh);
@@ -459,6 +545,13 @@ public:
     IterRange<VOHEIter> vertex_out_halfedges(VH _vh) const {
         VOHEIter begin(this, _vh);
         VOHEIter end(this, _vh);
+        end.set_end();
+        return {begin, end};
+    }
+
+    IterRange<VIHEIter> vertex_in_halfedges(VH _vh) const {
+        VIHEIter begin(this, _vh);
+        VIHEIter end(this, _vh);
         end.set_end();
         return {begin, end};
     }
@@ -498,6 +591,13 @@ public:
         return {begin, end};
     }
 
+    IterRange<HFHEIter> halfface_halfedges(HFH _hfh) const {
+        HFHEIter begin(this, _hfh);
+        HFHEIter end(this, _hfh);
+        end.set_end();
+        return {begin, end};
+    }
+
     IterRange<FEIter> face_edges(FH _fh) const {
         FEIter begin(this, _fh);
         FEIter end(this, _fh);
@@ -533,20 +633,31 @@ public:
         return {begin, end};
     }
 
+    IterRange<CCIter> cell_cells(CH _ch) const {
+        CCIter begin(this, _ch);
+        CCIter end(this, _ch);
+        end.set_end();
+        return {begin, end};
+    }
+
     void reserve_vertices(uint32_t _size) {
         vertices_.reserve(_size);
+        vertex_deleted_.reserve(_size);
     }
 
     void reserve_edges(uint32_t _size) {
         edges_.reserve(_size);
+        edge_deleted_.reserve(_size);
     }
 
     void reserve_faces(uint32_t _size) {
         faces_.reserve(_size);
+        face_deleted_.reserve(_size);
     }
 
     void reserve_cells(uint32_t _size) {
         cells_.reserve(_size);
+        cell_deleted_.reserve(_size);
     }
 
     constexpr bool is_deleted(VH _vh) const {
@@ -699,6 +810,39 @@ public:
 
     constexpr size_t num_allocated_cells() const {
         return cells_.size();
+    }
+
+    template<typename H>
+    constexpr size_t num_allocated() const;
+
+    template<>
+    constexpr size_t num_allocated<VH>() const {
+        return num_allocated_vertices();
+    }
+
+    template<>
+    constexpr size_t num_allocated<EH>() const {
+        return num_allocated_edges();
+    }
+
+    template<>
+    constexpr size_t num_allocated<HEH>() const {
+        return num_allocated_halfedges();
+    }
+
+    template<>
+    constexpr size_t num_allocated<FH>() const {
+        return num_allocated_faces();
+    }
+
+    template<>
+    constexpr size_t num_allocated<HFH>() const {
+        return num_allocated_halffaces();
+    }
+
+    template<>
+    constexpr size_t num_allocated<CH>() const {
+        return num_allocated_cells();
     }
 
     constexpr size_t num_deleted_vertices() const {
@@ -885,7 +1029,7 @@ public:
 
     VH add_vertex(const Point& _pos) {
         VH vh = TopologicalCellComplex::add_vertex();
-        positions_.resize(num_allocated_vertices());
+        positions_.resize(this);
         positions_[vh] = _pos;
         return vh;
     }
@@ -913,6 +1057,17 @@ public:
         Point bary = filled<Point>(0);
         FT valence(0);
         for (VH vh : face_vertices(_fh)) {
+            bary += point(vh);
+            valence += 1;
+        }
+        return bary / valence;
+    }
+
+    Point barycenter(CH _ch) const
+    {
+        Point bary = filled<Point>(0);
+        FT valence(0);
+        for (VH vh : cell_vertices(_ch)) {
             bary += point(vh);
             valence += 1;
         }
@@ -1031,12 +1186,5 @@ AABB<Point> aabb(const PolyhedralMesh<Point>& _mesh)
     }
     return bbox;
 }
-
-// struct PolygonMeshTags
-// {
-//     TopologicalCellComplex::VertexPropT<int> v_tags;
-//     TopologicalCellComplex::EdgePropT<int> e_tags;
-//     TopologicalCellComplex::FacePropT<int> f_tags;
-// };
 
 }
