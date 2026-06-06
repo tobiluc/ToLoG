@@ -3,15 +3,15 @@
 #include <ToLoG/mesh/CellComplex.hpp>
 #include <ToLoG/Core.hpp>
 
-namespace ToLoG
+namespace ToLoG::Mesh
 {
 
 using P = Point<double,3>;
-using Mesh = PolyhedralMesh<P>;
+using M = PolyhedralMesh<P>;
 
 TEST(MeshTest, TriangleFaceTest)
 {
-    Mesh m;
+    M m;
     Mesh::VH vh0 = m.add_vertex(P(0,0,0));
     Mesh::VH vh1 = m.add_vertex(P(0,0,1));
     Mesh::VH vh2 = m.add_vertex(P(1,0,0));
@@ -52,7 +52,7 @@ TEST(MeshTest, TriangleFaceTest)
 
 TEST(MeshTest, CubeMeshTest)
 {
-    Mesh m = create_cube<P>();
+    M m = create_cube<P>();
 
     std::vector<Mesh::VH> vhs;
     for (Mesh::VH vh : m.cell_vertices(Mesh::CH(0))) {

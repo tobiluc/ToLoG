@@ -8,6 +8,8 @@ add_library("${TOLOG_LIBRARY_NAME}" STATIC
     ToLoG/unstable/marching_cubes.cpp
     ToLoG/math/polynomial_roots.cpp
     ToLoG/mesh/CellComplex.cpp
+    ToLoG/mesh/cell_complex_iterators.cpp
+
 )
 add_library ("${TOLOG_LIBRARY_NAME}::${TOLOG_LIBRARY_NAME}" ALIAS ${TOLOG_LIBRARY_NAME})
 

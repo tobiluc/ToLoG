@@ -2,7 +2,7 @@
 #include <ToLoG/utils/indices.hpp>
 #include <ToLoG/mesh/CellComplex.hpp>
 
-namespace ToLoG
+namespace ToLoG::Mesh
 {
 
 // template<vector_of_dim<3> Point>
@@ -70,7 +70,7 @@ PolyhedralMesh<P> create_cube(FT _size=1)
 {
     PolyhedralMesh<P> cube;
     FT V = _size/static_cast<FT>(2);
-    std::array<typename PolyhedralMesh<P>::VH,8> vhs = {
+    std::array<VH,8> vhs = {
         cube.add_vertex(P(-V,-V,-V)),
         cube.add_vertex(P(-V,-V,+V)),
         cube.add_vertex(P(-V,+V,-V)),
@@ -80,7 +80,7 @@ PolyhedralMesh<P> create_cube(FT _size=1)
         cube.add_vertex(P(+V,+V,-V)),
         cube.add_vertex(P(+V,+V,+V))
     };
-    std::vector<typename PolyhedralMesh<P>::HFH> hfhs;
+    std::vector<HFH> hfhs;
     for (int i = 0; i < 6; ++i) {
         const auto& f = cube_vertex_indices[i];
         hfhs.push_back(cube.add_halfface({vhs[f[0]],vhs[f[1]],vhs[f[2]],vhs[f[3]]}));

@@ -1,15 +1,8 @@
 #include <ToLoG/mesh/CellComplex.hpp>
 #include <queue>
 
-namespace ToLoG
+namespace ToLoG::Mesh
 {
-
-using VH = TopologicalCellComplex::VH;
-using EH = TopologicalCellComplex::EH;
-using HEH = TopologicalCellComplex::HEH;
-using FH = TopologicalCellComplex::FH;
-using HFH = TopologicalCellComplex::HFH;
-using CH = TopologicalCellComplex::CH;
 
 VH TopologicalCellComplex::add_vertex()
 {
@@ -429,6 +422,19 @@ void TopologicalCellComplex::collect_garbage()
     // EdgePropT<uint32_t> eh_idx(num_allocated_edges());
     // FacePropT<uint32_t> fh_idx(num_allocated_faces());
     // CellPropT<uint32_t> ch_idx(num_allocated_cells());
+}
+
+VH TopologicalTetrahedralCellComplex::opposite_vertex(HFH _hfh) const
+{
+    CH ch = incident_cell(_hfh);
+    HFH hfh = cells_[ch].hfhs_[0];
+    if (hfh == _hfh) {hfh = cells_[ch].hfhs_[1];}
+    for (VH vh : halfface_vertices(hfh)) {
+        if (!are_incident(vh, _hfh.fh())) {
+            return vh;
+        }
+    }
+    return VH();
 }
 
 }
