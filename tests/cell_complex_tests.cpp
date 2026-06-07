@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 #include <ToLoG/mesh/CellComplex.hpp>
 #include <ToLoG/Core.hpp>
+#include <ToLoG/mesh/save_surface_mesh.hpp>
 
 namespace ToLoG::Mesh
 {
@@ -66,7 +67,7 @@ TEST(MeshTest, CubeMeshTest)
     }
     EXPECT_EQ(0, chs2.size());
 
-    m.save_obj(std::filesystem::path(TESTS_OUTPUT_DIR)/"cube.obj");
+    save_surface_mesh(std::filesystem::path(TESTS_OUTPUT_DIR)/"cube.obj", m);
 }
 
 }

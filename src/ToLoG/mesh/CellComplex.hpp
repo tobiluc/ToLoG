@@ -3,11 +3,8 @@
 #include <ToLoG/Traits_fwd.hpp>
 #include <ToLoG/vector_concepts.hpp>
 #include <cassert>
-#include <filesystem>
-#include <iostream>
 #include <ranges>
 #include <vector>
-#include <fstream>
 #include <ToLoG/geometry/AABB.hpp>
 #include <queue>
 #include <ToLoG/HashMap.hpp>
@@ -478,6 +475,13 @@ public:
         return deleted_cells_.size();
     }
 
+    constexpr bool has_deleted() const {
+        return num_deleted_vertices()
+                || num_deleted_edges()
+                || num_deleted_faces()
+               || num_deleted_cells();
+    }
+
     constexpr size_t num_active_vertices() const {
         return num_allocated_vertices() - num_deleted_vertices();
     }
@@ -646,11 +650,11 @@ public:
 
 };
 
-template<vector Point, typename Topology = TopologicalCellComplex>
-class GeometricCellComplex : public Topology
+template<vector Point, typename TopoKernel = TopologicalCellComplex>
+class GeometricCellComplex : public TopoKernel
 {
 private:
-    using Topology::Topology;
+    using TopoKernel::TopoKernel;
     using PositionProp = VertexPropT<Point>;
     using FT = Traits<Point>::value_type;
     static constexpr int DIM = Traits<Point>::dim;
@@ -658,14 +662,14 @@ private:
 public:
 
     VH add_vertex(const Point& _pos) {
-        VH vh = Topology::add_vertex();
-        positions_.resize(Topology::num_allocated_vertices());
+        VH vh = TopoKernel::add_vertex();
+        positions_.resize(TopoKernel::num_allocated_vertices());
         positions_[vh] = _pos;
         return vh;
     }
 
     void reserve_vertices(size_t _size) {
-        Topology::reserve_vertices(_size);
+        TopoKernel::reserve_vertices(_size);
         positions_.reserve(_size);
     }
 
@@ -675,18 +679,28 @@ public:
 
     auto points() const {
         auto to_point = std::views::transform([this](VH vh) {return point(vh);});
-        return Topology::vertices() | to_point;
+        return TopoKernel::vertices() | to_point;
+    }
+
+    void set_point(VH _vh, const Point& _pos) {
+        positions_[_vh] = _pos;
+    }
+
+    void set_points(const PositionProp& _points) {
+        for (VH vh : TopoKernel::vertices()) {
+            positions_[vh] = _points[vh];
+        }
     }
 
     Point barycenter(EH _eh) const {
-        return (point(Topology::vh0(_eh)) + point(Topology::vh1(_eh)))*FT(0.5);
+        return (point(TopoKernel::vh0(_eh)) + point(TopoKernel::vh1(_eh)))*FT(0.5);
     }
 
     Point barycenter(FH _fh) const
     {
         Point bary = filled<Point>(0);
         FT valence(0);
-        for (VH vh : Topology::face_vertices(_fh)) {
+        for (VH vh : TopoKernel::face_vertices(_fh)) {
             bary += point(vh);
             valence += 1;
         }
@@ -697,107 +711,11 @@ public:
     {
         Point bary = filled<Point>(0);
         FT valence(0);
-        for (VH vh : Topology::cell_vertices(_ch)) {
+        for (VH vh : TopoKernel::cell_vertices(_ch)) {
             bary += point(vh);
             valence += 1;
         }
         return bary / valence;
-    }
-
-    void laplacian_smoothing(int _smoothing_iters = 1, bool _skip_nonmanifold = true)
-    {
-        // Cache Vertex Manifoldness
-        VertexPropT<uint8_t> v_manifold(Topology::num_allocated_vertices(), false);
-        for (VH vh : Topology::vertices()) {
-            v_manifold[vh] = Topology::surface_vertex_is_manifold(vh);
-        }
-
-        for (int iter = 0; iter < _smoothing_iters; ++iter) {
-            PositionProp next_points(Topology::num_allocated_vertices());
-            for (VH vh0 : Topology::vertices()) {
-                FT n(1);
-                next_points[vh0] = point(vh0);
-                if (_skip_nonmanifold && !v_manifold[vh0]) {continue;}
-                for (EH eh : Topology::vertex_edges(vh0)) {
-                    if (_skip_nonmanifold && !Topology::surface_edge_is_manifold(eh)) {continue;}
-                    VH vh1 = Topology::opposite_vertex(vh0, eh);
-                    if (_skip_nonmanifold && !v_manifold[vh1]) {continue;}
-                    next_points[vh0] += point(vh1);
-                    ++n;
-                }
-                next_points[vh0] /= n;
-            }
-            positions_ = std::move(next_points);
-        }
-    }
-
-    enum class TriangulationStrategy {
-        BARY, // insert new vertex at barycenter
-        FAN
-    };
-
-    void triangulate_faces(const TriangulationStrategy _strat = TriangulationStrategy::BARY)
-    {
-        GeometricCellComplex tri_mesh;
-        tri_mesh.reserve_vertices(Topology::num_allocated_vertices());
-        tri_mesh.reserve_edges(Topology::num_allocated_edges());
-        tri_mesh.reserve_faces(Topology::num_allocated_faces());
-        for (const auto& p : positions_) {
-            tri_mesh.add_vertex(p);
-        }
-        if (_strat == TriangulationStrategy::BARY)
-        {
-            for (FH fh : Topology::faces()) {
-                VH v0 = tri_mesh.add_vertex(barycenter(fh));
-                const auto& f = Topology::face_vertices(fh);
-                for (int i = 0; i < f.size(); ++i) {
-                    tri_mesh.add_face({
-                        v0,
-                        f[i],
-                        f[(i+1)%f.size()]
-                    });
-                }
-            }
-        }
-        else if (_strat == TriangulationStrategy::FAN)
-        {
-            for (FH fh : Topology::faces()) {
-                const auto& f = Topology::face_vertices(fh);
-                for (int i = 1; i < f.size()-1; ++i) {
-                    tri_mesh.add_face({
-                        f[0],
-                        f[i],
-                        f[i+1]
-                    });
-                }
-            }
-        }
-        *this = std::move(tri_mesh);
-    }
-
-    void save_obj(const std::filesystem::path& _path) const {
-        std::ofstream file(_path);
-        for (const auto& p : positions_) {
-            file << "v";
-            for (int i = 0; i < DIM; ++i) {
-                file << " " << p[i];
-            }
-            file << std::endl;
-        }
-        for (const auto& eh : Topology::edges()) {
-            if (!Topology::edge_is_disconnected(eh)) {continue;}
-            HEH heh = eh.heh(0);
-            file << "l " << (Topology::vh0(heh).idx()+1) << " "
-                 << (Topology::vh1(heh).idx()+1) << std::endl;
-        }
-        for (const auto& fh : Topology::faces()) {
-            file << "f";
-            for (VH vh : Topology::face_vertices(fh)) {
-                file << " " << (vh.idx()+1);
-            }
-            file << std::endl;
-        }
-        file.close();
     }
 
 protected:
