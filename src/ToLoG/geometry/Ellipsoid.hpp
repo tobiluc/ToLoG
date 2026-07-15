@@ -35,11 +35,21 @@ public:
     const P& center() const {
         return center_;
     }
+    P& center() {
+        return center_;
+    }
     const P& direction(int i) const {
         return directions_[i];
     }
-    FT radius(int i) const {
+    const FT& radius(int i) const {
         return radii_[i];
+    }
+    Ellipsoid<P> scaled(FT _scale) const {
+        Ellipsoid<P> ell = *this;
+        for (int i = 0; i < DIM; ++i) {
+            ell.radii_[i] *= _scale;
+        }
+        return ell;
     }
     bool operator==(const Ellipsoid<P>& _e) const {
         return center_ == _e.center_ && directions_ == _e.directions_
