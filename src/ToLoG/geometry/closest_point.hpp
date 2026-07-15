@@ -13,6 +13,17 @@ P closest_point(const P& _q, const P& _p)
 }
 
 template<vector P>
+P closest_point(const AABB<P>& _b, const P& _p)
+{
+    using FT = Traits<P>::value_type;
+    P p;
+    for (int i = 0; i < Traits<P>::dim; ++i) {
+        p[i] = std::max<FT>(_b.min()[i], std::min<FT>(_p[i], _b.max()[i]));
+    }
+    return p;
+}
+
+template<vector P>
 P closest_point(const Segment<P>& _s, const P& _p)
 {
     using FT = Traits<P>::value_type;
