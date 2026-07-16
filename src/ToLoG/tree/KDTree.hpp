@@ -3,6 +3,7 @@
 #include <numeric>
 #include <span>
 #include <stack>
+#include <queue>
 
 namespace ToLoG
 {

@@ -2,6 +2,7 @@
 
 #include <ToLoG/vector_concepts.hpp>
 #include <span>
+#include <ostream>
 
 namespace ToLoG
 {
