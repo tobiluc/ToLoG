@@ -18,19 +18,7 @@ public:
     Ellipsoid(const P& _center, const std::array<P,DIM>& _axes) :
         center_(_center)
     {
-        for (int i = 0; i < DIM; ++i) {
-            directions_[i] = normalized(_axes[i]);
-            radii_[i] = norm(_axes[i]);
-            assert(radii_[i] > 0);
-        }
-#ifndef NDEBUG
-        for (int i = 0; i < DIM; ++i) {
-            assert(std::abs(radii_[i])>1e-14);
-            for (int j = i+1; j < DIM; ++j) {
-                assert(std::abs(dot(_axes[i], _axes[j]))<=1e-14);
-            }
-        }
-#endif
+        set_axes(_axes);
     }
     const P& center() const {
         return center_;
@@ -46,10 +34,38 @@ public:
     }
     Ellipsoid<P> scaled(FT _scale) const {
         Ellipsoid<P> ell = *this;
-        for (int i = 0; i < DIM; ++i) {
-            ell.radii_[i] *= _scale;
-        }
+        for (FT& r : ell.radii_) {r *= _scale;}
         return ell;
+    }
+    constexpr P axis(int i) const {
+        return direction(i) * radius(i);
+    }
+    constexpr std::array<P,DIM> axes() const {
+        std::array<P,DIM> res;
+        for (int i = 0; i < DIM; ++i) {res[i] = axis(i);}
+        return res;
+    }
+    void set_axis(int i, const P& _axis)
+    {
+        directions_[i] = normalized(_axis);
+        radii_[i] = norm(_axis);
+        assert(radii_[i] > 0);
+    }
+    void set_axes(const std::array<P, DIM>& _axes)
+    {
+        for (int i = 0; i < DIM; ++i) {set_axis(i, _axes[i]);}
+        assert(check_orthogonal());
+    }
+    bool check_orthogonal() const
+    {
+        for (int i = 0; i < DIM; ++i) {
+            for (int j = i+1; j < DIM; ++j) {
+                if (std::abs(dot(direction(i), direction(j))) > 1e-14) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
     bool operator==(const Ellipsoid<P>& _e) const {
         return center_ == _e.center_ && directions_ == _e.directions_
