@@ -561,7 +561,7 @@ public:
     constexpr HEH heh(HFH _hfh, uint32_t _subidx) const {
         FH fh = _hfh.fh();
         uint32_t n = faces_[fh].hehs_.size();
-        assert(_idx < n);
+        assert(_subidx < n);
         if (is_deleted(fh)) {return HEH();}
         if (_hfh.subidx() == 0) {
             return faces_[fh].hehs_[_subidx];
