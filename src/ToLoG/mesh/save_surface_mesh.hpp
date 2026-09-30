@@ -14,12 +14,19 @@ void save_surface_mesh(const std::filesystem::path& _path,
     if (_mesh.has_deleted()) {
         throw std::runtime_error("saving does not currently work with deleted entities.");
     }
+    if (Traits<Point>::dim > 3) {
+        throw std::runtime_error("mesh dimension needs to be <= 3 for exporting to .obj");
+    }
 
     std::ofstream file(_path);
     for (const auto& p : _mesh.points()) {
         file << "v";
-        for (int i = 0; i < Traits<Point>::dim; ++i) {
-            file << " " << p[i];
+        for (int i = 0; i < 3; ++i) {
+            if (i < Traits<Point>::dim) {
+                file << " " << p[i];
+            } else {
+                file << " 0";
+            }
         }
         file << std::endl;
     }
