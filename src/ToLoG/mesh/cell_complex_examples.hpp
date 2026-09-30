@@ -64,7 +64,7 @@ namespace ToLoG::Mesh
 //     return m;
 // }
 
-template<vector P,
+template<vector_of_dim<3> P,
     typename FT = typename Traits<P>::value_type>
 PolyhedralMesh<P> create_cube(FT _size=1)
 {
@@ -87,6 +87,37 @@ PolyhedralMesh<P> create_cube(FT _size=1)
     }
     cube.add_cell(hfhs);
     return cube;
+}
+
+template<vector_of_dim<2> P,
+         typename FT = typename Traits<P>::value_type>
+PolyhedralMesh<P> create_grid_2(size_t _n_rows = 5, size_t _n_cols = 5, FT _size=1)
+{
+    PolyhedralMesh<P> grid;
+    for (int r = 0; r < _n_rows + 1; ++r) {
+        for (int c = 0; c < _n_cols + 1; ++c) {
+            grid.add_vertex({c*_size, r*_size});
+        }
+    }
+    for (int r = 0; r < _n_rows; ++r) {
+        for (int c = 0; c < _n_cols; ++c) {
+            uint32_t i = r * (_n_cols + 1) + c; // bottom-left
+
+            VH vh3(i); // (r, c)
+            VH vh2(i + 1); // (r, c + 1)
+            VH vh1(i + 1 + (_n_cols + 1)); // (r + 1, c + 1)
+            VH vh0(i + (_n_cols + 1)); // (r + 1, c)
+
+            std::vector<HEH> hehs = {
+                grid.add_halfedge(vh0, vh1),
+                grid.add_halfedge(vh1, vh2),
+                grid.add_halfedge(vh2, vh3),
+                grid.add_halfedge(vh3, vh0)
+            };
+            grid.add_halfface(hehs);
+        }
+    }
+    return grid;
 }
 
 }
