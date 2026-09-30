@@ -2,6 +2,7 @@
 
 #include <ToLoG/Traits_fwd.hpp>
 #include <ToLoG/vector_concepts.hpp>
+#include <ToLoG/geometry/vector_math.hpp>
 #include <cassert>
 #include <ranges>
 #include <vector>
