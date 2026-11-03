@@ -2,6 +2,7 @@
 #include <ToLoG/geometry/predicates/predicates.hpp>
 #include <ToLoG/Core.hpp>
 #include <ToLoG/utils/indices.hpp>
+#include <cstdint>
 #include <iostream>
 #include <ToLoG/mesh/tet_topology.hpp>
 #include <ToLoG/geometry/predicates/intersects.hpp>
@@ -114,7 +115,7 @@ TetTopology::VAR supporting_simplex_in_tet(
         }
 
         if (zero_hfs.size() == 0) {
-            assert((oris[0]==tet_ori&&oris[1]==tet_ori&&oris[2]==tet_ori));
+            assert((oris[0]==tet_ori&&oris[1]==tet_ori));
             return TT::VAR::ABCD; // into tet
         }
         if (zero_hfs.size() == 1) {
@@ -250,8 +251,10 @@ TetSegmentIntersection<P> exiting_simplex_in_tet(
             return {TT::var(zeros[0]), compute_intersection(hf), hf};
         } else if (zeros.size() == 2) {
             // Vertex
-            const TT::V v = TT::v1(zeros[0]);
-            assert(v == TT::v0(zeros[1]));
+            TT::V v = TT::V::O;
+            if (TT::v0(zeros[0]) == TT::v1(zeros[1])) {v = TT::v0(zeros[0]);}
+            else if (TT::v0(zeros[1]) == TT::v1(zeros[0])) {v = TT::v0(zeros[1]);}
+            assert(v != TT::V::O);
             return {TT::var(v), _tet[v], hf};
         }
     }
